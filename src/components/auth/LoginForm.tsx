@@ -2,7 +2,13 @@
 
 import React, { useState } from 'react'
 import { Button } from '@/components/ui/button'
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
+import {
+  Card,
+  CardContent,
+  CardDescription,
+  CardHeader,
+  CardTitle,
+} from '@/components/ui/card'
 import { useAuth } from '@/contexts/AuthContext'
 
 export function LoginForm() {
@@ -20,7 +26,7 @@ export function LoginForm() {
     setError('')
 
     try {
-      const { error } = isSignUp 
+      const { error } = isSignUp
         ? await signUp(email, password)
         : await signIn(email, password)
 
@@ -42,16 +48,18 @@ export function LoginForm() {
             {isSignUp ? 'Create Account' : 'Sign In'}
           </CardTitle>
           <CardDescription className="text-center">
-            {isSignUp 
-              ? 'Enter your details to create a new account' 
-              : 'Enter your credentials to sign in to your account'
-            }
+            {isSignUp
+              ? 'Enter your details to create a new account'
+              : 'Enter your credentials to sign in to your account'}
           </CardDescription>
         </CardHeader>
         <CardContent className="space-y-4">
           <form onSubmit={handleSubmit} className="space-y-4">
             <div>
-              <label htmlFor="email" className="block text-sm font-medium text-gray-700">
+              <label
+                htmlFor="email"
+                className="block text-sm font-medium text-gray-700"
+              >
                 Email
               </label>
               <input
@@ -65,7 +73,10 @@ export function LoginForm() {
               />
             </div>
             <div>
-              <label htmlFor="password" className="block text-sm font-medium text-gray-700">
+              <label
+                htmlFor="password"
+                className="block text-sm font-medium text-gray-700"
+              >
                 Password
               </label>
               <input
@@ -79,16 +90,10 @@ export function LoginForm() {
               />
             </div>
             {error && (
-              <div className="text-red-600 text-sm text-center">
-                {error}
-              </div>
+              <div className="text-red-600 text-sm text-center">{error}</div>
             )}
-            <Button
-              type="submit"
-              className="w-full"
-              disabled={loading}
-            >
-              {loading ? 'Loading...' : (isSignUp ? 'Sign Up' : 'Sign In')}
+            <Button type="submit" className="w-full" disabled={loading}>
+              {loading ? 'Loading...' : isSignUp ? 'Sign Up' : 'Sign In'}
             </Button>
           </form>
 
@@ -98,10 +103,9 @@ export function LoginForm() {
               onClick={() => setIsSignUp(!isSignUp)}
               className="text-sm text-indigo-600 hover:text-indigo-500"
             >
-              {isSignUp 
-                ? 'Already have an account? Sign in' 
-                : "Don't have an account? Sign up"
-              }
+              {isSignUp
+                ? 'Already have an account? Sign in'
+                : "Don't have an account or forgot your password? Please contact support at vuhuongnam07@gamil.com"}
             </button>
           </div>
         </CardContent>
