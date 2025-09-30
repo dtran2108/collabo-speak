@@ -1,0 +1,158 @@
+'use client'
+
+import { useEffect, useState, useCallback } from 'react'
+import { useParams } from 'next/navigation'
+import BackBtn from '@/components/back-btn'
+import { Conversation } from '@/components/conversation'
+import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar'
+import { Card, CardContent, CardHeader } from '@/components/ui/card'
+import { Bot } from 'lucide-react'
+import { db } from '@/lib/database'
+import type { Session, Persona } from '@/types/database'
+
+interface SessionWithPersonas extends Session {
+  personas: Persona[]
+}
+
+export default function Page() {
+  const params = useParams()
+  const sessionId = params.sessionId as string
+  const [session, setSession] = useState<SessionWithPersonas | null>(null)
+  const [loading, setLoading] = useState(true)
+  const [error, setError] = useState<string | null>(null)
+
+  // Load session and personas data
+  const loadSession = useCallback(async () => {
+    try {
+      setLoading(true)
+      setError(null)
+      
+      const sessionData = await db.sessions.getById(sessionId)
+      if (!sessionData) {
+        setError('Session not found')
+        return
+      }
+      
+      const personas = await db.personas.getBySessionId(sessionId)
+      
+      setSession({
+        ...sessionData,
+        personas
+      })
+    } catch (error) {
+      console.error('Error loading session:', error)
+      setError('Failed to load session')
+    } finally {
+      setLoading(false)
+    }
+  }, [sessionId])
+
+  // Load session on component mount
+  useEffect(() => {
+    if (sessionId) {
+      loadSession()
+    }
+  }, [sessionId, loadSession])
+
+  if (loading) {
+    return (
+      <div className="container mx-auto py-2 px-2">
+        <div className='mb-2'>
+          <BackBtn />
+        </div>
+        <div className="flex items-center justify-center h-64">
+          <div className="text-center">
+            <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-indigo-600 mx-auto"></div>
+            <p className="mt-2 text-gray-600">Loading session...</p>
+          </div>
+        </div>
+      </div>
+    )
+  }
+
+  if (error || !session) {
+    return (
+      <div className="container mx-auto py-2 px-2">
+        <div className='mb-2'>
+          <BackBtn />
+        </div>
+        <div className="flex items-center justify-center h-64">
+          <div className="text-center">
+            <p className="text-red-500 mb-4">{error || 'Session not found'}</p>
+            <button 
+              onClick={loadSession}
+              className="px-4 py-2 bg-indigo-600 text-white rounded hover:bg-indigo-700"
+            >
+              Try Again
+            </button>
+          </div>
+        </div>
+      </div>
+    )
+  }
+
+  return (
+    <div className="container mx-auto py-2 px-2">
+      <div className='mb-2'>
+        <BackBtn />
+      </div>
+      <section className="grid grid-cols-4 gap-4">
+        <div className="col-span-1">
+          <Card>
+            <CardHeader className="border-b">
+              <h1 className="font-bold text-lg">
+                {session.name}
+              </h1>
+            </CardHeader>
+            <CardContent>
+              <p className="text-muted-foreground text-sm">
+                {session.description}
+              </p>
+            </CardContent>
+          </Card>
+          
+          {session.personas.length > 0 && (
+            <Card className="mt-4">
+              <CardHeader className="border-b">
+                <div className="flex space-x-2 mt-4">
+                  <Bot strokeWidth={1.25} />
+                  <span className="text-lg font-bold">AI Personas</span>
+                </div>
+              </CardHeader>
+              <CardContent>
+                {session.personas.map((persona) => (
+                  <div key={persona.id} className="mb-4 last:mb-0">
+                    <div className="flex items-center space-x-2">
+                      <Avatar>
+                        <AvatarImage src="" alt={persona.name} />
+                        <AvatarFallback>
+                          {persona.name.charAt(0).toUpperCase()}
+                        </AvatarFallback>
+                      </Avatar>
+                      <span className="text-lg font-bold">{persona.name}</span>
+                    </div>
+                    {persona.description && (
+                      <p className="text-muted-foreground text-sm mt-2">
+                        {persona.description}
+                      </p>
+                    )}
+                  </div>
+                ))}
+              </CardContent>
+            </Card>
+          )}
+        </div>
+        <div className="col-span-3">
+          <Card className="w-full h-full gap-0">
+            <CardHeader className="border-b font-bold text-lg">
+              Chat Window
+            </CardHeader>
+            <CardContent className='py-4'>
+              <Conversation />
+            </CardContent>
+          </Card>
+        </div>
+      </section>
+    </div>
+  )
+}
