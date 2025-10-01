@@ -94,11 +94,25 @@ export default function Page() {
       <div className="container mx-auto">
         <div className="mx-auto flex max-w-5xl flex-col gap-6 text-left">
           <div className="grid grid-cols-1 lg:grid-cols-3 gap-8 items-stretch">
-            <div className="col-span-1 flex w-full">
-              <ChartRadarLegend />
+            <div className="col-span-1 flex w-full relative">
+              <div className="w-full blur-[3px]">
+                <ChartRadarLegend />
+              </div>
+              <div className="absolute inset-0 flex items-center justify-center">
+                <div className="bg-black text-white px-4 py-2 rounded-lg text-sm font-semibold text-center">
+                  Progress will be updated after 1 week
+                </div>
+              </div>
             </div>
-            <div className="col-span-2 flex w-full">
-              <OralProficiencyCard />
+            <div className="col-span-2 flex w-full relative">
+              <div className="w-full blur-[3px]">
+                <OralProficiencyCard />
+              </div>
+              <div className="absolute inset-0 flex items-center justify-center">
+                <div className="bg-black text-white px-4 py-2 rounded-lg text-sm font-semibold text-center">
+                  Progress will be updated after 1 week
+                </div>
+              </div>
             </div>
           </div>
           <h1 className="mt-4 text-lg ml-2 font-semibold text-pretty lg:text-3xl">

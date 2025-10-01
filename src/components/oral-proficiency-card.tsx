@@ -9,22 +9,8 @@ import {
   CardTitle,
 } from './ui/card'
 import {
-  CarouselItem,
-  CarouselContent,
-  Carousel,
   type CarouselApi,
-  CarouselNext,
-  CarouselPrevious,
 } from '@/components/ui/carousel'
-import { Badge } from './ui/badge'
-import {
-  Table,
-  TableBody,
-  TableCell,
-  TableHead,
-  TableHeader,
-  TableRow,
-} from './ui/table'
 import { ChartContainer, ChartTooltip, ChartTooltipContent } from './ui/chart'
 import {
   Line,
@@ -36,21 +22,6 @@ import {
 } from 'recharts'
 
 export function OralProficiencyCard() {
-  const [api, setApi] = useState<CarouselApi>()
-  const [current, setCurrent] = useState(0)
-  const [count, setCount] = useState(0)
-
-  useEffect(() => {
-    if (!api) {
-      return
-    }
-    setCount(api.scrollSnapList().length)
-    setCurrent(api.selectedScrollSnap() + 1)
-    api.on('select', () => {
-      setCurrent(api.selectedScrollSnap() + 1)
-    })
-  }, [api])
-
   const SnapshotItem = () => {
     // Sample data for the chart - in a real app, this would come from props or API
     const chartData = [
