@@ -8,7 +8,7 @@ import { useConversation } from '@elevenlabs/react'
 
 // UI
 import { Button } from '@/components/ui/button'
-import { Mic, MicOff, Phone } from 'lucide-react'
+import { Loader, Mic, MicOff, Phone } from 'lucide-react'
 import Transcript from './transcript'
 import { ReflectionModal } from './ReflectionModal'
 
@@ -285,7 +285,10 @@ export function Conversation({ personas }: { personas: Persona[] }) {
               variant="destructive"
             >
               {isConnecting ? (
-                'Connecting...'
+                <>
+                  <Loader className="animate-spin w-4 h-4 mr-2" />
+                  Connecting...
+                </>
               ) : (
                 <>
                   <Phone className="mr-2 h-4 w-4" />
