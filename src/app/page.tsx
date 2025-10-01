@@ -39,8 +39,9 @@ export default function Page() {
       }
 
       // Sort by created_at date (earlier dates first)
-      sessionsWithPersonas.sort((a, b) => 
-        new Date(a.created_at).getTime() - new Date(b.created_at).getTime()
+      sessionsWithPersonas.sort(
+        (a, b) =>
+          new Date(a.created_at).getTime() - new Date(b.created_at).getTime(),
       )
 
       setSessions(sessionsWithPersonas)
@@ -89,7 +90,8 @@ export default function Page() {
       <div className="container mx-auto">
         <div className="mx-auto flex max-w-5xl flex-col items-center gap-6 text-center">
           <h1 className="mb-2 text-4xl font-semibold text-pretty lg:text-5xl">
-            Welcome to CollaboSpeak
+            Welcome to CollaboSpeak <br />
+            {user?.email}
           </h1>
           <p className="text-muted-foreground">
             Sharpen your collaborative problem-solving skills with by engaging
