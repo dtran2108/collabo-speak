@@ -218,7 +218,14 @@ export function OralProficiencyCard() {
       </CardHeader>
       <CardContent>
         <div className="mx-auto max-w-full">
-          <Carousel setApi={setApi} className="w-full max-w-[90%] mx-auto">
+          <Carousel
+            opts={{
+              align: 'start',
+              loop: true,
+            }}
+            setApi={setApi}
+            className="w-full max-w-[90%] mx-auto"
+          >
             <CarouselContent>
               <SnapshotItem />
               <DeepDiveItem />
