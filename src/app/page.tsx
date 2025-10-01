@@ -9,6 +9,8 @@ import { useRouter } from 'next/navigation'
 import { useEffect, useState } from 'react'
 import { api } from '@/lib/api'
 import type { Session, Persona } from '@/types/database'
+import { ChartRadarLegend } from '@/components/charts/radar-chart'
+import { OralProficiencyCard } from '@/components/oral-proficiency-card'
 
 interface SessionWithPersonas extends Session {
   personas: Persona[]
@@ -88,17 +90,26 @@ export default function Page() {
   return (
     <section className="py-16">
       <div className="container mx-auto">
-        <div className="mx-auto flex max-w-5xl flex-col items-center gap-6 text-center">
+        <div className="mx-auto flex max-w-5xl flex-col gap-6 text-left">
           <h1 className="mb-2 text-4xl font-semibold text-pretty lg:text-5xl">
             Welcome to CollaboSpeak <br />
             {user?.email}
           </h1>
-          <p className="text-muted-foreground">
-            Sharpen your collaborative problem-solving skills with by engaging
-            in realistic role-play discussions with AI-powered personas. <br />
-            Select a scenario to begin!
-          </p>
 
+          <h1 className="mb-2 text-2xl font-semibold text-pretty lg:text-3xl">
+            Progress
+          </h1>
+          <div className="grid grid-cols-1 lg:grid-cols-3 gap-8 items-stretch">
+            <div className="col-span-1 flex w-full">
+              <ChartRadarLegend />
+            </div>
+            <div className="col-span-2 flex w-full">
+              <OralProficiencyCard />
+            </div>
+          </div>
+          <h1 className="mt-4 text-2xl font-semibold text-pretty lg:text-3xl">
+            Select a scenario to begin!
+          </h1>
           {sessionsError ? (
             <div className="mt-10 text-center">
               <p className="text-red-500 mb-4">{sessionsError}</p>
@@ -107,7 +118,7 @@ export default function Page() {
               </Button>
             </div>
           ) : (
-            <div className="mt-10 grid grid-cols-1 place-items-center gap-8 sm:grid-cols-2 lg:grid-cols-3 min-w-[75vw]">
+            <div className="mt-2 grid grid-cols-1 place-items-center gap-8 sm:grid-cols-2 lg:grid-cols-3">
               {sessions.map((session) => (
                 <Card key={session.id} className="w-full h-full flex-1">
                   <CardHeader className="pb-1 text-left">
