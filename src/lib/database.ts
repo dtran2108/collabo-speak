@@ -2,13 +2,13 @@ import { supabase } from './supabase'
 import type { 
   Session, 
   Persona, 
-  UserSession,
+  SessionToUser,
   SessionInsert, 
   PersonaInsert, 
-  UserSessionInsert,
+  SessionToUserInsert,
   SessionUpdate,
   PersonaUpdate,
-  UserSessionUpdate
+  SessionToUserUpdate
 } from '@/types/database'
 
 // Storage bucket name for transcripts
@@ -170,11 +170,11 @@ export const db = {
   },
 
   // User Sessions
-  userSessions: {
+  sessionToUser: {
     // Get user sessions for a user
-    async getByUserId(userId: string): Promise<UserSession[]> {
+    async getByUserId(userId: string): Promise<SessionToUser[]> {
       const { data, error } = await supabase
-        .from('userSessions')
+        .from('sessionToUser')
         .select(`
           *,
           sessions (
@@ -196,9 +196,9 @@ export const db = {
     },
 
     // Get user session by ID
-    async getById(id: string): Promise<UserSession | null> {
+    async getById(id: string): Promise<SessionToUser | null> {
       const { data, error } = await supabase
-        .from('userSessions')
+        .from('sessionToUser')
         .select(`
           *,
           sessions (
@@ -220,9 +220,9 @@ export const db = {
     },
 
     // Create a new user session
-    async create(userSession: UserSessionInsert): Promise<UserSession | null> {
+    async create(userSession: SessionToUserInsert): Promise<SessionToUser | null> {
       const { data, error } = await supabase
-        .from('userSessions')
+        .from('sessionToUser')
         .insert(userSession)
         .select(`
           *,
@@ -244,9 +244,9 @@ export const db = {
     },
 
     // Update user session
-    async update(id: string, updates: UserSessionUpdate): Promise<UserSession | null> {
+    async update(id: string, updates: SessionToUserUpdate): Promise<SessionToUser | null> {
       const { data, error } = await supabase
-        .from('userSessions')
+        .from('sessionToUser')
         .update(updates)
         .eq('id', id)
         .select(`
@@ -271,7 +271,7 @@ export const db = {
     // Delete user session
     async delete(id: string): Promise<boolean> {
       const { error } = await supabase
-        .from('userSessions')
+        .from('sessionToUser')
         .delete()
         .eq('id', id)
       

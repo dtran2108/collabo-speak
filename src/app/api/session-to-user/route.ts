@@ -23,7 +23,7 @@ export async function GET(request: NextRequest) {
     }
 
     const { data, error } = await supabase
-      .from('userSessions')
+      .from('sessionToUser')
       .select(`
         *,
         sessions (
@@ -45,7 +45,7 @@ export async function GET(request: NextRequest) {
       )
     }
 
-    return NextResponse.json({ userSessions: data || [] })
+    return NextResponse.json({ sessionToUser: data || [] })
   } catch (error) {
     console.error('User sessions API error:', error)
     return NextResponse.json(
@@ -86,7 +86,7 @@ export async function POST(request: NextRequest) {
     }
 
     const { data, error } = await supabase
-      .from('userSessions')
+      .from('sessionToUser')
       .insert({
         sessionId,
         userId: user.id,

@@ -86,7 +86,7 @@ export default function Page() {
   }
 
   return (
-    <section className="py-32">
+    <section className="py-16">
       <div className="container mx-auto">
         <div className="mx-auto flex max-w-5xl flex-col items-center gap-6 text-center">
           <h1 className="mb-2 text-4xl font-semibold text-pretty lg:text-5xl">

@@ -3,17 +3,17 @@
 import { useState, useEffect } from 'react'
 import { db } from '@/lib/database'
 import { auth } from '@/lib/auth'
-import type { UserSession, Session } from '@/types/database'
+import type { SessionToUser, Session } from '@/types/database'
 
-export function useUserSessions() {
-  const [userSessions, setUserSessions] = useState<UserSession[]>([])
-  const [currentUserSession, setCurrentUserSession] = useState<UserSession | null>(null)
+export function useSessionToUser() {
+  const [sessionToUser, setSessionToUser] = useState<SessionToUser[]>([])
+  const [currentUserSession, setCurrentUserSession] = useState<SessionToUser | null>(null)
   const [sessions, setSessions] = useState<Session[]>([])
   const [loading, setLoading] = useState(false)
   const [error, setError] = useState<string | null>(null)
 
   // Load user sessions
-  const loadUserSessions = async () => {
+  const loadsessionToUser = async () => {
     setLoading(true)
     setError(null)
     
@@ -24,8 +24,8 @@ export function useUserSessions() {
         return
       }
 
-      const sessions = await db.userSessions.getByUserId(user.id)
-      setUserSessions(sessions)
+      const sessions = await db.sessionToUser.getByUserId(user.id)
+      setSessionToUser(sessions)
     } catch (err) {
       setError(err instanceof Error ? err.message : 'Failed to load user sessions')
     } finally {
@@ -60,14 +60,14 @@ export function useUserSessions() {
         return null
       }
 
-      const userSession = await db.userSessions.create({
+      const userSession = await db.sessionToUser.create({
         userId: user.id,
         sessionId,
         transcriptUrl
       })
 
       if (userSession) {
-        setUserSessions(prev => [userSession, ...prev])
+        setSessionToUser(prev => [userSession, ...prev])
         setCurrentUserSession(userSession)
       }
 
@@ -83,10 +83,10 @@ export function useUserSessions() {
   // Update user session
   const updateUserSession = async (id: string, updates: { transcriptUrl?: string }) => {
     try {
-      const updatedUserSession = await db.userSessions.update(id, updates)
+      const updatedUserSession = await db.sessionToUser.update(id, updates)
       
       if (updatedUserSession) {
-        setUserSessions(prev => 
+        setSessionToUser(prev => 
           prev.map(session => 
             session.id === id ? updatedUserSession : session
           )
@@ -107,10 +107,10 @@ export function useUserSessions() {
   // Delete user session
   const deleteUserSession = async (id: string) => {
     try {
-      const success = await db.userSessions.delete(id)
+      const success = await db.sessionToUser.delete(id)
       
       if (success) {
-        setUserSessions(prev => prev.filter(session => session.id !== id))
+        setSessionToUser(prev => prev.filter(session => session.id !== id))
         
         if (currentUserSession?.id === id) {
           setCurrentUserSession(null)
@@ -125,23 +125,23 @@ export function useUserSessions() {
   }
 
   // Set current user session
-  const setActiveUserSession = (userSession: UserSession) => {
+  const setActiveUserSession = (userSession: SessionToUser) => {
     setCurrentUserSession(userSession)
   }
 
   // Load data on mount
   useEffect(() => {
-    loadUserSessions()
+    loadsessionToUser()
     loadSessions()
   }, [])
 
   return {
-    userSessions,
+    sessionToUser,
     currentUserSession,
     sessions,
     loading,
     error,
-    loadUserSessions,
+    loadsessionToUser,
     loadSessions,
     createUserSession,
     updateUserSession,

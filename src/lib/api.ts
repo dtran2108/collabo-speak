@@ -1,8 +1,8 @@
 import type { 
   Session, 
   Persona, 
-  UserSession,
-  UserSessionInsert
+  SessionToUser,
+  SessionToUserInsert
 } from '@/types/database'
 
 const API_BASE_URL = '/api'
@@ -72,15 +72,15 @@ export const api = {
   },
 
   // User sessions endpoints
-  userSessions: {
-    async getAll(): Promise<{ userSessions: UserSession[] }> {
+  sessionToUser: {
+    async getAll(): Promise<{ sessionToUser: SessionToUser[] }> {
       const response = await fetch(`${API_BASE_URL}/user-sessions`, {
         headers: getAuthHeaders(),
       })
       return handleResponse(response)
     },
 
-    async create(userSession: UserSessionInsert): Promise<{ userSession: UserSession }> {
+    async create(userSession: SessionToUserInsert): Promise<{ userSession: SessionToUser }> {
       const response = await fetch(`${API_BASE_URL}/user-sessions`, {
         method: 'POST',
         headers: {

@@ -41,7 +41,7 @@ export interface Database {
           created_at?: string
           name: string
           description?: string | null
-          sessionId?: string | null,
+          sessionId?: string | null
           avatarUrl: string | null
         }
         Update: {
@@ -49,18 +49,18 @@ export interface Database {
           created_at?: string
           name?: string
           description?: string | null
-          sessionId?: string | null,
+          sessionId?: string | null
           avatarUrl: string | null
         }
       }
-      userSessions: {
+      sessionToUser: {
         Row: {
           id: string
           created_at: string
           sessionId: string
           transcriptUrl: string | null
           userId: string
-          reflection: string | null,
+          reflection: string | null
         }
         Insert: {
           id?: string
@@ -79,6 +79,46 @@ export interface Database {
           reflection?: string | null
         }
       }
+      roles: {
+        Row: {
+          id: string
+          created_at: string
+          name: string
+          permissions: string[]
+        }
+        Insert: {
+          id?: string
+          created_at?: string
+          name: string
+          permissions: string[]
+        }
+        Update: {
+          id?: string
+          created_at?: string
+          name?: string
+          permissions?: string[]
+        }
+      }
+      roleToUser: {
+        Row: {
+          id: string
+          created_at: string
+          userId: string
+          roleId: string
+        }
+        Insert: {
+          id?: string
+          created_at?: string
+          userId: string
+          roleId: string
+        }
+        Update: {
+          id?: string
+          created_at?: string
+          userId: string
+          roleId: string
+        }
+      }
     }
     Views: {
       [_ in never]: never
@@ -95,12 +135,14 @@ export interface Database {
 // Convenience types
 export type Session = Database['public']['Tables']['sessions']['Row']
 export type Persona = Database['public']['Tables']['personas']['Row']
-export type UserSession = Database['public']['Tables']['userSessions']['Row']
+export type SessionToUser = Database['public']['Tables']['sessionToUser']['Row']
 
 export type SessionInsert = Database['public']['Tables']['sessions']['Insert']
 export type PersonaInsert = Database['public']['Tables']['personas']['Insert']
-export type UserSessionInsert = Database['public']['Tables']['userSessions']['Insert']
+export type SessionToUserInsert =
+  Database['public']['Tables']['sessionToUser']['Insert']
 
 export type SessionUpdate = Database['public']['Tables']['sessions']['Update']
 export type PersonaUpdate = Database['public']['Tables']['personas']['Update']
-export type UserSessionUpdate = Database['public']['Tables']['userSessions']['Update']
+export type SessionToUserUpdate =
+  Database['public']['Tables']['sessionToUser']['Update']

@@ -189,7 +189,7 @@ export function Conversation({ personas }: { personas: Persona[] }) {
 
           if (transcriptUrl) {
             // Create user session record with reflection
-            await api.userSessions.create({
+            await api.sessionToUser.create({
               sessionId,
               userId: user.id,
               transcriptUrl,
@@ -243,7 +243,6 @@ export function Conversation({ personas }: { personas: Persona[] }) {
 
       <div className="flex flex-col">
         <div className="flex items-center p-2 space-x-4">
-          {/* <Orb agentState={getAgentState()} className={'w-[50px] h-[50px]'} /> */}
           {status === 'connected' ? (
             <Button
               variant="destructive"
@@ -267,7 +266,7 @@ export function Conversation({ personas }: { personas: Persona[] }) {
             <Button
               onClick={handleStartConversation}
               disabled={!hasPermission || isSaving || isConnecting}
-              className="flex-1 bg-black hover:bg-black/80 rounded-full"
+              className="flex-1 bg-black hover:bg-black/80"
               variant="destructive"
             >
               {isConnecting ? (
