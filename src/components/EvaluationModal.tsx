@@ -47,7 +47,7 @@ export function EvaluationModal({
         {isLoading ? (
           <div className="flex flex-col items-center justify-center py-12 space-y-4">
             <Loader2 className="h-8 w-8 animate-spin text-blue-500" />
-            <p className="text-sm text-muted-foreground">
+            <p className="text-sm text-muted-foreground text-center">
               AI is analyzing your conversation...
               <br />
               Please do NOT close this window until the analysis is complete.
