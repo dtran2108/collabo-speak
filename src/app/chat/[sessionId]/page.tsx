@@ -92,13 +92,13 @@ export default function Page() {
   }
 
   return (
-    <div className="container mx-auto py-2 px-2">
+    <div className="container mx-auto py-2 px-2 max-h-screen overflow-hidden">
       <div className="mb-2">
         <BackBtn />
       </div>
       <section className="grid md:grid-cols-4 grid-cols-1 gap-0 md:gap-4">
         <div className="col-span-1">
-          <Card className='mb-4 md:mb-0'>
+          <Card className="mb-4 md:mb-0">
             <CardHeader className="border-b">
               <h1 className="font-bold text-lg">{session.name}</h1>
             </CardHeader>
@@ -110,19 +110,22 @@ export default function Page() {
           </Card>
 
           {session.personas.length > 0 && (
-            <Card className="mt-4 hidden md:block">
+            <Card className="mt-4 hidden md:flex">
               <CardHeader className="border-b">
-                <div className="flex space-x-2 mt-4">
+                <div className="flex space-x-2">
                   <Bot strokeWidth={1.25} />
                   <span className="text-lg font-bold">AI Personas</span>
                 </div>
               </CardHeader>
-              <CardContent className='mt-2'>
+              <CardContent>
                 {session.personas.map((persona) => (
                   <div key={persona.id} className="mb-4 last:mb-0">
                     <div className="flex items-center space-x-2">
                       <Avatar>
-                        <AvatarImage src="" alt={persona.name} />
+                        <AvatarImage
+                          src={persona?.avatarUrl || ''}
+                          alt={persona.name}
+                        />
                         <AvatarFallback>
                           {persona.name.charAt(0).toUpperCase()}
                         </AvatarFallback>
@@ -146,7 +149,7 @@ export default function Page() {
               Chat Window
             </CardHeader>
             <CardContent className="py-4">
-              <Conversation />
+              <Conversation personas={session.personas} />
             </CardContent>
           </Card>
         </div>

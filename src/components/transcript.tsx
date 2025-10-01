@@ -4,6 +4,7 @@ import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar'
 import { ScrollArea } from '@/components/ui/scroll-area'
 import { Badge } from '@/components/ui/badge'
 import { useEffect, useRef } from 'react'
+import { Persona } from '@/types/database'
 
 interface Message {
   id: string
@@ -17,11 +18,13 @@ interface Message {
 interface TranscriptProps {
   messages: Message[]
   isCensored?: boolean
+  personas: Persona[]
 }
 
 export default function Transcript({
   messages,
   isCensored = false,
+  personas,
 }: TranscriptProps) {
   const scrollAreaRef = useRef<HTMLDivElement>(null)
 
@@ -104,7 +107,9 @@ export default function Transcript({
         : { speakerName: 'AI Assistant' }
       return {
         name: speakerName,
-        avatar: speakerName.charAt(0).toUpperCase(),
+        avatar:
+          personas.find((persona) => persona.name === speakerName)?.avatarUrl ||
+          speakerName.charAt(0).toUpperCase(),
         color: 'bg-blue-500',
         isUser: false,
       }
@@ -120,7 +125,7 @@ export default function Transcript({
 
   return (
     <>
-      <div className="flex items-center gap-2">
+      <div className="flex items-center gap-2 mb-2">
         <div className="w-3 h-3 bg-green-500 rounded-full animate-pulse"></div>
         Live Transcript
         {isCensored && (
@@ -132,7 +137,10 @@ export default function Transcript({
           {messages.length} messages
         </Badge> */}
       </div>
-      <ScrollArea ref={scrollAreaRef} className="h-[500px] p-6">
+      <ScrollArea
+        ref={scrollAreaRef}
+        className="h-[400px] p-6 border rounded-md"
+      >
         <div className="space-y-4">
           {messages.map((message) => {
             // Handle multiple speakers in AI messages
@@ -144,7 +152,11 @@ export default function Transcript({
                   {speakers.map((speaker, index) => {
                     const speakerInfo = {
                       name: speaker.speakerName,
-                      avatar: speaker.speakerName.charAt(0).toUpperCase(),
+                      avatar:
+                        personas.find(
+                          (persona) => persona.name === speaker.speakerName,
+                        )?.avatarUrl ||
+                        speaker.speakerName.charAt(0).toUpperCase(),
                       color: getSpeakerColor(speaker.speakerName),
                       isUser: false,
                     }
@@ -208,7 +220,7 @@ export default function Transcript({
               >
                 {!isUser && (
                   <Avatar className="w-8 h-8">
-                    <AvatarImage src="" />
+                    <AvatarImage src={speakerInfo.avatar} />
                     <AvatarFallback
                       className={`text-white text-sm font-medium ${speakerInfo.color}`}
                     >

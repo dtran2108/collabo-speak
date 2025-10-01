@@ -8,7 +8,7 @@ import { useConversation } from '@elevenlabs/react'
 
 // UI
 import { Button } from '@/components/ui/button'
-import { Mic, MicOff } from 'lucide-react'
+import { Mic, MicOff, Phone } from 'lucide-react'
 import Transcript from './transcript'
 import { ReflectionModal } from './ReflectionModal'
 
@@ -16,6 +16,8 @@ import { ReflectionModal } from './ReflectionModal'
 import { db } from '@/lib/database'
 import { formatTranscript, generateTranscriptFileName } from '@/lib/transcript'
 import { useAuth } from '@/contexts/AuthContext'
+import { Orb } from './orb'
+import { Persona } from '@/types/database'
 
 interface Message {
   id: string
@@ -26,7 +28,7 @@ interface Message {
   color: string
 }
 
-export function Conversation() {
+export function Conversation({ personas }: { personas: Persona[] }) {
   const params = useParams()
   const sessionId = params.sessionId as string
   const { user } = useAuth()
@@ -40,6 +42,7 @@ export function Conversation() {
   const [isSaving, setIsSaving] = useState(false)
   const [showReflectionModal, setShowReflectionModal] = useState(false)
   const [isReflectionPending, setIsReflectionPending] = useState(false)
+  const [isConnecting, setIsConnecting] = useState(false)
 
   const generateId = () => Math.random().toString(36).substr(2, 9)
   const getCurrentTimestamp = () =>
@@ -48,6 +51,7 @@ export function Conversation() {
   const conversation = useConversation({
     onConnect: () => {
       console.log('Connected to ElevenLabs')
+      setIsConnecting(false)
     },
     onDisconnect: () => {
       console.log('Disconnected from ElevenLabs')
@@ -112,6 +116,19 @@ export function Conversation() {
 
   const { status, isSpeaking } = conversation
 
+  function getAgentState() {
+    if (status === 'connected' && isSpeaking) {
+      return 'talking'
+    }
+    if (status === 'connected') {
+      return 'listening'
+    }
+    if (status === 'disconnected') {
+      return null
+    }
+    return null
+  }
+
   useEffect(() => {
     // Request microphone permission on component mount
     const requestMicPermission = async () => {
@@ -129,12 +146,13 @@ export function Conversation() {
 
   const handleStartConversation = async () => {
     try {
+      setIsConnecting(true)
       // Set conversation start time
       setConversationStartTime(new Date())
 
       // Replace with your actual agent ID or URL
       const conversationId = await conversation.startSession({
-        agentId: 'agent_4201k6bj21hae4h9q32q6ra7mt75',
+        agentId: process.env.NEXT_PUBLIC_AGENT_ID!,
         connectionType: 'websocket',
       })
       console.log('Started conversation:', conversationId)
@@ -192,7 +210,10 @@ export function Conversation() {
               reflection,
             })
 
-            console.log('Transcript and reflection saved successfully:', transcriptUrl)
+            console.log(
+              'Transcript and reflection saved successfully:',
+              transcriptUrl,
+            )
           } else {
             console.error('Failed to upload transcript')
             setErrorMessage('Failed to save transcript')
@@ -224,20 +245,25 @@ export function Conversation() {
   }
 
   return (
-    <div className="space-y-4 mt-8 flex flex-col justify-between h-full">
+    <div className="space-y-4 flex flex-col justify-between h-full">
       {/* Transcript Component */}
       <div className="w-full max-w-4xl mx-auto">
-        <Transcript messages={messages} isCensored={isCensored} />
+        <Transcript
+          messages={messages}
+          isCensored={isCensored}
+          personas={personas}
+        />
       </div>
 
-      <div className="flex flex-col gap-2">
-        <div className="flex justify-center">
+      <div className="flex flex-col">
+        <div className="flex items-center p-2 space-x-4">
+          {/* <Orb agentState={getAgentState()} className={'w-[50px] h-[50px]'} /> */}
           {status === 'connected' ? (
             <Button
               variant="destructive"
               onClick={handleEndConversation}
-              disabled={isSaving}
-              className="w-full"
+              disabled={isSaving || isConnecting}
+              className="flex-1"
             >
               <MicOff className="mr-2 h-4 w-4" />
               {isSaving ? 'Saving...' : 'End Conversation'}
@@ -246,7 +272,7 @@ export function Conversation() {
             <Button
               onClick={handleReopenReflection}
               disabled={isSaving}
-              className="w-full"
+              className="flex-1"
               variant="default"
             >
               Reflection
@@ -254,12 +280,18 @@ export function Conversation() {
           ) : (
             <Button
               onClick={handleStartConversation}
-              disabled={!hasPermission || isSaving}
-              className="w-full"
+              disabled={!hasPermission || isSaving || isConnecting}
+              className="flex-1 bg-black hover:bg-black/80 rounded-full"
               variant="destructive"
             >
-              <Mic className="mr-2 h-4 w-4" />
-              Start Conversation
+              {isConnecting ? (
+                'Connecting...'
+              ) : (
+                <>
+                  <Phone className="mr-2 h-4 w-4" />
+                  Start a call
+                </>
+              )}
             </Button>
           )}
         </div>

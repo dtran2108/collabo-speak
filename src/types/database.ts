@@ -34,20 +34,23 @@ export interface Database {
           name: string
           description: string | null
           sessionId: string | null
+          avatarUrl: string | null
         }
         Insert: {
           id?: string
           created_at?: string
           name: string
           description?: string | null
-          sessionId?: string | null
+          sessionId?: string | null,
+          avatarUrl: string | null
         }
         Update: {
           id?: string
           created_at?: string
           name?: string
           description?: string | null
-          sessionId?: string | null
+          sessionId?: string | null,
+          avatarUrl: string | null
         }
       }
       userSessions: {
@@ -57,7 +60,7 @@ export interface Database {
           sessionId: string
           transcriptUrl: string | null
           userId: string
-          reflection: string | null
+          reflection: string | null,
         }
         Insert: {
           id?: string
