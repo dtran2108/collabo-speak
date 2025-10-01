@@ -13,7 +13,10 @@ interface Message {
  * @param startTime Optional start time for the conversation
  * @returns Formatted transcript string
  */
-export function formatTranscript(messages: Message[], startTime?: Date): string {
+export function formatTranscript(
+  messages: Message[],
+  startTime?: Date,
+): string {
   const conversationStart = startTime || new Date()
   const startTimeStr = conversationStart.toLocaleString('en-GB', {
     day: '2-digit',
@@ -22,14 +25,17 @@ export function formatTranscript(messages: Message[], startTime?: Date): string 
     hour: '2-digit',
     minute: '2-digit',
     second: '2-digit',
-    hour12: false
+    hour12: false,
   })
 
   let transcript = `// Conversation starts at ${startTimeStr}\n`
 
   messages.forEach((message) => {
-    const speaker = message.source === 'user' ? 'User' : extractSpeakerName(message.message)
-    transcript += `${speaker} (${message.timestamp}): ${extractMessageContent(message.message)}\n`
+    const speaker =
+      message.source === 'user' ? 'User' : extractSpeakerName(message.message)
+    transcript += `${speaker} (${message.timestamp}): ${extractMessageContent(
+      message.message,
+    )}\n`
   })
 
   const endTime = new Date()
@@ -40,7 +46,7 @@ export function formatTranscript(messages: Message[], startTime?: Date): string 
     hour: '2-digit',
     minute: '2-digit',
     second: '2-digit',
-    hour12: false
+    hour12: false,
   })
 
   transcript += `// Conversation ends at ${endTimeStr}\n`
@@ -77,10 +83,9 @@ function extractMessageContent(message: string): string {
 /**
  * Generates a unique filename for the transcript
  * @param sessionId The session ID
- * @param userId The user ID
  * @returns Unique filename for the transcript
  */
-export function generateTranscriptFileName(sessionId: string, userId: string): string {
+export function generateTranscriptFileName(sessionId: string): string {
   const timestamp = new Date().toISOString().replace(/[:.]/g, '-')
-  return `transcript_${sessionId}_${timestamp}.txt`
+  return `${sessionId}_${timestamp}.txt`
 }

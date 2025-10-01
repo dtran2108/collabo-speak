@@ -191,7 +191,7 @@ export function Conversation({ personas }: { personas: Persona[] }) {
           )
 
           // Generate filename
-          const fileName = generateTranscriptFileName(sessionId, user.id)
+          const fileName = generateTranscriptFileName(sessionId)
 
           // Upload transcript to storage
           const { url: transcriptUrl } = await api.transcripts.upload(
