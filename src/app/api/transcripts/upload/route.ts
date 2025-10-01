@@ -1,7 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { supabase } from '@/lib/supabase'
 
-const TRANSCRIPT_BUCKET = 'transcripts'
+const TRANSCRIPT_BUCKET = 'transcript-simple'
 
 export async function POST(request: NextRequest) {
   try {
@@ -36,18 +36,32 @@ export async function POST(request: NextRequest) {
     // Create a Blob from the content
     const blob = new Blob([content], { type: 'text/plain' })
     
+    // Create file path with user ID folder to match RLS policy
+    const filePath = `${user.email}/${fileName}`
+    
     // Upload to Supabase storage
     const { data: uploadData, error: uploadError } = await supabase.storage
       .from(TRANSCRIPT_BUCKET)
-      .upload(fileName, blob, {
+      .upload(filePath, blob, {
         contentType: 'text/plain',
         upsert: true // Overwrite if file exists
       })
 
     if (uploadError) {
       console.error('Error uploading transcript:', uploadError)
+      console.error('Upload details:', {
+        bucket: TRANSCRIPT_BUCKET,
+        fileName,
+        filePath,
+        fileSize: blob.size,
+        user: user.id
+      })
       return NextResponse.json(
-        { error: 'Failed to upload transcript' },
+        { 
+          error: 'Failed to upload transcript',
+          details: uploadError.message,
+          bucket: TRANSCRIPT_BUCKET
+        },
         { status: 500 }
       )
     }

@@ -11,6 +11,7 @@ import { Button } from '@/components/ui/button'
 import { Loader, MicOff, Phone } from 'lucide-react'
 import Transcript from './transcript'
 import { ReflectionModal } from './ReflectionModal'
+import { EvaluationModal } from './EvaluationModal'
 
 // Database and utilities
 import { api } from '@/lib/api'
@@ -40,12 +41,21 @@ export function Conversation({ personas }: { personas: Persona[] }) {
     useState<Date | null>(null)
   const [isSaving, setIsSaving] = useState(false)
   const [showReflectionModal, setShowReflectionModal] = useState(false)
+  const [showEvaluationModal, setShowEvaluationModal] = useState(false)
   const [isReflectionPending, setIsReflectionPending] = useState(false)
   const [isConnecting, setIsConnecting] = useState(false)
+  const [isEvaluating, setIsEvaluating] = useState(false)
+  const [evaluationData, setEvaluationData] = useState<{
+    strengths: string[]
+    improvements: string[]
+    tips: string[]
+    overall_score?: number
+    detailed_feedback?: string
+  } | null>(null)
 
   const generateId = () => Math.random().toString(36).substr(2, 9)
   const getCurrentTimestamp = () =>
-    new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })
+    new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit', second: '2-digit' })
 
   const conversation = useConversation({
     onConnect: () => {
@@ -133,6 +143,8 @@ export function Conversation({ personas }: { personas: Persona[] }) {
   const handleStartConversation = async () => {
     try {
       setIsConnecting(true)
+      // Clear previous messages when starting a new session
+      setMessages([])
       // Set conversation start time
       setConversationStartTime(new Date())
 
@@ -189,7 +201,7 @@ export function Conversation({ personas }: { personas: Persona[] }) {
 
           if (transcriptUrl) {
             // Create user session record with reflection
-            await api.sessionToUser.create({
+            const { userSession } = await api.sessionToUser.create({
               sessionId,
               userId: user.id,
               transcriptUrl,
@@ -200,6 +212,9 @@ export function Conversation({ personas }: { personas: Persona[] }) {
               'Transcript and reflection saved successfully:',
               transcriptUrl,
             )
+
+            // Now get AI evaluation
+            await getAIEvaluation(transcriptContent, userSession.id)
           } else {
             console.error('Failed to upload transcript')
             setErrorMessage('Failed to save transcript')
@@ -210,10 +225,9 @@ export function Conversation({ personas }: { personas: Persona[] }) {
         }
       }
 
-      // Close modal and reset state
+      // Close reflection modal
       setShowReflectionModal(false)
       setIsReflectionPending(false)
-      setMessages([])
     } catch (error) {
       setErrorMessage('Failed to save reflection')
       console.error('Error saving reflection:', error)
@@ -228,6 +242,37 @@ export function Conversation({ personas }: { personas: Persona[] }) {
 
   const handleViewTranscript = () => {
     setShowReflectionModal(false)
+  }
+
+  const getAIEvaluation = async (transcript: string, userSessionId: string) => {
+    try {
+      setIsEvaluating(true)
+      setShowEvaluationModal(true)
+
+      // Get evaluation from ChatGPT
+      const { evaluation } = await api.evaluation.evaluateTranscript(transcript)
+
+      // Update the user session with the feedback
+      await api.sessionToUser.update(userSessionId, evaluation)
+
+      // Set evaluation data and stop loading
+      setEvaluationData(evaluation)
+      setIsEvaluating(false)
+
+      console.log('AI evaluation completed and saved:', evaluation)
+    } catch (error) {
+      console.error('Error getting AI evaluation:', error)
+      setErrorMessage('Failed to get AI evaluation')
+      setIsEvaluating(false)
+      // Still show modal with default data
+      setEvaluationData(null)
+    }
+  }
+
+  const handleEvaluationClose = () => {
+    setShowEvaluationModal(false)
+    setEvaluationData(null)
+    // Keep the transcript visible, don't clear messages
   }
 
   return (
@@ -305,6 +350,14 @@ export function Conversation({ personas }: { personas: Persona[] }) {
         onSubmit={handleReflectionSubmit}
         onViewTranscript={handleViewTranscript}
         isSubmitting={isSaving}
+      />
+
+      {/* Evaluation Modal */}
+      <EvaluationModal
+        isOpen={showEvaluationModal}
+        onClose={handleEvaluationClose}
+        evaluationData={evaluationData}
+        isLoading={isEvaluating}
       />
     </div>
   )

@@ -4,15 +4,19 @@ import type {
   SessionToUser,
   SessionToUserInsert
 } from '@/types/database'
+import { supabase } from './supabase'
 
 const API_BASE_URL = '/api'
 
 // Helper function to get auth headers
-const getAuthHeaders = (): Record<string, string> => {
-  // In a real app, you'd get the token from your auth context or localStorage
-  // For now, we'll assume the token is available globally or from a context
-  const token = typeof window !== 'undefined' ? localStorage.getItem('supabase_token') : null
-  return token ? { 'Authorization': `Bearer ${token}` } : {}
+const getAuthHeaders = async (): Promise<Record<string, string>> => {
+  try {
+    const { data: { session } } = await supabase.auth.getSession()
+    return session?.access_token ? { 'Authorization': `Bearer ${session.access_token}` } : {}
+  } catch (error) {
+    console.error('Error getting auth headers:', error)
+    return {}
+  }
 }
 
 // Helper function to handle API responses
@@ -37,17 +41,19 @@ export const api = {
     },
 
     async signOut() {
+      const headers = await getAuthHeaders()
       const response = await fetch(`${API_BASE_URL}/auth/signout`, {
         method: 'POST',
-        headers: getAuthHeaders(),
+        headers,
       })
       return handleResponse(response)
     },
 
     async getCurrentUser() {
+      const headers = await getAuthHeaders()
       const response = await fetch(`${API_BASE_URL}/auth/user`, {
         method: 'GET',
-        headers: getAuthHeaders(),
+        headers,
       })
       return handleResponse(response)
     },
@@ -74,20 +80,35 @@ export const api = {
   // User sessions endpoints
   sessionToUser: {
     async getAll(): Promise<{ sessionToUser: SessionToUser[] }> {
-      const response = await fetch(`${API_BASE_URL}/user-sessions`, {
-        headers: getAuthHeaders(),
+      const headers = await getAuthHeaders()
+      const response = await fetch(`${API_BASE_URL}/session-to-user`, {
+        headers,
       })
       return handleResponse(response)
     },
 
     async create(userSession: SessionToUserInsert): Promise<{ userSession: SessionToUser }> {
-      const response = await fetch(`${API_BASE_URL}/user-sessions`, {
+      const headers = await getAuthHeaders()
+      const response = await fetch(`${API_BASE_URL}/session-to-user`, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
-          ...getAuthHeaders(),
+          ...headers,
         },
         body: JSON.stringify(userSession),
+      })
+      return handleResponse(response)
+    },
+
+    async update(id: string, feedback: JSON): Promise<{ userSession: SessionToUser }> {
+      const headers = await getAuthHeaders()
+      const response = await fetch(`${API_BASE_URL}/user-sessions/${id}`, {
+        method: 'PATCH',
+        headers: {
+          'Content-Type': 'application/json',
+          ...headers,
+        },
+        body: JSON.stringify({ feedback }),
       })
       return handleResponse(response)
     },
@@ -96,13 +117,27 @@ export const api = {
   // Transcript endpoints
   transcripts: {
     async upload(fileName: string, content: string): Promise<{ url: string; path: string }> {
+      const headers = await getAuthHeaders()
       const response = await fetch(`${API_BASE_URL}/transcripts/upload`, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
-          ...getAuthHeaders(),
+          ...headers,
         },
         body: JSON.stringify({ fileName, content }),
+      })
+      return handleResponse(response)
+    },
+  },
+
+  // Evaluation endpoints
+  evaluation: {
+    async evaluateTranscript(transcript: string) {
+      const headers = await getAuthHeaders()
+      const response = await fetch(`${API_BASE_URL}/evaluate-transcript`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json', ...headers },
+        body: JSON.stringify({ transcript }),
       })
       return handleResponse(response)
     },

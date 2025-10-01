@@ -21,6 +21,7 @@ export function formatTranscript(messages: Message[], startTime?: Date): string 
     year: 'numeric',
     hour: '2-digit',
     minute: '2-digit',
+    second: '2-digit',
     hour12: false
   })
 
@@ -38,6 +39,7 @@ export function formatTranscript(messages: Message[], startTime?: Date): string 
     year: 'numeric',
     hour: '2-digit',
     minute: '2-digit',
+    second: '2-digit',
     hour12: false
   })
 
@@ -80,5 +82,5 @@ function extractMessageContent(message: string): string {
  */
 export function generateTranscriptFileName(sessionId: string, userId: string): string {
   const timestamp = new Date().toISOString().replace(/[:.]/g, '-')
-  return `transcript_${sessionId}_${userId}_${timestamp}.txt`
+  return `transcript_${sessionId}_${timestamp}.txt`
 }

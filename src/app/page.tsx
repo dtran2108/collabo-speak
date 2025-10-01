@@ -161,12 +161,16 @@ export default function Page() {
                       onClick={() => handleStartSession(session.id)}
                       disabled={!session.isReady || isStartingSession}
                     >
-                      {isStartingSession
-                        ? <Loader2 className="animate-spin w-4 h-4 mr-2" /> +
-                          'Preparing Session...'
-                        : session.isReady
-                        ? 'Start Session'
-                        : 'Coming Soon'}
+                      {isStartingSession ? (
+                        <div className="flex items-center space-x-2">
+                          <Loader2 className="animate-spin w-4 h-4 mr-2" />{' '}
+                          <span>Preparing Session...</span>
+                        </div>
+                      ) : session.isReady ? (
+                        'Start Session'
+                      ) : (
+                        'Coming Soon'
+                      )}
                     </Button>
                   </CardFooter>
                 </Card>
