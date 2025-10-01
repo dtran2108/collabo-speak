@@ -124,7 +124,10 @@ export default function Page() {
                     <div className="*:data-[slot=avatar]:ring-background flex -space-x-2 *:data-[slot=avatar]:ring-2 mt-2">
                       {session.personas.slice(0, 3).map((persona) => (
                         <Avatar key={persona.id}>
-                          <AvatarImage src="" alt={persona.name} />
+                          <AvatarImage
+                            src={persona.avatarUrl || ''}
+                            alt={persona.name}
+                          />
                           <AvatarFallback>
                             {persona.name.charAt(0).toUpperCase()}
                           </AvatarFallback>

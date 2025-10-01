@@ -171,11 +171,11 @@ export default function Transcript({
                         className="flex gap-3 justify-start"
                       >
                         <Avatar className="w-8 h-8">
-                          <AvatarImage src="" />
+                          <AvatarImage src={speakerInfo.avatar} />
                           <AvatarFallback
                             className={`text-white text-sm font-medium ${speakerInfo.color}`}
                           >
-                            {speakerInfo.avatar}
+                            {speakerInfo.name.charAt(0).toUpperCase()}
                           </AvatarFallback>
                         </Avatar>
 
@@ -224,7 +224,7 @@ export default function Transcript({
                     <AvatarFallback
                       className={`text-white text-sm font-medium ${speakerInfo.color}`}
                     >
-                      {speakerInfo.avatar}
+                      {speakerInfo.name.charAt(0).toUpperCase()}
                     </AvatarFallback>
                   </Avatar>
                 )}
