@@ -2,7 +2,7 @@
 
 import { Card, CardContent, CardFooter, CardHeader } from '@/components/ui/card'
 import { Button } from '@/components/ui/button'
-import { Bot } from 'lucide-react'
+import { Bot, Loader2 } from 'lucide-react'
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar'
 import { useAuth } from '@/contexts/AuthContext'
 import { useRouter } from 'next/navigation'
@@ -22,6 +22,7 @@ export default function Page() {
   const [sessions, setSessions] = useState<SessionWithPersonas[]>([])
   const [sessionsLoading, setSessionsLoading] = useState(true)
   const [sessionsError, setSessionsError] = useState<string | null>(null)
+  const [isStartingSession, setIsStartingSession] = useState(false)
 
   // Load sessions and their personas
   const loadSessions = async () => {
@@ -65,6 +66,7 @@ export default function Page() {
       router.push('/login')
       return
     }
+    setIsStartingSession(true)
     console.log(
       'Starting session for user:',
       user.email,
@@ -88,17 +90,9 @@ export default function Page() {
   }
 
   return (
-    <section className="py-16">
+    <section className="py-4">
       <div className="container mx-auto">
         <div className="mx-auto flex max-w-5xl flex-col gap-6 text-left">
-          <h1 className="mb-2 text-4xl font-semibold text-pretty lg:text-5xl">
-            Welcome to CollaboSpeak <br />
-            {user?.email}
-          </h1>
-
-          <h1 className="mb-2 text-2xl font-semibold text-pretty lg:text-3xl">
-            Progress
-          </h1>
           <div className="grid grid-cols-1 lg:grid-cols-3 gap-8 items-stretch">
             <div className="col-span-1 flex w-full">
               <ChartRadarLegend />
@@ -107,8 +101,8 @@ export default function Page() {
               <OralProficiencyCard />
             </div>
           </div>
-          <h1 className="mt-4 text-2xl font-semibold text-pretty lg:text-3xl">
-            Select a scenario to begin!
+          <h1 className="mt-4 text-lg ml-2 font-semibold text-pretty lg:text-3xl">
+            Select one scenario to begin!
           </h1>
           {sessionsError ? (
             <div className="mt-10 text-center">
@@ -120,27 +114,38 @@ export default function Page() {
           ) : (
             <div className="mt-2 grid grid-cols-1 place-items-center gap-8 sm:grid-cols-2 lg:grid-cols-3">
               {sessions.map((session) => (
-                <Card key={session.id} className="w-full h-full flex-1">
+                <Card
+                  key={session.id}
+                  className="w-full h-full flex-1 py-4 gap-2"
+                >
                   <CardHeader className="pb-1 text-left">
                     <h2 className="text-lg font-semibold">{session.name}</h2>
                   </CardHeader>
                   <CardContent className="text-left h-full">
-                    <div className="flex space-x-2 text-muted-foreground">
-                      <Bot strokeWidth={1.25} />
-                      <span>{session.personas.length} AI personas</span>
-                    </div>
-                    <div className="*:data-[slot=avatar]:ring-background flex -space-x-2 *:data-[slot=avatar]:ring-2 mt-2">
-                      {session.personas.slice(0, 3).map((persona) => (
-                        <Avatar key={persona.id}>
-                          <AvatarImage
-                            src={persona.avatarUrl || ''}
-                            alt={persona.name}
-                          />
-                          <AvatarFallback>
-                            {persona.name.charAt(0).toUpperCase()}
-                          </AvatarFallback>
-                        </Avatar>
-                      ))}
+                    <div className="flex items-center space-x-2">
+                      <div className="*:data-[slot=avatar]:ring-background flex -space-x-2 *:data-[slot=avatar]:ring-2 mb-2 items-center">
+                        {session.personas.slice(0, 3).map((persona) => (
+                          <Avatar key={persona.id}>
+                            <AvatarImage
+                              src={persona.avatarUrl || ''}
+                              alt={persona.name}
+                            />
+                            <AvatarFallback>
+                              {persona.name.charAt(0).toUpperCase()}
+                            </AvatarFallback>
+                          </Avatar>
+                        ))}
+                      </div>
+                      <span className="text-muted-foreground text-sm">
+                        {session.personas
+                          .slice(0, 3)
+                          .map(
+                            (persona, index) =>
+                              `${persona.name}${
+                                index < session.personas.length - 1 ? ', ' : ''
+                              }`,
+                          )}
+                      </span>
                       {session.personas.length > 3 && (
                         <Avatar>
                           <AvatarFallback className="bg-gray-500 text-white">
@@ -154,9 +159,14 @@ export default function Page() {
                     <Button
                       className="w-full"
                       onClick={() => handleStartSession(session.id)}
-                      disabled={!session.isReady}
+                      disabled={!session.isReady || isStartingSession}
                     >
-                      {session.isReady ? 'Start Session' : 'Coming Soon'}
+                      {isStartingSession
+                        ? <Loader2 className="animate-spin w-4 h-4 mr-2" /> +
+                          'Preparing Session...'
+                        : session.isReady
+                        ? 'Start Session'
+                        : 'Coming Soon'}
                     </Button>
                   </CardFooter>
                 </Card>

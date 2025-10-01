@@ -41,8 +41,8 @@ const chartConfig = {
 
 export function ChartRadarLegend() {
   return (
-    <Card className="gap-2 py-6 h-full w-full">
-      <CardHeader className="items-center border-b">
+    <Card className="gap-2 py-4 h-full w-full">
+      <CardHeader className="items-center border-b [.border-b]:pb-3">
         <CardTitle>CPS</CardTitle>
         <CardDescription>Showing CPS for the last 2 weeks</CardDescription>
       </CardHeader>
@@ -76,14 +76,6 @@ export function ChartRadarLegend() {
           </RadarChart>
         </ChartContainer>
       </CardContent>
-      <CardFooter className="flex-col gap-2 pt-4 text-sm">
-        <div className="flex items-center gap-2 leading-none font-medium">
-          Trending up by 5.2% this week <TrendingUp className="h-4 w-4" />
-        </div>
-        <div className="text-muted-foreground flex items-center gap-2 leading-none">
-          January - December 2025
-        </div>
-      </CardFooter>
     </Card>
   )
 }

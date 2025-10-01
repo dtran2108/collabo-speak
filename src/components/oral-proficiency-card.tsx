@@ -16,7 +16,6 @@ import {
   CarouselNext,
   CarouselPrevious,
 } from '@/components/ui/carousel'
-import { Ratings } from './rating'
 import { Badge } from './ui/badge'
 import {
   Table,
@@ -26,6 +25,15 @@ import {
   TableHeader,
   TableRow,
 } from './ui/table'
+import { ChartContainer, ChartTooltip, ChartTooltipContent } from './ui/chart'
+import {
+  Line,
+  Bar,
+  ResponsiveContainer,
+  ComposedChart,
+  XAxis,
+  YAxis,
+} from 'recharts'
 
 export function OralProficiencyCard() {
   const [api, setApi] = useState<CarouselApi>()
@@ -44,198 +52,128 @@ export function OralProficiencyCard() {
   }, [api])
 
   const SnapshotItem = () => {
-    return (
-      <CarouselItem className="flex items-center">
-        <div className="flex-1 flex flex-col space-y-3">
-          <div className="flex justify-between items-center">
-            <Badge className="text-base bg-black">Snapshot</Badge>
-            <small className="text-muted-foreground">
-              *note: AI - illustration only
-            </small>
-          </div>
-          <div className="flex justify-between items-center">
-            <span className="font-semibold">C - Completion</span>
-            <div className="border border-gray-100 rounded-full p-4 flex items-center justify-center space-x-3">
-              <Ratings
-                className="flex space-x-2"
-                rating={2.5}
-                variant="yellow"
-                size={20}
-              />
-              <span className="text-sm text-muted-foreground">
-                2.5 out of 5
-              </span>
-            </div>
-          </div>
-          <div className="flex justify-between items-center">
-            <span className="font-semibold">A - Completion</span>
-            <div className="border border-gray-100 rounded-full p-4 flex items-center justify-center space-x-3">
-              <Ratings
-                className="flex space-x-2"
-                rating={2.5}
-                variant="yellow"
-                size={20}
-              />
-              <span className="text-sm text-muted-foreground">
-                2.5 out of 5
-              </span>
-            </div>
-          </div>
-          <div className="flex justify-between items-center">
-            <span className="font-semibold">F - Fillers</span>
-            <div className="border border-gray-100 rounded-full p-4 flex items-center justify-center space-x-3">
-              <Ratings
-                className="flex space-x-2"
-                rating={2.5}
-                variant="yellow"
-                size={20}
-              />
-              <span className="text-sm text-muted-foreground">
-                2.5 out of 5
-              </span>
-            </div>
-          </div>
-        </div>
-      </CarouselItem>
-    )
-  }
-
-  const DeepDiveItem = () => {
-    // Higher values are better
-    const higherIsBetter = [
-      { item: 'WPM', day1: 180, average: 90 },
-      { item: 'Clauses', day1: 80, average: 70 },
-      { item: 'TTK', day1: 10, average: 100 },
+    // Sample data for the chart - in a real app, this would come from props or API
+    const chartData = [
+      { date: '2024-01-01', wpm: 120, fillers: 8 },
+      { date: '2024-01-02', wpm: 135, fillers: 6 },
+      { date: '2024-01-03', wpm: 142, fillers: 4 },
     ]
 
-    // Lower values are better
-    const lowerIsBetter = [
-      { item: 'Error', day1: 30, average: 50 },
-      { item: 'Fillers', day1: 90, average: 10 },
-    ]
-
-    const getArrow = (
-      day1: number,
-      average: number,
-      higherIsBetter: boolean,
-    ) => {
-      if (higherIsBetter) {
-        // For higher is better: green arrow up when average > day1, red arrow down when average < day1
-        if (average > day1) {
-          return <span className="text-green-500">↗</span>
-        } else if (average < day1) {
-          return <span className="text-red-500">↘</span>
-        } else {
-          return <span className="text-gray-500">→</span>
-        }
-      } else {
-        // For lower is better: green arrow down when average < day1, red arrow up when average > day1
-        if (average < day1) {
-          return <span className="text-green-500">↘</span>
-        } else if (average > day1) {
-          return <span className="text-red-500">↗</span>
-        } else {
-          return <span className="text-gray-500">→</span>
-        }
-      }
-    }
-
-    const renderTable = (data: typeof higherIsBetter, title: string) => {
-      const isHigherBetter = title === 'Higher is Better'
-      const badgeColor = isHigherBetter
-        ? 'bg-green-100 text-green-800 border-green-200'
-        : 'bg-purple-100 text-purple-800 border-purple-200'
-      const headerColor = isHigherBetter
-        ? 'bg-green-50 text-green-900'
-        : 'bg-purple-50 text-purple-900'
-
-      return (
-        <div className="space-y-3">
-          <div className="flex justify-end items-center">
-            <Badge className={`text-sm border ${badgeColor}`}>{title}</Badge>
-          </div>
-
-          <Table>
-            <TableHeader>
-              <TableRow className={headerColor}>
-                <TableHead className="text-xs font-semibold">Item</TableHead>
-                <TableHead className="text-center text-xs font-semibold">
-                  Day 1
-                </TableHead>
-                <TableHead className="text-center text-xs font-semibold">
-                  Average
-                </TableHead>
-              </TableRow>
-            </TableHeader>
-            <TableBody>
-              {data.map((row, index) => (
-                <TableRow key={index}>
-                  <TableCell className="font-medium capitalize text-xs">
-                    {row.item}
-                  </TableCell>
-                  <TableCell className="text-center text-xs">
-                    {row.day1}
-                  </TableCell>
-                  <TableCell className="text-center text-xs">
-                    <div className="flex items-center justify-center space-x-2">
-                      <span>{row.average}</span>
-                      {getArrow(
-                        row.day1,
-                        row.average,
-                        title === 'Higher is Better',
-                      )}
-                    </div>
-                  </TableCell>
-                </TableRow>
-              ))}
-            </TableBody>
-          </Table>
-        </div>
-      )
-    }
-
     return (
-      <CarouselItem>
-        <div className="flex flex-col space-y-6">
-          <div className="flex items-center">
-            <Badge className="text-base bg-black">Deep dive</Badge>
-          </div>
-
-          {renderTable(higherIsBetter, 'Higher is Better')}
-          {renderTable(lowerIsBetter, 'Lower is Better')}
+      <div className="flex-1 flex flex-col space-y-4">
+        <div className="h-64 w-full">
+          <ChartContainer
+            config={{
+              wpm: {
+                label: 'Words per Minute',
+                color: '#3b82f6', // Blue
+              },
+              fillers: {
+                label: 'Fillers per Minute',
+                color: '#f59e0b', // Orange
+              },
+            }}
+            className="h-full w-full"
+          >
+            <ResponsiveContainer width="100%" height="100%">
+              <ComposedChart data={chartData}>
+                <XAxis
+                  dataKey="date"
+                  tick={{ fontSize: 12 }}
+                  axisLine={false}
+                  tickLine={false}
+                  tickFormatter={(value) =>
+                    new Date(value).toLocaleDateString('en-US', {
+                      month: 'short',
+                      day: 'numeric',
+                    })
+                  }
+                />
+                <YAxis
+                  yAxisId="wpm"
+                  orientation="left"
+                  tick={{ fontSize: 12 }}
+                  axisLine={false}
+                  tickLine={false}
+                  domain={[100, 170]}
+                />
+                <YAxis
+                  yAxisId="fillers"
+                  orientation="right"
+                  tick={{ fontSize: 12 }}
+                  axisLine={false}
+                  tickLine={false}
+                  domain={[0, 10]}
+                />
+                <ChartTooltip
+                  content={
+                    <ChartTooltipContent
+                      labelFormatter={(value) =>
+                        `Date: ${new Date(value).toLocaleDateString()}`
+                      }
+                      formatter={(value, name) => [
+                        <div key={name} className="flex items-center space-x-2">
+                          {name === 'wpm' ? (
+                            <div className="w-3 h-3 bg-[#f59e0b] rounded-none"></div>
+                          ) : (
+                            <div className="w-3 h-0.5 bg-[#3b82f6] rounded-sm"></div>
+                          )}
+                          <span className="text-muted-foreground">
+                            {value}{' '}
+                            {name === 'wpm' ? 'words/minute' : 'fillers/minute'}
+                          </span>
+                        </div>,
+                      ]}
+                    />
+                  }
+                />
+                <Bar
+                  yAxisId="wpm"
+                  dataKey="wpm"
+                  fill="#f59e0b"
+                  radius={[2, 2, 0, 0]}
+                  opacity={0.7}
+                />
+                <Line
+                  yAxisId="fillers"
+                  dataKey="fillers"
+                  type="monotone"
+                  stroke="#3b82f6"
+                  strokeWidth={2}
+                  dot={{ fill: '#3b82f6', strokeWidth: 2, r: 4 }}
+                  activeDot={{ r: 6, stroke: '#3b82f6', strokeWidth: 2 }}
+                />
+              </ComposedChart>
+            </ResponsiveContainer>
+          </ChartContainer>
         </div>
-      </CarouselItem>
+
+        <div className="flex justify-center space-x-6 text-sm">
+          <div className="flex items-center space-x-2">
+            <div className="w-3 h-3 bg-[#f59e0b] rounded-none"></div>
+            <span className="text-muted-foreground">Words per Minute</span>
+          </div>
+          <div className="flex items-center space-x-2">
+            <div className="w-3 h-0.5 bg-[#3b82f6] rounded-sm"></div>
+            <span className="text-muted-foreground">Fillers per Minute</span>
+          </div>
+        </div>
+      </div>
     )
   }
 
   return (
-    <Card className="h-full w-full">
-      <CardHeader className="border-b">
+    <Card className="h-full w-full py-4">
+      <CardHeader className="border-b [.border-b]:pb-3">
         <CardTitle>Oral Proficiency</CardTitle>
         <CardDescription>
           Performance metrics with directional indicators
         </CardDescription>
       </CardHeader>
-      <CardContent>
-        <div className="mx-auto max-w-full">
-          <Carousel
-            opts={{
-              align: 'start',
-              loop: true,
-            }}
-            setApi={setApi}
-            className="w-full max-w-[90%] mx-auto"
-          >
-            <CarouselContent>
-              <SnapshotItem />
-              <DeepDiveItem />
-            </CarouselContent>
-            <CarouselPrevious className="border-none" />
-            <CarouselNext className="border-none" />
-          </Carousel>
-          <div className="text-muted-foreground py-2 text-center text-sm">
-            {current} of {count}
-          </div>
+      <CardContent className='p-0'>
+        <div className="mx-auto max-w-full grid grid-cols-2 gap-4">
+          <SnapshotItem />
+          <SnapshotItem />
         </div>
       </CardContent>
     </Card>

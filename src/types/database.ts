@@ -61,6 +61,13 @@ export interface Database {
           transcriptUrl: string | null
           userId: string
           reflection: string | null
+          pisa_shared_understanding: number | null
+          pisa_problem_solving_action: number | null
+          pisa_team_organization: number | null
+          words_per_min: number | null
+          filler_words_per_min: number | null
+          feedback: JSON | null
+          participation_percentage: number | null
         }
         Insert: {
           id?: string
@@ -69,6 +76,13 @@ export interface Database {
           transcriptUrl?: string | null
           userId: string
           reflection?: string | null
+          pisa_shared_understanding?: number | null
+          pisa_problem_solving_action?: number | null
+          pisa_team_organization?: number | null
+          words_per_min?: number | null
+          filler_words_per_min?: number | null
+          feedback?: JSON | null
+          participation_percentage?: number | null
         }
         Update: {
           id?: string
@@ -77,6 +91,13 @@ export interface Database {
           transcriptUrl?: string | null
           userId?: string
           reflection?: string | null
+          pisa_shared_understanding?: number | null
+          pisa_problem_solving_action?: number | null
+          pisa_team_organization?: number | null
+          words_per_min?: number | null
+          filler_words_per_min?: number | null
+          feedback?: JSON | null
+          participation_percentage?: number | null
         }
       }
       roles: {
