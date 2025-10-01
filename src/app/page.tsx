@@ -7,7 +7,7 @@ import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar'
 import { useAuth } from '@/contexts/AuthContext'
 import { useRouter } from 'next/navigation'
 import { useEffect, useState } from 'react'
-import { db } from '@/lib/database'
+import { api } from '@/lib/api'
 import type { Session, Persona } from '@/types/database'
 
 interface SessionWithPersonas extends Session {
@@ -27,11 +27,11 @@ export default function Page() {
       setSessionsLoading(true)
       setSessionsError(null)
 
-      const sessionsData = await db.sessions.getAll()
+      const { sessions: sessionsData } = await api.sessions.getAll()
       const sessionsWithPersonas: SessionWithPersonas[] = []
 
       for (const session of sessionsData) {
-        const personas = await db.personas.getBySessionId(session.id)
+        const { personas } = await api.sessions.getPersonas(session.id)
         sessionsWithPersonas.push({
           ...session,
           personas,
@@ -107,17 +107,14 @@ export default function Page() {
               </Button>
             </div>
           ) : (
-            <div className="mt-10 grid grid-cols-1 place-items-center gap-8 sm:grid-cols-2 lg:grid-cols-3">
+            <div className="mt-10 grid grid-cols-1 place-items-center gap-8 sm:grid-cols-2 lg:grid-cols-3 min-w-[75vw]">
               {sessions.map((session) => (
-                <Card key={session.id} className="w-full h-full">
+                <Card key={session.id} className="w-full h-full flex-1">
                   <CardHeader className="pb-1 text-left">
                     <h2 className="text-lg font-semibold">{session.name}</h2>
                   </CardHeader>
                   <CardContent className="text-left h-full">
-                    <p className="leading-snug text-muted-foreground line-clamp-4">
-                      {session.description}
-                    </p>
-                    <div className="flex space-x-2 mt-4 text-muted-foreground">
+                    <div className="flex space-x-2 text-muted-foreground">
                       <Bot strokeWidth={1.25} />
                       <span>{session.personas.length} AI personas</span>
                     </div>

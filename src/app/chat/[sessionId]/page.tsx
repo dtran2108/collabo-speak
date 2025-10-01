@@ -7,7 +7,7 @@ import { Conversation } from '@/components/conversation'
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar'
 import { Card, CardContent, CardHeader } from '@/components/ui/card'
 import { Bot } from 'lucide-react'
-import { db } from '@/lib/database'
+import { api } from '@/lib/api'
 import type { Session, Persona } from '@/types/database'
 
 interface SessionWithPersonas extends Session {
@@ -27,13 +27,13 @@ export default function Page() {
       setLoading(true)
       setError(null)
 
-      const sessionData = await db.sessions.getById(sessionId)
+      const { session: sessionData } = await api.sessions.getById(sessionId)
       if (!sessionData) {
         setError('Session not found')
         return
       }
-
-      const personas = await db.personas.getBySessionId(sessionId)
+      
+      const { personas } = await api.sessions.getPersonas(sessionId)
 
       setSession({
         ...sessionData,

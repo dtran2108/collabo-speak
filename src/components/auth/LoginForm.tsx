@@ -14,11 +14,10 @@ import { useAuth } from '@/contexts/AuthContext'
 export function LoginForm() {
   const [email, setEmail] = useState('')
   const [password, setPassword] = useState('')
-  const [isSignUp, setIsSignUp] = useState(false)
   const [loading, setLoading] = useState(false)
   const [error, setError] = useState('')
 
-  const { signIn, signUp } = useAuth()
+  const { signIn } = useAuth()
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault()
@@ -26,9 +25,7 @@ export function LoginForm() {
     setError('')
 
     try {
-      const { error } = isSignUp
-        ? await signUp(email, password)
-        : await signIn(email, password)
+      const { error } = await signIn(email, password)
 
       if (error) {
         setError(error.message)
@@ -45,12 +42,10 @@ export function LoginForm() {
       <Card className="w-full max-w-md">
         <CardHeader className="space-y-1">
           <CardTitle className="text-2xl font-bold text-center">
-            {isSignUp ? 'Create Account' : 'Sign In'}
+            Sign In
           </CardTitle>
           <CardDescription className="text-center">
-            {isSignUp
-              ? 'Enter your details to create a new account'
-              : 'Enter your credentials to sign in to your account'}
+            Enter your credentials to sign in to your account
           </CardDescription>
         </CardHeader>
         <CardContent className="space-y-4">
@@ -93,20 +88,14 @@ export function LoginForm() {
               <div className="text-red-600 text-sm text-center">{error}</div>
             )}
             <Button type="submit" className="w-full" disabled={loading}>
-              {loading ? 'Loading...' : isSignUp ? 'Sign Up' : 'Sign In'}
+              {loading ? 'Loading...' : 'Sign In'}
             </Button>
           </form>
 
           <div className="text-center">
-            <button
-              type="button"
-              onClick={() => setIsSignUp(!isSignUp)}
-              className="text-sm text-indigo-600 hover:text-indigo-500"
-            >
-              {isSignUp
-                ? 'Already have an account? Sign in'
-                : "Don't have an account or forgot your password? Please contact support at vuhuongnam07@gmail.com"}
-            </button>
+            <p className="text-sm text-gray-600">
+              Don&apos;t have an account or forgot your password? Please contact support at vuhuongnam07@gmail.com
+            </p>
           </div>
         </CardContent>
       </Card>

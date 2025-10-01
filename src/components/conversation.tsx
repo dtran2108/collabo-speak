@@ -8,15 +8,14 @@ import { useConversation } from '@elevenlabs/react'
 
 // UI
 import { Button } from '@/components/ui/button'
-import { Loader, Mic, MicOff, Phone } from 'lucide-react'
+import { Loader, MicOff, Phone } from 'lucide-react'
 import Transcript from './transcript'
 import { ReflectionModal } from './ReflectionModal'
 
 // Database and utilities
-import { db } from '@/lib/database'
+import { api } from '@/lib/api'
 import { formatTranscript, generateTranscriptFileName } from '@/lib/transcript'
 import { useAuth } from '@/contexts/AuthContext'
-import { Orb } from './orb'
 import { Persona } from '@/types/database'
 
 interface Message {
@@ -116,19 +115,6 @@ export function Conversation({ personas }: { personas: Persona[] }) {
 
   const { status, isSpeaking } = conversation
 
-  function getAgentState() {
-    if (status === 'connected' && isSpeaking) {
-      return 'talking'
-    }
-    if (status === 'connected') {
-      return 'listening'
-    }
-    if (status === 'disconnected') {
-      return null
-    }
-    return null
-  }
-
   useEffect(() => {
     // Request microphone permission on component mount
     const requestMicPermission = async () => {
@@ -196,14 +182,14 @@ export function Conversation({ personas }: { personas: Persona[] }) {
           const fileName = generateTranscriptFileName(sessionId, user.id)
 
           // Upload transcript to storage
-          const transcriptUrl = await db.storage.uploadTranscript(
+          const { url: transcriptUrl } = await api.transcripts.upload(
             fileName,
             transcriptContent,
           )
 
           if (transcriptUrl) {
             // Create user session record with reflection
-            await db.userSessions.create({
+            await api.userSessions.create({
               sessionId,
               userId: user.id,
               transcriptUrl,

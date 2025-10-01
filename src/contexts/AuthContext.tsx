@@ -8,11 +8,7 @@ interface AuthContextType {
   user: AuthUser | null
   loading: boolean
   signIn: (email: string, password: string) => Promise<{ data: AuthResponse['data']; error: AuthError | null }>
-  signUp: (email: string, password: string) => Promise<{ data: AuthResponse['data']; error: AuthError | null }>
-  signInWithGoogle: () => Promise<{ data: { provider: string; url: string | null }; error: AuthError | null }>
-  signInWithGitHub: () => Promise<{ data: { provider: string; url: string | null }; error: AuthError | null }>
   signOut: () => Promise<{ error: AuthError | null }>
-  resetPassword: (email: string) => Promise<{ data: Record<string, never> | null; error: AuthError | null }>
 }
 
 const AuthContext = createContext<AuthContextType | undefined>(undefined)
@@ -49,35 +45,15 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     return await auth.signIn(email, password)
   }
 
-  const signUp = async (email: string, password: string) => {
-    return await auth.signUp(email, password)
-  }
-
-  const signInWithGoogle = async () => {
-    return await auth.signInWithGoogle()
-  }
-
-  const signInWithGitHub = async () => {
-    return await auth.signInWithGitHub()
-  }
-
   const signOut = async () => {
     return await auth.signOut()
-  }
-
-  const resetPassword = async (email: string) => {
-    return await auth.resetPassword(email)
   }
 
   const value = {
     user,
     loading,
     signIn,
-    signUp,
-    signInWithGoogle,
-    signInWithGitHub,
-    signOut,
-    resetPassword
+    signOut
   }
 
   return (
