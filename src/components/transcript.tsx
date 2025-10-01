@@ -137,135 +137,142 @@ export default function Transcript({
           {messages.length} messages
         </Badge> */}
       </div>
-      <ScrollArea
-        ref={scrollAreaRef}
-        className="h-[400px] p-6 border rounded-md"
-      >
-        <div className="space-y-4">
-          {messages.map((message) => {
-            // Handle multiple speakers in AI messages
-            if (message.source === 'ai') {
-              const speakers = splitMultiSpeakerMessage(message.message)
+      {Boolean(messages.length) && (
+        <ScrollArea
+          ref={scrollAreaRef}
+          className="h-[400px] p-6 border rounded-md"
+        >
+          <div className="space-y-4">
+            {messages.map((message) => {
+              // Handle multiple speakers in AI messages
+              if (message.source === 'ai') {
+                const speakers = splitMultiSpeakerMessage(message.message)
 
-              return (
-                <div key={message.id} className="space-y-1">
-                  {speakers.map((speaker, index) => {
-                    const speakerInfo = {
-                      name: speaker.speakerName,
-                      avatar:
-                        personas.find(
-                          (persona) => persona.name === speaker.speakerName,
-                        )?.avatarUrl ||
-                        speaker.speakerName.charAt(0).toUpperCase(),
-                      color: getSpeakerColor(speaker.speakerName),
-                      isUser: false,
-                    }
+                return (
+                  <div key={message.id} className="space-y-1">
+                    {speakers.map((speaker, index) => {
+                      const speakerInfo = {
+                        name: speaker.speakerName,
+                        avatar:
+                          personas.find(
+                            (persona) => persona.name === speaker.speakerName,
+                          )?.avatarUrl ||
+                          speaker.speakerName.charAt(0).toUpperCase(),
+                        color: getSpeakerColor(speaker.speakerName),
+                        isUser: false,
+                      }
 
-                    const displayContent = isCensored
-                      ? censorContent()
-                      : speaker.content
+                      const displayContent = isCensored
+                        ? censorContent()
+                        : speaker.content
 
-                    return (
-                      <div
-                        key={`${message.id}-${index}`}
-                        className="flex gap-3 justify-start"
-                      >
-                        <Avatar className="w-8 h-8">
-                          <AvatarImage src={speakerInfo.avatar} />
-                          <AvatarFallback
-                            className={`text-white text-sm font-medium ${speakerInfo.color}`}
-                          >
-                            {speakerInfo.name.charAt(0).toUpperCase()}
-                          </AvatarFallback>
-                        </Avatar>
+                      return (
+                        <div
+                          key={`${message.id}-${index}`}
+                          className="flex gap-3 justify-start"
+                        >
+                          <Avatar className="w-8 h-8">
+                            <AvatarImage src={speakerInfo.avatar} />
+                            <AvatarFallback
+                              className={`text-white text-sm font-medium ${speakerInfo.color}`}
+                            >
+                              {speakerInfo.name.charAt(0).toUpperCase()}
+                            </AvatarFallback>
+                          </Avatar>
 
-                        <div className="max-w-[70%] order-2">
-                          <div className="rounded-2xl px-4 py-3 bg-muted text-foreground rounded-bl-md">
-                            <div className="flex items-center gap-2 mb-1">
-                              <span className="text-xs font-semibold opacity-80">
-                                {speakerInfo.name}
-                              </span>
-                              <span className="text-xs opacity-60">
-                                {message.timestamp}
-                              </span>
+                          <div className="max-w-[70%] order-2">
+                            <div className="rounded-2xl px-4 py-3 bg-muted text-foreground rounded-bl-md">
+                              <div className="flex items-center gap-2 mb-1">
+                                <span className="text-xs font-semibold opacity-80">
+                                  {speakerInfo.name}
+                                </span>
+                                <span className="text-xs opacity-60">
+                                  {message.timestamp}
+                                </span>
+                              </div>
+                              <p className="text-sm leading-relaxed">
+                                {displayContent}
+                              </p>
                             </div>
-                            <p className="text-sm leading-relaxed">
-                              {displayContent}
-                            </p>
                           </div>
                         </div>
+                      )
+                    })}
+                  </div>
+                )
+              }
+
+              // Handle user messages (single speaker)
+              const speakerInfo = getSpeakerInfo(
+                message.source,
+                message.message,
+              )
+              const isUser = speakerInfo.isUser
+
+              // Extract content and apply censoring if needed
+              let displayContent = message.message
+              if (isCensored) {
+                displayContent = censorContent()
+              }
+
+              return (
+                <div
+                  key={message.id}
+                  className={`flex gap-3 ${
+                    isUser ? 'justify-end' : 'justify-start'
+                  }`}
+                >
+                  {!isUser && (
+                    <Avatar className="w-8 h-8">
+                      <AvatarImage src={speakerInfo.avatar} />
+                      <AvatarFallback
+                        className={`text-white text-sm font-medium ${speakerInfo.color}`}
+                      >
+                        {speakerInfo.name.charAt(0).toUpperCase()}
+                      </AvatarFallback>
+                    </Avatar>
+                  )}
+
+                  <div
+                    className={`max-w-[70%] ${isUser ? 'order-1' : 'order-2'}`}
+                  >
+                    <div
+                      className={`rounded-2xl px-4 py-3 ${
+                        isUser
+                          ? 'bg-primary text-primary-foreground rounded-br-md'
+                          : 'bg-muted text-foreground rounded-bl-md'
+                      }`}
+                    >
+                      <div className="flex items-center gap-2 mb-1">
+                        <span className="text-xs font-semibold opacity-80">
+                          {speakerInfo.name}
+                        </span>
+                        <span className="text-xs opacity-60">
+                          {message.timestamp}
+                        </span>
                       </div>
-                    )
-                  })}
+                      <p className="text-sm leading-relaxed">
+                        {displayContent}
+                      </p>
+                    </div>
+                  </div>
+
+                  {isUser && (
+                    <Avatar className="w-8 h-8 order-2">
+                      <AvatarImage src="" />
+                      <AvatarFallback
+                        className={`text-white text-sm font-medium ${speakerInfo.color}`}
+                      >
+                        {speakerInfo.avatar}
+                      </AvatarFallback>
+                    </Avatar>
+                  )}
                 </div>
               )
-            }
-
-            // Handle user messages (single speaker)
-            const speakerInfo = getSpeakerInfo(message.source, message.message)
-            const isUser = speakerInfo.isUser
-
-            // Extract content and apply censoring if needed
-            let displayContent = message.message
-            if (isCensored) {
-              displayContent = censorContent()
-            }
-
-            return (
-              <div
-                key={message.id}
-                className={`flex gap-3 ${
-                  isUser ? 'justify-end' : 'justify-start'
-                }`}
-              >
-                {!isUser && (
-                  <Avatar className="w-8 h-8">
-                    <AvatarImage src={speakerInfo.avatar} />
-                    <AvatarFallback
-                      className={`text-white text-sm font-medium ${speakerInfo.color}`}
-                    >
-                      {speakerInfo.name.charAt(0).toUpperCase()}
-                    </AvatarFallback>
-                  </Avatar>
-                )}
-
-                <div
-                  className={`max-w-[70%] ${isUser ? 'order-1' : 'order-2'}`}
-                >
-                  <div
-                    className={`rounded-2xl px-4 py-3 ${
-                      isUser
-                        ? 'bg-primary text-primary-foreground rounded-br-md'
-                        : 'bg-muted text-foreground rounded-bl-md'
-                    }`}
-                  >
-                    <div className="flex items-center gap-2 mb-1">
-                      <span className="text-xs font-semibold opacity-80">
-                        {speakerInfo.name}
-                      </span>
-                      <span className="text-xs opacity-60">
-                        {message.timestamp}
-                      </span>
-                    </div>
-                    <p className="text-sm leading-relaxed">{displayContent}</p>
-                  </div>
-                </div>
-
-                {isUser && (
-                  <Avatar className="w-8 h-8 order-2">
-                    <AvatarImage src="" />
-                    <AvatarFallback
-                      className={`text-white text-sm font-medium ${speakerInfo.color}`}
-                    >
-                      {speakerInfo.avatar}
-                    </AvatarFallback>
-                  </Avatar>
-                )}
-              </div>
-            )
-          })}
-        </div>
-      </ScrollArea>
+            })}
+          </div>
+        </ScrollArea>
+      )}
     </>
   )
 }
