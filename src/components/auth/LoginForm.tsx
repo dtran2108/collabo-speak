@@ -105,7 +105,7 @@ export function LoginForm() {
             >
               {isSignUp
                 ? 'Already have an account? Sign in'
-                : "Don't have an account or forgot your password? Please contact support at vuhuongnam07@gamil.com"}
+                : "Don't have an account or forgot your password? Please contact support at vuhuongnam07@gmail.com"}
             </button>
           </div>
         </CardContent>

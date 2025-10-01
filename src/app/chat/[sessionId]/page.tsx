@@ -26,18 +26,18 @@ export default function Page() {
     try {
       setLoading(true)
       setError(null)
-      
+
       const sessionData = await db.sessions.getById(sessionId)
       if (!sessionData) {
         setError('Session not found')
         return
       }
-      
+
       const personas = await db.personas.getBySessionId(sessionId)
-      
+
       setSession({
         ...sessionData,
-        personas
+        personas,
       })
     } catch (error) {
       console.error('Error loading session:', error)
@@ -57,7 +57,7 @@ export default function Page() {
   if (loading) {
     return (
       <div className="container mx-auto py-2 px-2">
-        <div className='mb-2'>
+        <div className="mb-2">
           <BackBtn />
         </div>
         <div className="flex items-center justify-center h-64">
@@ -73,13 +73,13 @@ export default function Page() {
   if (error || !session) {
     return (
       <div className="container mx-auto py-2 px-2">
-        <div className='mb-2'>
+        <div className="mb-2">
           <BackBtn />
         </div>
         <div className="flex items-center justify-center h-64">
           <div className="text-center">
             <p className="text-red-500 mb-4">{error || 'Session not found'}</p>
-            <button 
+            <button
               onClick={loadSession}
               className="px-4 py-2 bg-indigo-600 text-white rounded hover:bg-indigo-700"
             >
@@ -93,16 +93,14 @@ export default function Page() {
 
   return (
     <div className="container mx-auto py-2 px-2">
-      <div className='mb-2'>
+      <div className="mb-2">
         <BackBtn />
       </div>
-      <section className="grid grid-cols-4 gap-4">
+      <section className="grid md:grid-cols-4 grid-cols-1 gap-0 md:gap-4">
         <div className="col-span-1">
-          <Card>
+          <Card className='mb-4 md:mb-0'>
             <CardHeader className="border-b">
-              <h1 className="font-bold text-lg">
-                {session.name}
-              </h1>
+              <h1 className="font-bold text-lg">{session.name}</h1>
             </CardHeader>
             <CardContent>
               <p className="text-muted-foreground text-sm">
@@ -110,16 +108,16 @@ export default function Page() {
               </p>
             </CardContent>
           </Card>
-          
+
           {session.personas.length > 0 && (
-            <Card className="mt-4">
+            <Card className="mt-4 hidden md:block">
               <CardHeader className="border-b">
                 <div className="flex space-x-2 mt-4">
                   <Bot strokeWidth={1.25} />
                   <span className="text-lg font-bold">AI Personas</span>
                 </div>
               </CardHeader>
-              <CardContent>
+              <CardContent className='mt-2'>
                 {session.personas.map((persona) => (
                   <div key={persona.id} className="mb-4 last:mb-0">
                     <div className="flex items-center space-x-2">
@@ -147,7 +145,7 @@ export default function Page() {
             <CardHeader className="border-b font-bold text-lg">
               Chat Window
             </CardHeader>
-            <CardContent className='py-4'>
+            <CardContent className="py-4">
               <Conversation />
             </CardContent>
           </Card>

@@ -57,6 +57,7 @@ export interface Database {
           sessionId: string
           transcriptUrl: string | null
           userId: string
+          reflection: string | null
         }
         Insert: {
           id?: string
@@ -64,6 +65,7 @@ export interface Database {
           sessionId: string
           transcriptUrl?: string | null
           userId: string
+          reflection?: string | null
         }
         Update: {
           id?: string
@@ -71,6 +73,7 @@ export interface Database {
           sessionId?: string
           transcriptUrl?: string | null
           userId?: string
+          reflection?: string | null
         }
       }
     }

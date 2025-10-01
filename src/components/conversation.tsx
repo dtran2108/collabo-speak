@@ -10,6 +10,7 @@ import { useConversation } from '@elevenlabs/react'
 import { Button } from '@/components/ui/button'
 import { Mic, MicOff } from 'lucide-react'
 import Transcript from './transcript'
+import { ReflectionModal } from './ReflectionModal'
 
 // Database and utilities
 import { db } from '@/lib/database'
@@ -29,13 +30,16 @@ export function Conversation() {
   const params = useParams()
   const sessionId = params.sessionId as string
   const { user } = useAuth()
-  
+
   const [hasPermission, setHasPermission] = useState(false)
   const [errorMessage, setErrorMessage] = useState('')
   const [messages, setMessages] = useState<Message[]>([])
   const [isCensored, setIsCensored] = useState(true) // Start with censored content
-  const [conversationStartTime, setConversationStartTime] = useState<Date | null>(null)
+  const [conversationStartTime, setConversationStartTime] =
+    useState<Date | null>(null)
   const [isSaving, setIsSaving] = useState(false)
+  const [showReflectionModal, setShowReflectionModal] = useState(false)
+  const [isReflectionPending, setIsReflectionPending] = useState(false)
 
   const generateId = () => Math.random().toString(36).substr(2, 9)
   const getCurrentTimestamp = () =>
@@ -127,7 +131,7 @@ export function Conversation() {
     try {
       // Set conversation start time
       setConversationStartTime(new Date())
-      
+
       // Replace with your actual agent ID or URL
       const conversationId = await conversation.startSession({
         agentId: 'agent_4201k6bj21hae4h9q32q6ra7mt75',
@@ -142,50 +146,81 @@ export function Conversation() {
 
   const handleEndConversation = async () => {
     try {
-      setIsSaving(true)
-      
       // End the conversation
       await conversation.endSession()
-      
+
       // Uncover the transcript content when ending the session
       setIsCensored(false)
-      
-      // Save transcript if user is logged in and we have messages
+
+      // Set reflection as pending and open modal
+      setIsReflectionPending(true)
+      setShowReflectionModal(true)
+    } catch (error) {
+      setErrorMessage('Failed to end conversation')
+      console.error('Error ending conversation:', error)
+    }
+  }
+
+  const handleReflectionSubmit = async (reflection: string) => {
+    try {
+      setIsSaving(true)
+
+      // Save transcript and reflection if user is logged in and we have messages
       if (user && messages.length > 0) {
         try {
           // Format the transcript
-          const transcriptContent = formatTranscript(messages, conversationStartTime || undefined)
-          
+          const transcriptContent = formatTranscript(
+            messages,
+            conversationStartTime || undefined,
+          )
+
           // Generate filename
           const fileName = generateTranscriptFileName(sessionId, user.id)
-          
+
           // Upload transcript to storage
-          const transcriptUrl = await db.storage.uploadTranscript(fileName, transcriptContent)
-          
+          const transcriptUrl = await db.storage.uploadTranscript(
+            fileName,
+            transcriptContent,
+          )
+
           if (transcriptUrl) {
-            // Create user session record
+            // Create user session record with reflection
             await db.userSessions.create({
               sessionId,
               userId: user.id,
-              transcriptUrl
+              transcriptUrl,
+              reflection,
             })
-            
-            console.log('Transcript saved successfully:', transcriptUrl)
+
+            console.log('Transcript and reflection saved successfully:', transcriptUrl)
           } else {
             console.error('Failed to upload transcript')
             setErrorMessage('Failed to save transcript')
           }
         } catch (saveError) {
-          console.error('Error saving transcript:', saveError)
-          setErrorMessage('Failed to save transcript')
+          console.error('Error saving transcript and reflection:', saveError)
+          setErrorMessage('Failed to save transcript and reflection')
         }
       }
+
+      // Close modal and reset state
+      setShowReflectionModal(false)
+      setIsReflectionPending(false)
+      setMessages([])
     } catch (error) {
-      setErrorMessage('Failed to end conversation')
-      console.error('Error ending conversation:', error)
+      setErrorMessage('Failed to save reflection')
+      console.error('Error saving reflection:', error)
     } finally {
       setIsSaving(false)
     }
+  }
+
+  const handleReopenReflection = () => {
+    setShowReflectionModal(true)
+  }
+
+  const handleViewTranscript = () => {
+    setShowReflectionModal(false)
   }
 
   return (
@@ -206,6 +241,15 @@ export function Conversation() {
             >
               <MicOff className="mr-2 h-4 w-4" />
               {isSaving ? 'Saving...' : 'End Conversation'}
+            </Button>
+          ) : isReflectionPending ? (
+            <Button
+              onClick={handleReopenReflection}
+              disabled={isSaving}
+              className="w-full"
+              variant="default"
+            >
+              Reflection
             </Button>
           ) : (
             <Button
@@ -233,6 +277,15 @@ export function Conversation() {
           )}
         </div>
       </div>
+
+      {/* Reflection Modal */}
+      <ReflectionModal
+        isOpen={showReflectionModal}
+        onClose={() => setShowReflectionModal(false)}
+        onSubmit={handleReflectionSubmit}
+        onViewTranscript={handleViewTranscript}
+        isSubmitting={isSaving}
+      />
     </div>
   )
 }
