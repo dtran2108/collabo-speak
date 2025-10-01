@@ -49,6 +49,8 @@ export function EvaluationModal({
             <Loader2 className="h-8 w-8 animate-spin text-blue-500" />
             <p className="text-sm text-muted-foreground">
               AI is analyzing your conversation...
+              <br />
+              Please do NOT close this window until the analysis is complete.
             </p>
           </div>
         ) : (
