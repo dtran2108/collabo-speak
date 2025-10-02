@@ -69,9 +69,9 @@ turn duration = timestamp of last turn of session − timestamp of student turn.
 Return your evaluation in the following JSON format:
 
 {
-  "strengths": ["strength1", "strength2", "strength3", "strength4",...],
-  "improvements": ["improvement1", "improvement2", "improvement3", "improvement4",...],
-  "tips": ["tip1", "tip2", "tip3", "tip4",...],
+  "strengths": ["strength1 + examples", "strength2 + examples", "strength3 + examples", "strength4 + examples",...],
+  "improvements": ["improvement1 + examples", "improvement2 + examples", "improvement3 + examples", "improvement4 + examples",...],
+  "tips": ["tip1 + examples", "tip2 + examples", "tip3 + examples", "tip4 + examples",...],
   "words_per_min": "an integer value for words per minute",
   "filler_words_per_min": "an integer value for fillers per minute",
   "participation_percentage": "a float value for turns percentage",

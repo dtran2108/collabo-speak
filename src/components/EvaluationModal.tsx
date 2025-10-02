@@ -60,7 +60,7 @@ export function EvaluationModal({
           <div className="flex flex-col items-center justify-center py-12 space-y-4">
             <Loader className="h-8 w-8 animate-spin text-blue-500" />
             <p className="text-sm text-muted-foreground text-center">
-              AI is analyzing your conversation...
+              Your session is being evaluated...
             </p>
             <div className="bg-amber-50 border border-amber-200 rounded-lg p-2 max-w-md">
               <div className="flex items-center justify-center space-x-2">

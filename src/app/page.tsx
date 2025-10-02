@@ -99,12 +99,12 @@ export default function Page() {
         <div className="mx-auto flex max-w-5xl flex-col gap-6 text-left">
           <div className="grid grid-cols-1 lg:grid-cols-3 gap-8 items-stretch relative">
             <div className="col-span-1 flex w-full">
-              <div className="w-full blur-[3px]">
+              <div className={`w-full ${(!user || !hasEnoughSessions) ? 'blur-[3px]' : ''}`}>
                 <ChartRadarLegend pisaData={pisaData} />
               </div>
             </div>
             <div className="col-span-2 flex w-full">
-              <div className="w-full blur-[3px]">
+              <div className={`w-full ${(!user || !hasEnoughSessions) ? 'blur-[3px]' : ''}`}>
                 <OralProficiencyCard weeklyData={weeklyData} />
               </div>
             </div>
