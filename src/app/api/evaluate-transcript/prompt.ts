@@ -2,6 +2,8 @@ export const getPrompt = (transcript: string) => {
   return `Your goal is to provide encouraging feedback based ONLY on the student's speech in the transcript. The student's goal was to improve:
 1) Collaborative problem solving (based on the PISA framework)
 2) Oral skills (based on the CAF framework) Your feedback must always include the following structure: Today's session: {minutes} min {seconds} sec (Student performance only) → WPM: {wpm} | Fillers: {fillers}/min ▼ | Turns: {turns}%.
+
+
 Then give 3 clear points: What you did well, What to work on, Tips for next time
 Guidelines:
 - Report WPM, Fillers, and Turns only for the student (exclude all AI persona data).
