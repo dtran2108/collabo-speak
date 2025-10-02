@@ -25,7 +25,7 @@ export const description = 'A radar chart with a legend'
 interface PISAData {
   scale: string
   firstDay: number
-  average: number
+  lastDay: number
 }
 
 interface ChartRadarLegendProps {
@@ -37,17 +37,17 @@ const chartConfig = {
     label: 'First Day',
     color: 'var(--chart-1)',
   },
-  average: {
-    label: 'Average',
+  lastDay: {
+    label: 'Last Day',
     color: 'var(--chart-2)',
   },
 } satisfies ChartConfig
 
 export function ChartRadarLegend({ pisaData = [] }: ChartRadarLegendProps) {
   const chartData = pisaData.length > 0 ? pisaData : [
-    { scale: 'C', firstDay: 0, average: 0 },
-    { scale: 'P', firstDay: 0, average: 0 },
-    { scale: 'S', firstDay: 0, average: 0 },
+    { scale: 'C', firstDay: 0, lastDay: 0 },
+    { scale: 'P', firstDay: 0, lastDay: 0 },
+    { scale: 'S', firstDay: 0, lastDay: 0 },
   ]
 
   if (pisaData.length === 0) {
@@ -91,10 +91,10 @@ export function ChartRadarLegend({ pisaData = [] }: ChartRadarLegendProps) {
               strokeWidth={2}
             />
             <Radar
-              dataKey="average"
-              fill="var(--color-average)"
+              dataKey="lastDay"
+              fill="var(--color-lastDay)"
               fillOpacity={0}
-              stroke="var(--color-average)"
+              stroke="var(--color-lastDay)"
               strokeWidth={2}
             />
             <ChartLegend content={<ChartLegendContent />} />

@@ -6,14 +6,14 @@ import { auth } from '@/lib/auth'
 import type { SessionToUser, Session } from '@/types/database'
 
 export function useSessionToUser() {
-  const [sessionToUser, setSessionToUser] = useState<SessionToUser[]>([])
+  const [participationLog, setParticipationLog] = useState<SessionToUser[]>([])
   const [currentUserSession, setCurrentUserSession] = useState<SessionToUser | null>(null)
   const [sessions, setSessions] = useState<Session[]>([])
   const [loading, setLoading] = useState(false)
   const [error, setError] = useState<string | null>(null)
 
   // Load user sessions
-  const loadsessionToUser = async () => {
+  const loadParticipationLog = async () => {
     setLoading(true)
     setError(null)
     
@@ -24,8 +24,8 @@ export function useSessionToUser() {
         return
       }
 
-      const sessions = await db.sessionToUser.getByUserId(user.id)
-      setSessionToUser(sessions)
+      const sessions = await db.participationLog.getByUserId(user.id)
+      setParticipationLog(sessions)
     } catch (err) {
       setError(err instanceof Error ? err.message : 'Failed to load user sessions')
     } finally {
@@ -60,14 +60,14 @@ export function useSessionToUser() {
         return null
       }
 
-      const userSession = await db.sessionToUser.create({
+      const userSession = await db.participationLog.create({
         userId: user.id,
         sessionId,
         transcriptUrl
       })
 
       if (userSession) {
-        setSessionToUser(prev => [userSession, ...prev])
+        setParticipationLog(prev => [userSession, ...prev])
         setCurrentUserSession(userSession)
       }
 
@@ -83,10 +83,10 @@ export function useSessionToUser() {
   // Update user session
   const updateUserSession = async (id: string, updates: { transcriptUrl?: string }) => {
     try {
-      const updatedUserSession = await db.sessionToUser.update(id, updates)
+      const updatedUserSession = await db.participationLog.update(id, updates)
       
       if (updatedUserSession) {
-        setSessionToUser(prev => 
+        setParticipationLog(prev => 
           prev.map(session => 
             session.id === id ? updatedUserSession : session
           )
@@ -107,10 +107,10 @@ export function useSessionToUser() {
   // Delete user session
   const deleteUserSession = async (id: string) => {
     try {
-      const success = await db.sessionToUser.delete(id)
+      const success = await db.participationLog.delete(id)
       
       if (success) {
-        setSessionToUser(prev => prev.filter(session => session.id !== id))
+        setParticipationLog(prev => prev.filter(session => session.id !== id))
         
         if (currentUserSession?.id === id) {
           setCurrentUserSession(null)
@@ -131,17 +131,17 @@ export function useSessionToUser() {
 
   // Load data on mount
   useEffect(() => {
-    loadsessionToUser()
+    loadParticipationLog()
     loadSessions()
   }, [])
 
   return {
-    sessionToUser,
+    participationLog,
     currentUserSession,
     sessions,
     loading,
     error,
-    loadsessionToUser,
+    loadParticipationLog,
     loadSessions,
     createUserSession,
     updateUserSession,

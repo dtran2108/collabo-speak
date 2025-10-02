@@ -78,7 +78,7 @@ export const api = {
   },
 
   // User sessions endpoints
-  sessionToUser: {
+  participationLog: {
     async getAll(params?: {
       page?: number
       limit?: number
@@ -175,6 +175,31 @@ export const api = {
       searchParams.set('sessionIds', sessionIds.join(','))
       
       const response = await fetch(`${API_BASE_URL}/session-participation?${searchParams.toString()}`, {
+        headers,
+      })
+      return handleResponse(response)
+    },
+  },
+
+  // Chart data endpoints
+  charts: {
+    async getChartData(): Promise<{
+      hasEnoughSessions: boolean
+      weeklyData: Array<{
+        week: string
+        wpm: number
+        fillers: number
+        participation: number
+      }>
+      pisaData: Array<{
+        scale: string
+        firstDay: number
+        lastDay: number
+      }>
+      totalSessions: number
+    }> {
+      const headers = await getAuthHeaders()
+      const response = await fetch(`${API_BASE_URL}/chart-data`, {
         headers,
       })
       return handleResponse(response)

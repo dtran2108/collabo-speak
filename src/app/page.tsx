@@ -24,22 +24,33 @@ export default function Page() {
   const [sessionsLoading, setSessionsLoading] = useState(true)
   const [sessionsError, setSessionsError] = useState<string | null>(null)
   const [isStartingSession, setIsStartingSession] = useState(false)
-  const [sessionParticipation, setSessionParticipation] = useState<{ [sessionId: string]: boolean }>({})
-  
+  const [sessionParticipation, setSessionParticipation] = useState<{
+    [sessionId: string]: boolean
+  }>({})
+
   // Chart data hook - only load when user is authenticated
-  const { hasEnoughSessions, weeklyData, pisaData, loading: chartLoading } = useChartData()
+  const {
+    hasEnoughSessions,
+    weeklyData,
+    pisaData,
+    loading: chartLoading,
+  } = useChartData()
 
   // Check session participation for authenticated users
-  const checkSessionParticipation = useCallback(async (sessionIds: string[]) => {
-    if (!user || sessionIds.length === 0) return
+  const checkSessionParticipation = useCallback(
+    async (sessionIds: string[]) => {
+      if (!user || sessionIds.length === 0) return
 
-    try {
-      const { participation } = await api.participation.checkSessionParticipation(sessionIds)
-      setSessionParticipation(participation)
-    } catch (error) {
-      console.error('Error checking session participation:', error)
-    }
-  }, [user])
+      try {
+        const { participation } =
+          await api.participation.checkSessionParticipation(sessionIds)
+        setSessionParticipation(participation)
+      } catch (error) {
+        console.error('Error checking session participation:', error)
+      }
+    },
+    [user],
+  )
 
   // Load sessions and their personas
   const loadSessions = useCallback(async () => {
@@ -68,7 +79,7 @@ export default function Page() {
 
       // Check participation for authenticated users
       if (user) {
-        const sessionIds = sessionsWithPersonas.map(session => session.id)
+        const sessionIds = sessionsWithPersonas.map((session) => session.id)
         await checkSessionParticipation(sessionIds)
       }
     } catch (error) {
@@ -87,7 +98,7 @@ export default function Page() {
   // Check participation when user changes
   useEffect(() => {
     if (user && sessions.length > 0) {
-      const sessionIds = sessions.map(session => session.id)
+      const sessionIds = sessions.map((session) => session.id)
       checkSessionParticipation(sessionIds)
     } else if (!user) {
       setSessionParticipation({})
@@ -128,24 +139,31 @@ export default function Page() {
         <div className="mx-auto flex max-w-5xl flex-col gap-6 text-left">
           <div className="grid grid-cols-1 lg:grid-cols-3 lg:gap-8 gap-0 space-y-4 lg:space-y-0 items-stretch relative">
             <div className="col-span-1 flex w-full">
-              <div className={`w-full ${(!user || !hasEnoughSessions) ? 'blur-[3px]' : ''}`}>
+              <div
+                className={`w-full ${
+                  !user || !hasEnoughSessions ? 'blur-[3px]' : ''
+                }`}
+              >
                 <ChartRadarLegend pisaData={pisaData} />
               </div>
             </div>
             <div className="col-span-2 flex w-full">
-              <div className={`w-full ${(!user || !hasEnoughSessions) ? 'blur-[3px]' : ''}`}>
+              <div
+                className={`w-full ${
+                  !user || !hasEnoughSessions ? 'blur-[3px]' : ''
+                }`}
+              >
                 <OralProficiencyCard weeklyData={weeklyData} />
               </div>
             </div>
-            
+
             {/* Single overlay covering both charts */}
             {(!user || !hasEnoughSessions) && (
               <div className="absolute inset-0 flex items-center justify-center">
                 <div className="bg-black text-white px-6 py-3 rounded-lg text-sm font-semibold text-center">
-                  {!user 
-                    ? "Please log in to see your performance" 
-                    : "Progress will be updated after 2 sessions"
-                  }
+                  {!user
+                    ? 'Please complete at least 2 sessions to see your progress'
+                    : 'Progress will be updated after 2 sessions'}
                 </div>
               </div>
             )}

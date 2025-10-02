@@ -17,7 +17,7 @@ export async function PATCH(
     }
 
     const { data, error } = await supabase
-      .from('sessionToUser')
+      .from('participation_log')
       .update({
         feedback: {
           strengths: AIFeedback.strengths,

@@ -170,11 +170,11 @@ export const db = {
   },
 
   // User Sessions
-  sessionToUser: {
+  participationLog: {
     // Get user sessions for a user
     async getByUserId(userId: string): Promise<SessionToUser[]> {
       const { data, error } = await supabase
-        .from('sessionToUser')
+        .from('participation_log')
         .select(`
           *,
           sessions (
@@ -198,7 +198,7 @@ export const db = {
     // Get user session by ID
     async getById(id: string): Promise<SessionToUser | null> {
       const { data, error } = await supabase
-        .from('sessionToUser')
+        .from('participation_log')
         .select(`
           *,
           sessions (
@@ -222,7 +222,7 @@ export const db = {
     // Create a new user session
     async create(userSession: SessionToUserInsert): Promise<SessionToUser | null> {
       const { data, error } = await supabase
-        .from('sessionToUser')
+        .from('participation_log')
         .insert(userSession)
         .select(`
           *,
@@ -246,7 +246,7 @@ export const db = {
     // Update user session
     async update(id: string, updates: SessionToUserUpdate): Promise<SessionToUser | null> {
       const { data, error } = await supabase
-        .from('sessionToUser')
+        .from('participation_log')
         .update(updates)
         .eq('id', id)
         .select(`
@@ -271,7 +271,7 @@ export const db = {
     // Delete user session
     async delete(id: string): Promise<boolean> {
       const { error } = await supabase
-        .from('sessionToUser')
+        .from('participation_log')
         .delete()
         .eq('id', id)
       

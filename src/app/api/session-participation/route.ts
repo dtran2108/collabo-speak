@@ -42,7 +42,7 @@ export async function GET(request: NextRequest) {
 
     // Query to get user's participation in the specified sessions
     const { data, error } = await supabase
-      .from('sessionToUser')
+      .from('participation_log')
       .select('sessionId')
       .eq('userId', user.id)
       .in('sessionId', sessionIdArray)

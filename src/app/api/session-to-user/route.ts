@@ -34,7 +34,7 @@ export async function GET(request: NextRequest) {
 
     // Build query
     let query = supabase
-      .from('sessionToUser')
+      .from('participation_log')
       .select(`
         *,
         sessions (
@@ -124,7 +124,7 @@ export async function POST(request: NextRequest) {
     }
 
     const { data, error } = await supabase
-      .from('sessionToUser')
+      .from('participation_log')
       .insert({
         sessionId,
         userId: user.id,

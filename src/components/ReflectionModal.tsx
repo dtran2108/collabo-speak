@@ -39,8 +39,8 @@ export function ReflectionModal({
       return
     }
 
-    if (reflection.length > 300) {
-      setError('Reflection must be 300 characters or less')
+    if (reflection.length > 150) {
+      setError('Reflection must be 150 characters or less')
       return
     }
 
@@ -80,8 +80,8 @@ export function ReflectionModal({
               required
             />
             <div className="flex justify-between text-sm text-muted-foreground">
-              <span className={reflection.length > 300 ? 'text-red-500' : ''}>
-                {reflection.length}/300 characters
+              <span className={reflection.length > 150 ? 'text-red-500' : ''}>
+                {reflection.length}/150 characters
               </span>
             </div>
             {error && (

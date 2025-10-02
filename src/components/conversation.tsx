@@ -213,7 +213,7 @@ export function Conversation({ personas }: { personas: Persona[] }) {
 
           if (transcriptUrl) {
             // Create user session record with reflection
-            const { userSession } = await api.sessionToUser.create({
+            const { userSession } = await api.participationLog.create({
               sessionId,
               userId: user.id,
               transcriptUrl,
@@ -270,7 +270,7 @@ export function Conversation({ personas }: { personas: Persona[] }) {
 
       // Try to update the user session with the feedback (don't fail if this doesn't work)
       try {
-        await api.sessionToUser.update(userSessionId, evaluation)
+        await api.participationLog.update(userSessionId, evaluation)
         console.log('AI evaluation completed and saved:', evaluation)
       } catch (updateError) {
         console.error('Error updating user session (but evaluation data is still shown):', updateError)

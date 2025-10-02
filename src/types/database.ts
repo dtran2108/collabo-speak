@@ -53,7 +53,7 @@ export interface Database {
           avatarUrl: string | null
         }
       }
-      sessionToUser: {
+      participation_log: {
         Row: {
           id: string
           created_at: string
@@ -159,14 +159,14 @@ export interface Database {
 // Convenience types
 export type Session = Database['public']['Tables']['sessions']['Row']
 export type Persona = Database['public']['Tables']['personas']['Row']
-export type SessionToUser = Database['public']['Tables']['sessionToUser']['Row']
+export type SessionToUser = Database['public']['Tables']['participation_log']['Row']
 
 export type SessionInsert = Database['public']['Tables']['sessions']['Insert']
 export type PersonaInsert = Database['public']['Tables']['personas']['Insert']
 export type SessionToUserInsert =
-  Database['public']['Tables']['sessionToUser']['Insert']
+  Database['public']['Tables']['participation_log']['Insert']
 
 export type SessionUpdate = Database['public']['Tables']['sessions']['Update']
 export type PersonaUpdate = Database['public']['Tables']['personas']['Update']
 export type SessionToUserUpdate =
-  Database['public']['Tables']['sessionToUser']['Update']
+  Database['public']['Tables']['participation_log']['Update']

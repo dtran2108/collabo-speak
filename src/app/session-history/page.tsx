@@ -8,7 +8,7 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/com
 import { Badge } from '@/components/ui/badge'
 import { Button } from '@/components/ui/button'
 import { Ratings } from '@/components/rating'
-import { History, Calendar, MessageSquare, TrendingUp, Target, Lightbulb, BarChart3, Search, Filter, ChevronLeft, ChevronRight } from 'lucide-react'
+import { History, Calendar, MessageSquare, TrendingUp, Target, Lightbulb, BarChart3, Filter, ChevronLeft, ChevronRight } from 'lucide-react'
 import { toast } from 'sonner'
 import Link from 'next/link'
 
@@ -62,7 +62,7 @@ export default function SessionHistoryPage() {
   const loadSessionHistory = useCallback(async () => {
     try {
       setIsLoading(true)
-      const { sessionToUser, pagination: paginationData } = await api.sessionToUser.getAll({
+      const { sessionToUser, pagination: paginationData } = await api.participationLog.getAll({
         page: pagination.page,
         limit: pagination.limit,
         sessionId: filters.sessionId || undefined,
