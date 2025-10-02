@@ -103,6 +103,29 @@ export interface Database {
           duration?: string | null
         }
       }
+      user_profiles: {
+        Row: {
+          id: number
+          created_at: string
+          user_id: string
+          full_name: string | null
+          ielts_score: string | null
+        }
+        Insert: {
+          id?: number
+          created_at?: string
+          user_id: string
+          full_name?: string | null
+          ielts_score?: string | null
+        }
+        Update: {
+          id?: number
+          created_at?: string
+          user_id?: string
+          full_name?: string | null
+          ielts_score?: string | null
+        }
+      }
       roles: {
         Row: {
           id: string
@@ -160,13 +183,16 @@ export interface Database {
 export type Session = Database['public']['Tables']['sessions']['Row']
 export type Persona = Database['public']['Tables']['personas']['Row']
 export type SessionToUser = Database['public']['Tables']['participation_log']['Row']
+export type UserProfile = Database['public']['Tables']['user_profiles']['Row']
 
 export type SessionInsert = Database['public']['Tables']['sessions']['Insert']
 export type PersonaInsert = Database['public']['Tables']['personas']['Insert']
 export type SessionToUserInsert =
   Database['public']['Tables']['participation_log']['Insert']
+export type UserProfileInsert = Database['public']['Tables']['user_profiles']['Insert']
 
 export type SessionUpdate = Database['public']['Tables']['sessions']['Update']
 export type PersonaUpdate = Database['public']['Tables']['personas']['Update']
 export type SessionToUserUpdate =
   Database['public']['Tables']['participation_log']['Update']
+export type UserProfileUpdate = Database['public']['Tables']['user_profiles']['Update']

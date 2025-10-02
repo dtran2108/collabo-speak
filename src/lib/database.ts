@@ -8,7 +8,10 @@ import type {
   SessionToUserInsert,
   SessionUpdate,
   PersonaUpdate,
-  SessionToUserUpdate
+  SessionToUserUpdate,
+  UserProfile,
+  UserProfileInsert,
+  UserProfileUpdate
 } from '@/types/database'
 
 // Storage bucket name for transcripts
@@ -333,6 +336,76 @@ export const db = {
         console.error('Error deleting transcript:', error)
         return false
       }
+    }
+  },
+
+  // User Profiles
+  userProfiles: {
+    // Get user profile by user ID
+    async getByUserId(userId: string): Promise<UserProfile | null> {
+      const { data, error } = await supabase
+        .from('user_profiles')
+        .select('*')
+        .eq('user_id', userId)
+        .single()
+
+      if (error) {
+        if (error.code === 'PGRST116') {
+          return null // No profile found
+        }
+        console.error('Error getting user profile:', error)
+        throw new Error('Failed to get user profile')
+      }
+
+      return data
+    },
+
+    // Create user profile
+    async create(profile: UserProfileInsert): Promise<UserProfile> {
+      const { data, error } = await supabase
+        .from('user_profiles')
+        .insert(profile)
+        .select()
+        .single()
+
+      if (error) {
+        console.error('Error creating user profile:', error)
+        throw new Error('Failed to create user profile')
+      }
+
+      return data
+    },
+
+    // Update user profile
+    async update(userId: string, updates: UserProfileUpdate): Promise<UserProfile | null> {
+      const { data, error } = await supabase
+        .from('user_profiles')
+        .update(updates)
+        .eq('user_id', userId)
+        .select()
+        .single()
+
+      if (error) {
+        console.error('Error updating user profile:', error)
+        throw new Error('Failed to update user profile')
+      }
+
+      return data
+    },
+
+    // Delete user profile
+    async delete(userId: string): Promise<boolean> {
+      const { error } = await supabase
+        .from('user_profiles')
+        .delete()
+        .eq('user_id', userId)
+
+      if (error) {
+        console.error('Error deleting user profile:', error)
+        return false
+      }
+
+      return true
     }
   }
 }
