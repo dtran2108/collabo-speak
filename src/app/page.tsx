@@ -2,15 +2,16 @@
 
 import { Card, CardContent, CardFooter, CardHeader } from '@/components/ui/card'
 import { Button } from '@/components/ui/button'
-import { Bot, Loader2 } from 'lucide-react'
+import { Loader, Check } from 'lucide-react'
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar'
 import { useAuth } from '@/contexts/AuthContext'
 import { useRouter } from 'next/navigation'
-import { useEffect, useState } from 'react'
+import { useEffect, useState, useCallback } from 'react'
 import { api } from '@/lib/api'
 import type { Session, Persona } from '@/types/database'
 import { ChartRadarLegend } from '@/components/charts/radar-chart'
 import { OralProficiencyCard } from '@/components/oral-proficiency-card'
+import { useChartData } from '@/hooks/useChartData'
 
 interface SessionWithPersonas extends Session {
   personas: Persona[]
@@ -23,9 +24,25 @@ export default function Page() {
   const [sessionsLoading, setSessionsLoading] = useState(true)
   const [sessionsError, setSessionsError] = useState<string | null>(null)
   const [isStartingSession, setIsStartingSession] = useState(false)
+  const [sessionParticipation, setSessionParticipation] = useState<{ [sessionId: string]: boolean }>({})
+  
+  // Chart data hook - only load when user is authenticated
+  const { hasEnoughSessions, weeklyData, pisaData, loading: chartLoading } = useChartData()
+
+  // Check session participation for authenticated users
+  const checkSessionParticipation = useCallback(async (sessionIds: string[]) => {
+    if (!user || sessionIds.length === 0) return
+
+    try {
+      const { participation } = await api.participation.checkSessionParticipation(sessionIds)
+      setSessionParticipation(participation)
+    } catch (error) {
+      console.error('Error checking session participation:', error)
+    }
+  }, [user])
 
   // Load sessions and their personas
-  const loadSessions = async () => {
+  const loadSessions = useCallback(async () => {
     try {
       setSessionsLoading(true)
       setSessionsError(null)
@@ -48,18 +65,34 @@ export default function Page() {
       )
 
       setSessions(sessionsWithPersonas)
+
+      // Check participation for authenticated users
+      if (user) {
+        const sessionIds = sessionsWithPersonas.map(session => session.id)
+        await checkSessionParticipation(sessionIds)
+      }
     } catch (error) {
       console.error('Error loading sessions:', error)
       setSessionsError('Failed to load sessions')
     } finally {
       setSessionsLoading(false)
     }
-  }
+  }, [user, checkSessionParticipation])
 
   // Load sessions on component mount
   useEffect(() => {
     loadSessions()
-  }, [])
+  }, [loadSessions])
+
+  // Check participation when user changes
+  useEffect(() => {
+    if (user && sessions.length > 0) {
+      const sessionIds = sessions.map(session => session.id)
+      checkSessionParticipation(sessionIds)
+    } else if (!user) {
+      setSessionParticipation({})
+    }
+  }, [user, sessions, checkSessionParticipation])
 
   const handleStartSession = (sessionId: string) => {
     if (!user) {
@@ -76,7 +109,7 @@ export default function Page() {
     router.push(`/chat/${sessionId}`)
   }
 
-  if (loading || sessionsLoading) {
+  if (loading || sessionsLoading || (user && chartLoading)) {
     return (
       <div className="min-h-screen flex items-center justify-center">
         <div className="text-center">
@@ -93,27 +126,29 @@ export default function Page() {
     <section className="py-4">
       <div className="container mx-auto">
         <div className="mx-auto flex max-w-5xl flex-col gap-6 text-left">
-          <div className="grid grid-cols-1 lg:grid-cols-3 gap-8 items-stretch">
-            <div className="col-span-1 flex w-full relative">
-              <div className="w-full blur-[3px]">
-                <ChartRadarLegend />
-              </div>
-              <div className="absolute inset-0 flex items-center justify-center">
-                <div className="bg-black text-white px-4 py-2 rounded-lg text-sm font-semibold text-center">
-                  Progress will be updated after 1 week
-                </div>
+          <div className="grid grid-cols-1 lg:grid-cols-3 lg:gap-8 gap-0 space-y-4 lg:space-y-0 items-stretch relative">
+            <div className="col-span-1 flex w-full">
+              <div className={`w-full ${(!user || !hasEnoughSessions) ? 'blur-[3px]' : ''}`}>
+                <ChartRadarLegend pisaData={pisaData} />
               </div>
             </div>
-            <div className="col-span-2 flex w-full relative">
-              <div className="w-full blur-[3px]">
-                <OralProficiencyCard />
-              </div>
-              <div className="absolute inset-0 flex items-center justify-center">
-                <div className="bg-black text-white px-4 py-2 rounded-lg text-sm font-semibold text-center">
-                  Progress will be updated after 1 week
-                </div>
+            <div className="col-span-2 flex w-full">
+              <div className={`w-full ${(!user || !hasEnoughSessions) ? 'blur-[3px]' : ''}`}>
+                <OralProficiencyCard weeklyData={weeklyData} />
               </div>
             </div>
+            
+            {/* Single overlay covering both charts */}
+            {(!user || !hasEnoughSessions) && (
+              <div className="absolute inset-0 flex items-center justify-center">
+                <div className="bg-black text-white px-6 py-3 rounded-lg text-sm font-semibold text-center">
+                  {!user 
+                    ? "Please log in to see your performance" 
+                    : "Progress will be updated after 2 sessions"
+                  }
+                </div>
+              </div>
+            )}
           </div>
           <h1 className="mt-4 text-lg ml-2 font-semibold text-pretty lg:text-3xl">
             Select one scenario to begin!
@@ -130,10 +165,18 @@ export default function Page() {
               {sessions.map((session) => (
                 <Card
                   key={session.id}
-                  className="w-full h-full flex-1 py-4 gap-2"
+                  className="w-full h-full flex-1 py-4 gap-2 relative"
                 >
                   <CardHeader className="pb-1 text-left">
-                    <h2 className="text-lg font-semibold">{session.name}</h2>
+                    <div className="flex flex-col justify-between">
+                      <h2 className="text-lg font-semibold">{session.name}</h2>
+                      {user && sessionParticipation[session.id] && (
+                        <div className="flex items-center space-x-1 text-green-600">
+                          <Check className="h-4 w-4" />
+                          <span className="text-xs font-medium">Completed</span>
+                        </div>
+                      )}
+                    </div>
                   </CardHeader>
                   <CardContent className="text-left h-full">
                     <div className="flex items-center space-x-2">
@@ -177,7 +220,7 @@ export default function Page() {
                     >
                       {isStartingSession ? (
                         <div className="flex items-center space-x-2">
-                          <Loader2 className="animate-spin w-4 h-4 mr-2" />{' '}
+                          <Loader className="animate-spin w-4 h-4 mr-2" />{' '}
                           <span>Preparing Session...</span>
                         </div>
                       ) : session.isReady ? (

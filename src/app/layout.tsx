@@ -2,6 +2,7 @@ import type { Metadata } from 'next'
 import { Geist, Geist_Mono } from 'next/font/google'
 import './globals.css'
 import { AuthProvider } from '@/contexts/AuthContext'
+import { Toaster } from '@/components/ui/sonner'
 import { Navbar } from '@/components/nav-bar'
 import { Analytics } from '@vercel/analytics/next'
 
@@ -34,6 +35,7 @@ export default function RootLayout({
         <AuthProvider>
           <Navbar />
           <div className="pt-16">{children}</div>
+          <Toaster />
         </AuthProvider>
         <Analytics />
       </body>

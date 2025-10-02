@@ -22,11 +22,15 @@ import { TrendingUp } from 'lucide-react'
 
 export const description = 'A radar chart with a legend'
 
-const chartData = [
-  { scale: 'C', firstDay: 3, average: 2.5 },
-  { scale: 'P', firstDay: 1, average: 3 },
-  { scale: 'S', firstDay: 2, average: 3.5 },
-]
+interface PISAData {
+  scale: string
+  firstDay: number
+  average: number
+}
+
+interface ChartRadarLegendProps {
+  pisaData?: PISAData[]
+}
 
 const chartConfig = {
   firstDay: {
@@ -39,7 +43,28 @@ const chartConfig = {
   },
 } satisfies ChartConfig
 
-export function ChartRadarLegend() {
+export function ChartRadarLegend({ pisaData = [] }: ChartRadarLegendProps) {
+  const chartData = pisaData.length > 0 ? pisaData : [
+    { scale: 'C', firstDay: 0, average: 0 },
+    { scale: 'P', firstDay: 0, average: 0 },
+    { scale: 'S', firstDay: 0, average: 0 },
+  ]
+
+  if (pisaData.length === 0) {
+    return (
+      <Card className="gap-2 py-4 h-full w-full">
+        <CardHeader className="items-center border-b [.border-b]:pb-3">
+          <CardTitle>CPS</CardTitle>
+          <CardDescription>Showing CPS for the last 2 weeks</CardDescription>
+        </CardHeader>
+        <CardContent>
+          <div className="flex items-center justify-center h-64 text-muted-foreground">
+            No data available
+          </div>
+        </CardContent>
+      </Card>
+    )
+  }
   return (
     <Card className="gap-2 py-4 h-full w-full">
       <CardHeader className="items-center border-b [.border-b]:pb-3">

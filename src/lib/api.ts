@@ -79,9 +79,33 @@ export const api = {
 
   // User sessions endpoints
   sessionToUser: {
-    async getAll(): Promise<{ sessionToUser: SessionToUser[] }> {
+    async getAll(params?: {
+      page?: number
+      limit?: number
+      sessionId?: string
+      search?: string
+    }): Promise<{ 
+      sessionToUser: SessionToUser[]
+      pagination: {
+        page: number
+        limit: number
+        total: number
+        totalPages: number
+        hasNext: boolean
+        hasPrev: boolean
+      }
+    }> {
       const headers = await getAuthHeaders()
-      const response = await fetch(`${API_BASE_URL}/session-to-user`, {
+      const searchParams = new URLSearchParams()
+      
+      if (params?.page) searchParams.set('page', params.page.toString())
+      if (params?.limit) searchParams.set('limit', params.limit.toString())
+      if (params?.sessionId) searchParams.set('sessionId', params.sessionId)
+      if (params?.search) searchParams.set('search', params.search)
+      
+      const url = `${API_BASE_URL}/session-to-user${searchParams.toString() ? `?${searchParams.toString()}` : ''}`
+      
+      const response = await fetch(url, {
         headers,
       })
       return handleResponse(response)
@@ -108,7 +132,7 @@ export const api = {
           'Content-Type': 'application/json',
           ...headers,
         },
-        body: JSON.stringify({ feedback }),
+        body: JSON.stringify(feedback),
       })
       return handleResponse(response)
     },
@@ -138,6 +162,20 @@ export const api = {
         method: 'POST',
         headers: { 'Content-Type': 'application/json', ...headers },
         body: JSON.stringify({ transcript }),
+      })
+      return handleResponse(response)
+    },
+  },
+
+  // Session participation endpoints
+  participation: {
+    async checkSessionParticipation(sessionIds: string[]): Promise<{ participation: { [sessionId: string]: boolean } }> {
+      const headers = await getAuthHeaders()
+      const searchParams = new URLSearchParams()
+      searchParams.set('sessionIds', sessionIds.join(','))
+      
+      const response = await fetch(`${API_BASE_URL}/session-participation?${searchParams.toString()}`, {
+        headers,
       })
       return handleResponse(response)
     },

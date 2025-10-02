@@ -1,4 +1,5 @@
 import { NextRequest, NextResponse } from 'next/server'
+import { getPrompt } from './prompt'
 
 interface EvaluationRequest {
   transcript: string
@@ -8,6 +9,13 @@ interface ChatGPTEvaluation {
   strengths: string[]
   improvements: string[]
   tips: string[]
+  words_per_min: number
+  filler_words_per_min: number
+  participation_percentage: number
+  duration: number
+  pisa_shared_understanding: number
+  pisa_problem_solving_action: number
+  pisa_team_organization: number
 }
 
 export async function POST(request: NextRequest) {
@@ -20,29 +28,6 @@ export async function POST(request: NextRequest) {
         { status: 400 },
       )
     }
-
-    // Prepare the prompt for ChatGPT
-    const prompt = `
-Your goal is to provide encouraging feedback based ONLY on the student's speech in the transcript. The student's goal was to improve: 1) Collaborative problem solving (based on the PISA framework) 2) Oral skills (based on the CAF framework) Your feedback must always include the following structure: Today's session: {minutes} min {seconds} sec (Student performance only) → WPM: {wpm} | Fillers: {fillers}/min ▼ | Turns: {turns}% Then give 3 clear points: 👍 What you did well 🔧 What to work on 💡 Tips for next time Guidelines: - Report WPM, Fillers, and Turns only for the student (exclude all AI persona data). - Use friendly, encouraging, and easy-to-understand language (no technical jargon like “CAF” or “syntax”). - Underlying frameworks: • Complexity = sentence variety, elaboration of ideas • Accuracy = clarity, correctness of English • Fluency = speed, smoothness, filler word control • PISA (collaboration): – Shared understanding = listening, responding, ensuring common understanding – Taking action = suggesting solutions, moving discussion forward – Team organisation = inviting/including others, coordinating group - Always include at least one example of something the student did well. - Always provide one specific, actionable suggestion. - Keep tone positive, constructive, and student-friendly. Return your evaluation in the following JSON format:
-
-{
-  "strengths": ["strength1", "strength2", "strength3", "strength4",...],
-  "improvements": ["improvement1", "improvement2", "improvement3", "improvement4",...],
-  "tips": ["tip1", "tip2", "tip3", "tip4",...],
-}
-
-Focus on:
-- Communication skills (clarity, pace, vocabulary)
-- Engagement level (questions asked, active listening)
-- Speaking confidence and fluency
-- Areas for improvement
-- Specific, actionable advice
-
-Transcript:
-${transcript}
-
-Please provide a detailed, constructive evaluation in the exact JSON format specified above.`
-
     // Call ChatGPT API
     const chatGPTResponse = await fetch(
       'https://api.openai.com/v1/chat/completions',
@@ -62,11 +47,11 @@ Please provide a detailed, constructive evaluation in the exact JSON format spec
             },
             {
               role: 'user',
-              content: prompt,
+              content: getPrompt(transcript),
             },
           ],
           temperature: 0.7,
-          max_tokens: 1000,
+          // max_tokens: 1000,
         }),
       },
     )
@@ -115,6 +100,18 @@ Please provide a detailed, constructive evaluation in the exact JSON format spec
         { error: 'Invalid evaluation format received' },
         { status: 500 },
       )
+    }
+
+    if (
+      !evaluation.words_per_min ||
+      !evaluation.filler_words_per_min ||
+      !evaluation.participation_percentage ||
+      !evaluation.duration ||
+      !evaluation.pisa_shared_understanding ||
+      !evaluation.pisa_problem_solving_action ||
+      !evaluation.pisa_team_organization
+    ) {
+      console.error('Invalid evaluation format received:', evaluation)
     }
 
     return NextResponse.json({ evaluation })

@@ -17,6 +17,7 @@ import { EvaluationModal } from './EvaluationModal'
 import { api } from '@/lib/api'
 import { formatTranscript, generateTranscriptFileName } from '@/lib/transcript'
 import { useAuth } from '@/contexts/AuthContext'
+import { toast } from 'sonner'
 import { Persona } from '@/types/database'
 
 interface Message {
@@ -49,13 +50,24 @@ export function Conversation({ personas }: { personas: Persona[] }) {
     strengths: string[]
     improvements: string[]
     tips: string[]
+    words_per_min?: number
+    filler_words_per_min?: number
+    participation_percentage?: number
+    duration?: string
+    pisa_shared_understanding?: number
+    pisa_problem_solving_action?: number
+    pisa_team_organization?: number
     overall_score?: number
     detailed_feedback?: string
   } | null>(null)
 
   const generateId = () => Math.random().toString(36).substr(2, 9)
   const getCurrentTimestamp = () =>
-    new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit', second: '2-digit' })
+    new Date().toLocaleTimeString([], {
+      hour: '2-digit',
+      minute: '2-digit',
+      second: '2-digit',
+    })
 
   const conversation = useConversation({
     onConnect: () => {
@@ -252,14 +264,18 @@ export function Conversation({ personas }: { personas: Persona[] }) {
       // Get evaluation from ChatGPT
       const { evaluation } = await api.evaluation.evaluateTranscript(transcript)
 
-      // Update the user session with the feedback
-      await api.sessionToUser.update(userSessionId, evaluation)
-
-      // Set evaluation data and stop loading
+      // Set evaluation data first so it shows even if PATCH fails
       setEvaluationData(evaluation)
       setIsEvaluating(false)
 
-      console.log('AI evaluation completed and saved:', evaluation)
+      // Try to update the user session with the feedback (don't fail if this doesn't work)
+      try {
+        await api.sessionToUser.update(userSessionId, evaluation)
+        console.log('AI evaluation completed and saved:', evaluation)
+      } catch (updateError) {
+        console.error('Error updating user session (but evaluation data is still shown):', updateError)
+        toast.warning('Failed to save evaluation data to database, but you can still view your feedback')
+      }
     } catch (error) {
       console.error('Error getting AI evaluation:', error)
       setErrorMessage('Failed to get AI evaluation')
