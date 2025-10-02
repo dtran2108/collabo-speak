@@ -1,6 +1,5 @@
 'use client'
 
-import { useEffect, useState } from 'react'
 import {
   Card,
   CardContent,
@@ -8,9 +7,6 @@ import {
   CardHeader,
   CardTitle,
 } from './ui/card'
-import {
-  type CarouselApi,
-} from '@/components/ui/carousel'
 import { ChartContainer, ChartTooltip, ChartTooltipContent } from './ui/chart'
 import {
   Line,
@@ -141,7 +137,7 @@ export function OralProficiencyCard() {
           Performance metrics with directional indicators
         </CardDescription>
       </CardHeader>
-      <CardContent className='p-0'>
+      <CardContent className="p-0">
         <div className="mx-auto max-w-full grid grid-cols-2 gap-4">
           <SnapshotItem />
           <SnapshotItem />

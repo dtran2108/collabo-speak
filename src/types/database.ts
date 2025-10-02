@@ -68,6 +68,7 @@ export interface Database {
           filler_words_per_min: number | null
           feedback: JSON | null
           participation_percentage: number | null
+          duration: string | null
         }
         Insert: {
           id?: string
@@ -83,6 +84,7 @@ export interface Database {
           filler_words_per_min?: number | null
           feedback?: JSON | null
           participation_percentage?: number | null
+          duration?: string | null
         }
         Update: {
           id?: string
@@ -98,6 +100,7 @@ export interface Database {
           filler_words_per_min?: number | null
           feedback?: JSON | null
           participation_percentage?: number | null
+          duration?: string | null
         }
       }
       roles: {

@@ -108,7 +108,7 @@ export const api = {
           'Content-Type': 'application/json',
           ...headers,
         },
-        body: JSON.stringify({ feedback }),
+        body: JSON.stringify(feedback),
       })
       return handleResponse(response)
     },

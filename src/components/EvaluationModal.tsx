@@ -7,12 +7,24 @@ import {
   DialogHeader,
   DialogTitle,
 } from '@/components/ui/dialog'
-import { CheckCircle, Target, Lightbulb, Loader2 } from 'lucide-react'
+import {
+  CheckCircle,
+  Target,
+  Lightbulb,
+  Loader,
+} from 'lucide-react'
 
 interface EvaluationData {
   strengths: string[]
   improvements: string[]
   tips: string[]
+  words_per_min?: number
+  filler_words_per_min?: number
+  participation_percentage?: number
+  duration?: string
+  pisa_shared_understanding?: number
+  pisa_problem_solving_action?: number
+  pisa_team_organization?: number
 }
 
 interface EvaluationModalProps {
@@ -46,15 +58,71 @@ export function EvaluationModal({
 
         {isLoading ? (
           <div className="flex flex-col items-center justify-center py-12 space-y-4">
-            <Loader2 className="h-8 w-8 animate-spin text-blue-500" />
-            <p className="text-sm text-muted-foreground">
+            <Loader className="h-8 w-8 animate-spin text-blue-500" />
+            <p className="text-sm text-muted-foreground text-center">
               AI is analyzing your conversation...
-              <br />
-              Please do NOT close this window until the analysis is complete.
             </p>
+            <div className="bg-amber-50 border border-amber-200 rounded-lg p-2 max-w-md">
+              <div className="flex items-center justify-center space-x-2">
+                <p className="text-sm font-semibold text-amber-800 text-center">
+                  ⚠️ Please do NOT close this window until the analysis is
+                  complete
+                </p>
+              </div>
+            </div>
           </div>
         ) : (
           <div className="space-y-6 py-4">
+            {/* Performance Metrics - Compact at the top */}
+            {(data?.words_per_min ||
+              data?.filler_words_per_min ||
+              data?.participation_percentage ||
+              data?.duration) && (
+              <div className="space-y-3">
+                <div className="grid grid-cols-4 gap-3 pl-7">
+                  {data?.words_per_min !== null && (
+                    <div className="bg-gray-50 p-2 rounded-md text-center">
+                      <div className="text-xs text-gray-600 mb-1">WPM</div>
+                      <p className="text-sm font-bold text-gray-900">
+                        {data.words_per_min}
+                      </p>
+                    </div>
+                  )}
+
+                  {data?.filler_words_per_min !== null && (
+                    <div className="bg-gray-50 p-2 rounded-md text-center">
+                      <div className="text-xs text-gray-600 mb-1">
+                        Fillers/min
+                      </div>
+                      <p className="text-sm font-bold text-gray-900">
+                        {data.filler_words_per_min}
+                      </p>
+                    </div>
+                  )}
+
+                  {data?.participation_percentage !== null && (
+                    <div className="bg-gray-50 p-2 rounded-md text-center">
+                      <div className="text-xs text-gray-600 mb-1">
+                        Participation
+                      </div>
+                      <p className="text-sm font-bold text-gray-900">
+                        {data.participation_percentage}%
+                      </p>
+                    </div>
+                  )}
+
+                  {data?.duration !== null && (
+                    <div className="bg-gray-50 p-2 rounded-md text-center">
+                      <div className="text-xs text-gray-600 mb-1">Duration</div>
+                      <p className="text-sm font-bold text-gray-900">
+                        {data.duration}
+                      </p>
+                    </div>
+                  )}
+                </div>
+              </div>
+            )}
+
             {/* What you did well */}
             <div className="space-y-3">
               <div className="flex items-center space-x-2">
@@ -138,7 +206,7 @@ export function EvaluationModal({
           <Button onClick={onClose} className="px-8" disabled={isLoading}>
             {isLoading ? (
               <>
-                <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                <Loader className="mr-2 h-4 w-4 animate-spin" />
                 Analyzing...
               </>
             ) : (

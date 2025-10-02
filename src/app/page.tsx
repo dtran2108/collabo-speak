@@ -2,7 +2,7 @@
 
 import { Card, CardContent, CardFooter, CardHeader } from '@/components/ui/card'
 import { Button } from '@/components/ui/button'
-import { Bot, Loader2 } from 'lucide-react'
+import { Loader } from 'lucide-react'
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar'
 import { useAuth } from '@/contexts/AuthContext'
 import { useRouter } from 'next/navigation'
@@ -177,7 +177,7 @@ export default function Page() {
                     >
                       {isStartingSession ? (
                         <div className="flex items-center space-x-2">
-                          <Loader2 className="animate-spin w-4 h-4 mr-2" />{' '}
+                          <Loader className="animate-spin w-4 h-4 mr-2" />{' '}
                           <span>Preparing Session...</span>
                         </div>
                       ) : session.isReady ? (
