@@ -7,7 +7,7 @@ import {
   DialogHeader,
   DialogTitle,
 } from '@/components/ui/dialog'
-import { CheckCircle, Target, Lightbulb, Loader } from 'lucide-react'
+import { Loader } from 'lucide-react'
 import { Ratings } from './rating'
 
 interface EvaluationData {

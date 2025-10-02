@@ -26,7 +26,18 @@ import {
 export const description = 'A radar chart with a legend'
 
 // Custom tooltip component that positions away from corners
-const CustomRadarTooltip = ({ active, payload, coordinate }: any) => {
+interface TooltipProps {
+  active?: boolean
+  payload?: Array<{
+    dataKey: string
+    value: number
+    color: string
+    payload: { scale: string }
+  }>
+  coordinate?: { x: number; y: number }
+}
+
+const CustomRadarTooltip = ({ active, payload, coordinate }: TooltipProps) => {
   if (active && payload && payload.length) {
     // Calculate offset position to move tooltip away from corners
     const offsetX = 20
@@ -50,7 +61,7 @@ const CustomRadarTooltip = ({ active, payload, coordinate }: any) => {
               ? 'Taking Appropriate Action to Solve the Problem'
               : 'Establishing and Maintaining Team Organization'}
           </p>
-          {payload.map((entry: any, index: number) => (
+          {payload.map((entry, index: number) => (
             <div key={index} className="flex items-center gap-2 text-xs">
               <div
                 className="w-2 h-2 rounded-full"
