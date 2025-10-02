@@ -128,11 +128,11 @@ export function OralProficiencyCard({ weeklyData = [] }: OralProficiencyCardProp
         <div className="flex justify-center space-x-6 text-sm">
           <div className="flex items-center space-x-2">
             <div className="w-3 h-3 bg-[#3b82f6] rounded-none"></div>
-            <span className="text-muted-foreground">Words per Minute</span>
+            <span className="text-muted-foreground text-base">Words per Minute</span>
           </div>
           <div className="flex items-center space-x-2">
             <div className="w-3 h-0.5 bg-[#f59e0b] rounded-sm"></div>
-            <span className="text-muted-foreground">Fillers per Minute</span>
+            <span className="text-muted-foreground text-base">Fillers per Minute</span>
           </div>
         </div>
       </div>
@@ -159,7 +159,7 @@ export function OralProficiencyCard({ weeklyData = [] }: OralProficiencyCardProp
           <ChartContainer
             config={{
               participation: {
-                label: 'Contribution Percentage',
+                label: '% of Speaking Time',
                 color: '#10b981', // Green
               },
             }}
@@ -208,7 +208,7 @@ export function OralProficiencyCard({ weeklyData = [] }: OralProficiencyCardProp
         <div className="flex justify-center space-x-6 text-sm">
           <div className="flex items-center space-x-2">
             <div className="w-3 h-3 bg-[#10b981] rounded-none"></div>
-            <span className="text-muted-foreground">Contribution Percentage</span>
+            <span className="text-muted-foreground text-base">% of Speaking Time</span>
           </div>
         </div>
       </div>
@@ -219,9 +219,6 @@ export function OralProficiencyCard({ weeklyData = [] }: OralProficiencyCardProp
     <Card className="h-full w-full py-4">
       <CardHeader className="border-b [.border-b]:pb-3">
         <CardTitle>Oral Proficiency</CardTitle>
-        <CardDescription>
-          Weekly performance metrics and contribution analysis
-        </CardDescription>
       </CardHeader>
       <CardContent className="p-0">
         <div className="mx-auto max-w-full grid grid-cols-2 gap-4">

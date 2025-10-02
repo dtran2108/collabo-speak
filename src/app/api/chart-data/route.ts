@@ -38,8 +38,8 @@ interface WeeklyData {
 
 interface PISAData {
   scale: string
-  firstDay: number
-  lastDay: number
+  firstSession: number
+  lastSession: number
 }
 
 export async function GET(request: NextRequest) {
@@ -49,18 +49,18 @@ export async function GET(request: NextRequest) {
     if (!authHeader) {
       return NextResponse.json(
         { error: 'Authorization header required' },
-        { status: 401 }
+        { status: 401 },
       )
     }
 
     const token = authHeader.replace('Bearer ', '')
-    const { data: { user }, error: userError } = await supabase.auth.getUser(token)
+    const {
+      data: { user },
+      error: userError,
+    } = await supabase.auth.getUser(token)
 
     if (userError || !user) {
-      return NextResponse.json(
-        { error: 'Invalid token' },
-        { status: 401 }
-      )
+      return NextResponse.json({ error: 'Invalid token' }, { status: 401 })
     }
 
     // Fetch all user sessions
@@ -71,7 +71,8 @@ export async function GET(request: NextRequest) {
     while (hasMore) {
       const { data, error } = await supabase
         .from('participation_log')
-        .select(`
+        .select(
+          `
           *,
           sessions (
             id,
@@ -80,7 +81,8 @@ export async function GET(request: NextRequest) {
             agentId,
             isReady
           )
-        `)
+        `,
+        )
         .eq('userId', user.id)
         .order('created_at', { ascending: false })
         .range((page - 1) * 100, page * 100 - 1)
@@ -89,7 +91,7 @@ export async function GET(request: NextRequest) {
         console.error('Error fetching user sessions:', error)
         return NextResponse.json(
           { error: 'Failed to fetch user sessions' },
-          { status: 500 }
+          { status: 500 },
         )
       }
 
@@ -110,13 +112,13 @@ export async function GET(request: NextRequest) {
       hasEnoughSessions,
       weeklyData,
       pisaData,
-      totalSessions: allSessions.length
+      totalSessions: allSessions.length,
     })
   } catch (error) {
     console.error('Chart data API error:', error)
     return NextResponse.json(
       { error: 'Internal server error' },
-      { status: 500 }
+      { status: 500 },
     )
   }
 }
@@ -137,12 +139,12 @@ function calculateWeeklyData(sessions: SessionData[]): WeeklyData[] {
 
   // Group sessions by week
   const weeklyGroups: { [key: string]: SessionData[] } = {}
-  
-  sessions.forEach(session => {
+
+  sessions.forEach((session) => {
     const date = new Date(session.created_at)
     const weekStart = getWeekStartDate(date)
     const weekKey = weekStart.toISOString().split('T')[0]
-    
+
     if (!weeklyGroups[weekKey]) {
       weeklyGroups[weekKey] = []
     }
@@ -152,34 +154,47 @@ function calculateWeeklyData(sessions: SessionData[]): WeeklyData[] {
   // Calculate averages for each week
   const weeklyData = Object.entries(weeklyGroups)
     .map(([week, weekSessions]) => {
-      const validSessions = weekSessions.filter(s => 
-        s.words_per_min !== null && 
-        s.filler_words_per_min !== null && 
-        s.participation_percentage !== null
+      const validSessions = weekSessions.filter(
+        (s) =>
+          s.words_per_min !== null &&
+          s.filler_words_per_min !== null &&
+          s.participation_percentage !== null,
       )
 
       if (validSessions.length === 0) return null
 
       const avgWpm = Math.round(
-        validSessions.reduce((sum, s) => sum + (s.words_per_min || 0), 0) / validSessions.length
+        validSessions.reduce((sum, s) => sum + (s.words_per_min || 0), 0) /
+          validSessions.length,
       )
       const avgFillers = Math.round(
-        validSessions.reduce((sum, s) => sum + (s.filler_words_per_min || 0), 0) / validSessions.length
+        validSessions.reduce(
+          (sum, s) => sum + (s.filler_words_per_min || 0),
+          0,
+        ) / validSessions.length,
       )
       const avgParticipation = Math.round(
-        validSessions.reduce((sum, s) => sum + (s.participation_percentage || 0), 0) / validSessions.length
+        validSessions.reduce(
+          (sum, s) => sum + (s.participation_percentage || 0),
+          0,
+        ) / validSessions.length,
       )
 
       return {
-        week: new Date(week).toLocaleDateString('en-US', { month: 'short', day: 'numeric' }),
+        week: new Date(week).toLocaleDateString('en-US', {
+          month: 'short',
+          day: 'numeric',
+        }),
         wpm: avgWpm,
         fillers: avgFillers,
-        participation: avgParticipation
+        participation: avgParticipation,
       }
     })
     .filter(Boolean) as WeeklyData[]
 
-  return weeklyData.sort((a, b) => new Date(a.week).getTime() - new Date(b.week).getTime())
+  return weeklyData.sort(
+    (a, b) => new Date(a.week).getTime() - new Date(b.week).getTime(),
+  )
 }
 
 // Calculate PISA data for radar chart
@@ -187,17 +202,19 @@ function calculatePISAData(sessions: SessionData[]): PISAData[] {
   if (sessions.length === 0) return []
 
   // Get valid sessions with PISA data
-  const validSessions = sessions.filter(s => 
-    s.pisa_shared_understanding !== null && 
-    s.pisa_problem_solving_action !== null && 
-    s.pisa_team_organization !== null
+  const validSessions = sessions.filter(
+    (s) =>
+      s.pisa_shared_understanding !== null &&
+      s.pisa_problem_solving_action !== null &&
+      s.pisa_team_organization !== null,
   )
 
   if (validSessions.length === 0) return []
 
   // Sort by creation date to get first and last sessions
-  const sortedSessions = validSessions.sort((a, b) => 
-    new Date(a.created_at).getTime() - new Date(b.created_at).getTime()
+  const sortedSessions = validSessions.sort(
+    (a, b) =>
+      new Date(a.created_at).getTime() - new Date(b.created_at).getTime(),
   )
 
   const firstSession = sortedSessions[0]
@@ -205,19 +222,19 @@ function calculatePISAData(sessions: SessionData[]): PISAData[] {
 
   return [
     {
-      scale: 'C',
-      firstDay: firstSession.pisa_shared_understanding || 0,
-      lastDay: lastSession.pisa_shared_understanding || 0
+      scale: '🗣️',
+      firstSession: firstSession.pisa_shared_understanding || 0,
+      lastSession: lastSession.pisa_shared_understanding || 0,
     },
     {
-      scale: 'P',
-      firstDay: firstSession.pisa_problem_solving_action || 0,
-      lastDay: lastSession.pisa_problem_solving_action || 0
+      scale: '💡',
+      firstSession: firstSession.pisa_problem_solving_action || 0,
+      lastSession: lastSession.pisa_problem_solving_action || 0,
     },
     {
-      scale: 'S',
-      firstDay: firstSession.pisa_team_organization || 0,
-      lastDay: lastSession.pisa_team_organization || 0
-    }
+      scale: '🤝',
+      firstSession: firstSession.pisa_team_organization || 0,
+      lastSession: lastSession.pisa_team_organization || 0,
+    },
   ]
 }

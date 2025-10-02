@@ -92,7 +92,7 @@ export default function Page() {
   }
 
   return (
-    <div className="container mx-auto py-2 px-2 lg:max-h-screen lg:overflow-hidden">
+    <div className="container mx-auto py-2 px-2">
       <div className="mb-2">
         <BackBtn />
       </div>

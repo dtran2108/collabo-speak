@@ -11,8 +11,8 @@ interface WeeklyData {
 
 interface PISAData {
   scale: string
-  firstDay: number
-  lastDay: number
+  firstSession: number
+  lastSession: number
 }
 
 export function useChartData() {
@@ -39,7 +39,7 @@ export function useChartData() {
     try {
       setLoading(true)
       const chartData = await api.charts.getChartData()
-      
+
       setHasEnoughSessions(chartData.hasEnoughSessions)
       setWeeklyData(chartData.weeklyData)
       setPisaData(chartData.pisaData)
@@ -60,6 +60,6 @@ export function useChartData() {
     hasEnoughSessions,
     weeklyData,
     pisaData,
-    totalSessions
+    totalSessions,
   }
 }

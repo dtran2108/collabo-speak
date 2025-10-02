@@ -11,8 +11,8 @@ export const chartsApi = {
     }>
     pisaData: Array<{
       scale: string
-      firstDay: number
-      lastDay: number
+      firstSession: number
+      lastSession: number
     }>
     totalSessions: number
   }> {

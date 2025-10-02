@@ -8,6 +8,7 @@ import {
   DialogTitle,
 } from '@/components/ui/dialog'
 import { CheckCircle, Target, Lightbulb, Loader } from 'lucide-react'
+import { Ratings } from './rating'
 
 interface EvaluationData {
   strengths: string[]
@@ -98,7 +99,7 @@ export function EvaluationModal({
                   {data?.participation_percentage !== null && (
                     <div className="bg-gray-50 p-2 rounded-md text-center">
                       <div className="text-xs text-gray-600 mb-1">
-                        Participation
+                        % of Speaking Time
                       </div>
                       <p className="text-sm font-bold text-gray-900">
                         {data.participation_percentage}%
@@ -118,12 +119,70 @@ export function EvaluationModal({
               </div>
             )}
 
+            {/* PISA Scores */}
+            {(data?.pisa_shared_understanding !== null ||
+              data?.pisa_problem_solving_action !== null ||
+              data?.pisa_team_organization !== null) && (
+              <div>
+                <h4 className="font-semibold text-gray-900 mb-3">
+                  PISA Collaborative Problem Solving
+                </h4>
+                <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+                  {data?.pisa_shared_understanding !== null && (
+                    <div className="text-center">
+                      <div className="text-sm text-gray-600 mb-2">
+                        Establishing and Maintaining a Shared Understanding
+                      </div>
+                      <div className="flex justify-center">
+                        <Ratings
+                          rating={data?.pisa_shared_understanding || 0}
+                          totalStars={4}
+                          size={16}
+                          variant="yellow"
+                        />
+                      </div>
+                    </div>
+                  )}
+                  {data?.pisa_problem_solving_action !== null && (
+                    <div className="text-center">
+                      <div className="text-sm text-gray-600 mb-2">
+                        Taking Appropriate Action to Solve the Problem
+                      </div>
+                      <div className="flex justify-center">
+                        <Ratings
+                          rating={data?.pisa_problem_solving_action || 0}
+                          totalStars={4}
+                          size={16}
+                          variant="yellow"
+                        />
+                      </div>
+                    </div>
+                  )}
+                  {data?.pisa_team_organization !== null && (
+                    <div className="text-center">
+                      <div className="text-sm text-gray-600 mb-2">
+                        Establishing and Maintaining Team Organization
+                      </div>
+                      <div className="flex justify-center">
+                        <Ratings
+                          rating={data?.pisa_team_organization || 0}
+                          totalStars={4}
+                          size={16}
+                          variant="yellow"
+                        />
+                      </div>
+                    </div>
+                  )}
+                </div>
+              </div>
+            )}
+
             {/* What you did well */}
             <div className="space-y-3">
               <div className="flex items-center space-x-2">
-                <CheckCircle className="h-5 w-5 text-green-500" />
+                {/* <CheckCircle className="h-5 w-5 text-green-500" /> */}
                 <h3 className="text-lg font-semibold text-green-700">
-                  What you did well?
+                  👍 What you did well?
                 </h3>
               </div>
               <ul className="space-y-2 pl-7">
@@ -143,9 +202,9 @@ export function EvaluationModal({
             {/* What to work on */}
             <div className="space-y-3">
               <div className="flex items-center space-x-2">
-                <Target className="h-5 w-5 text-orange-500" />
+                {/* <Target className="h-5 w-5 text-orange-500" /> */}
                 <h3 className="text-lg font-semibold text-orange-700">
-                  What to work on?
+                  🔧 What to work on?
                 </h3>
               </div>
               <ul className="space-y-2 pl-7">
@@ -169,9 +228,9 @@ export function EvaluationModal({
             {/* Tips for next time */}
             <div className="space-y-3">
               <div className="flex items-center space-x-2">
-                <Lightbulb className="h-5 w-5 text-blue-500" />
+                {/* <Lightbulb className="h-5 w-5 text-blue-500" /> */}
                 <h3 className="text-lg font-semibold text-blue-700">
-                  Tips for next time
+                  💡 Tips for next time
                 </h3>
               </div>
               <ul className="space-y-2 pl-7">
