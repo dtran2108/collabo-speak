@@ -110,7 +110,7 @@ export default function Page() {
           </Card>
 
           {session.personas.length > 0 && (
-            <Card className="mt-4 hidden md:flex">
+            <Card className="my-4">
               <CardHeader className="border-b">
                 <div className="flex space-x-2">
                   <Bot strokeWidth={1.25} />

@@ -97,7 +97,7 @@ export default function Page() {
     <section className="py-4">
       <div className="container mx-auto">
         <div className="mx-auto flex max-w-5xl flex-col gap-6 text-left">
-          <div className="grid grid-cols-1 lg:grid-cols-3 gap-8 items-stretch relative">
+          <div className="grid grid-cols-1 lg:grid-cols-3 lg:gap-8 gap-0 space-y-4 lg:space-y-0 items-stretch relative">
             <div className="col-span-1 flex w-full">
               <div className={`w-full ${(!user || !hasEnoughSessions) ? 'blur-[3px]' : ''}`}>
                 <ChartRadarLegend pisaData={pisaData} />
