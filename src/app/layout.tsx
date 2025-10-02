@@ -4,6 +4,7 @@ import './globals.css'
 import { AuthProvider } from '@/contexts/AuthContext'
 import { Toaster } from '@/components/ui/sonner'
 import { Navbar } from '@/components/nav-bar'
+import { Analytics } from '@vercel/analytics/next'
 
 const geistSans = Geist({
   variable: '--font-geist-sans',
@@ -33,11 +34,10 @@ export default function RootLayout({
       >
         <AuthProvider>
           <Navbar />
-          <div className="pt-16">
-            {children}
-          </div>
+          <div className="pt-16">{children}</div>
           <Toaster />
         </AuthProvider>
+        <Analytics />
       </body>
     </html>
   )
