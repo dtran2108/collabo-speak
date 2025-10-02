@@ -25,7 +25,7 @@ export default function Page() {
   const [sessionsError, setSessionsError] = useState<string | null>(null)
   const [isStartingSession, setIsStartingSession] = useState(false)
   
-  // Chart data hook
+  // Chart data hook - only load when user is authenticated
   const { hasEnoughSessions, weeklyData, pisaData, loading: chartLoading } = useChartData()
 
   // Load sessions and their personas
@@ -80,7 +80,7 @@ export default function Page() {
     router.push(`/chat/${sessionId}`)
   }
 
-  if (loading || sessionsLoading || chartLoading) {
+  if (loading || sessionsLoading || (user && chartLoading)) {
     return (
       <div className="min-h-screen flex items-center justify-center">
         <div className="text-center">
@@ -97,39 +97,29 @@ export default function Page() {
     <section className="py-4">
       <div className="container mx-auto">
         <div className="mx-auto flex max-w-5xl flex-col gap-6 text-left">
-          <div className="grid grid-cols-1 lg:grid-cols-3 gap-8 items-stretch">
-            <div className="col-span-1 flex w-full relative">
-              {hasEnoughSessions ? (
+          <div className="grid grid-cols-1 lg:grid-cols-3 gap-8 items-stretch relative">
+            <div className="col-span-1 flex w-full">
+              <div className="w-full blur-[3px]">
                 <ChartRadarLegend pisaData={pisaData} />
-              ) : (
-                <>
-                  <div className="w-full blur-[3px]">
-                    <ChartRadarLegend />
-                  </div>
-                  <div className="absolute inset-0 flex items-center justify-center">
-                    <div className="bg-black text-white px-4 py-2 rounded-lg text-sm font-semibold text-center">
-                      Progress will be updated after 2 sessions
-                    </div>
-                  </div>
-                </>
-              )}
+              </div>
             </div>
-            <div className="col-span-2 flex w-full relative">
-              {hasEnoughSessions ? (
+            <div className="col-span-2 flex w-full">
+              <div className="w-full blur-[3px]">
                 <OralProficiencyCard weeklyData={weeklyData} />
-              ) : (
-                <>
-                  <div className="w-full blur-[3px]">
-                    <OralProficiencyCard />
-                  </div>
-                  <div className="absolute inset-0 flex items-center justify-center">
-                    <div className="bg-black text-white px-4 py-2 rounded-lg text-sm font-semibold text-center">
-                      Progress will be updated after 2 sessions
-                    </div>
-                  </div>
-                </>
-              )}
+              </div>
             </div>
+            
+            {/* Single overlay covering both charts */}
+            {(!user || !hasEnoughSessions) && (
+              <div className="absolute inset-0 flex items-center justify-center">
+                <div className="bg-black text-white px-6 py-3 rounded-lg text-sm font-semibold text-center">
+                  {!user 
+                    ? "Please log in to see your performance" 
+                    : "Progress will be updated after 2 sessions"
+                  }
+                </div>
+              </div>
+            )}
           </div>
           <h1 className="mt-4 text-lg ml-2 font-semibold text-pretty lg:text-3xl">
             Select one scenario to begin!
