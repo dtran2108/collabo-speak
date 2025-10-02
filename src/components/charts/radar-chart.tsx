@@ -1,12 +1,11 @@
 'use client'
 
-import { PolarAngleAxis, PolarGrid, Radar, RadarChart } from 'recharts'
+import { PolarAngleAxis, PolarGrid, PolarRadiusAxis, Radar, RadarChart } from 'recharts'
 
 import {
   Card,
   CardContent,
   CardDescription,
-  CardFooter,
   CardHeader,
   CardTitle,
 } from '@/components/ui/card'
@@ -18,7 +17,6 @@ import {
   ChartTooltip,
   ChartTooltipContent,
 } from '@/components/ui/chart'
-import { TrendingUp } from 'lucide-react'
 
 export const description = 'A radar chart with a legend'
 
@@ -82,6 +80,7 @@ export function ChartRadarLegend({ pisaData = [] }: ChartRadarLegendProps) {
               content={<ChartTooltipContent indicator="line" />}
             />
             <PolarAngleAxis dataKey="scale" />
+            <PolarRadiusAxis domain={[0, 4]} axisLine={false} tick={false} />
             <PolarGrid radialLines={false} />
             <Radar
               dataKey="firstDay"
