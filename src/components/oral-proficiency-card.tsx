@@ -17,14 +17,32 @@ import {
   YAxis,
 } from 'recharts'
 
-export function OralProficiencyCard() {
-  const SnapshotItem = () => {
-    // Sample data for the chart - in a real app, this would come from props or API
-    const chartData = [
-      { date: '2024-01-01', wpm: 120, fillers: 8 },
-      { date: '2024-01-02', wpm: 135, fillers: 6 },
-      { date: '2024-01-03', wpm: 142, fillers: 4 },
-    ]
+interface WeeklyData {
+  week: string
+  wpm: number
+  fillers: number
+  participation: number
+}
+
+interface OralProficiencyCardProps {
+  weeklyData?: WeeklyData[]
+}
+
+export function OralProficiencyCard({ weeklyData = [] }: OralProficiencyCardProps) {
+  const WPMFillersChart = () => {
+    const chartData = weeklyData.map(item => ({
+      week: item.week,
+      wpm: item.wpm,
+      fillers: item.fillers
+    }))
+
+    if (chartData.length === 0) {
+      return (
+        <div className="flex items-center justify-center h-64 text-muted-foreground">
+          No data available
+        </div>
+      )
+    }
 
     return (
       <div className="flex-1 flex flex-col space-y-4">
@@ -45,16 +63,10 @@ export function OralProficiencyCard() {
             <ResponsiveContainer width="100%" height="100%">
               <ComposedChart data={chartData}>
                 <XAxis
-                  dataKey="date"
+                  dataKey="week"
                   tick={{ fontSize: 12 }}
                   axisLine={false}
                   tickLine={false}
-                  tickFormatter={(value) =>
-                    new Date(value).toLocaleDateString('en-US', {
-                      month: 'short',
-                      day: 'numeric',
-                    })
-                  }
                 />
                 <YAxis
                   yAxisId="wpm"
@@ -62,7 +74,7 @@ export function OralProficiencyCard() {
                   tick={{ fontSize: 12 }}
                   axisLine={false}
                   tickLine={false}
-                  domain={[100, 170]}
+                  domain={['dataMin - 10', 'dataMax + 10']}
                 />
                 <YAxis
                   yAxisId="fillers"
@@ -70,20 +82,18 @@ export function OralProficiencyCard() {
                   tick={{ fontSize: 12 }}
                   axisLine={false}
                   tickLine={false}
-                  domain={[0, 10]}
+                  domain={[0, 'dataMax + 2']}
                 />
                 <ChartTooltip
                   content={
                     <ChartTooltipContent
-                      labelFormatter={(value) =>
-                        `Date: ${new Date(value).toLocaleDateString()}`
-                      }
+                      labelFormatter={(value) => `Week: ${value}`}
                       formatter={(value, name) => [
                         <div key={name} className="flex items-center space-x-2">
                           {name === 'wpm' ? (
-                            <div className="w-3 h-3 bg-[#f59e0b] rounded-none"></div>
+                            <div className="w-3 h-3 bg-[#3b82f6] rounded-none"></div>
                           ) : (
-                            <div className="w-3 h-0.5 bg-[#3b82f6] rounded-sm"></div>
+                            <div className="w-3 h-0.5 bg-[#f59e0b] rounded-sm"></div>
                           )}
                           <span className="text-muted-foreground">
                             {value}{' '}
@@ -97,7 +107,7 @@ export function OralProficiencyCard() {
                 <Bar
                   yAxisId="wpm"
                   dataKey="wpm"
-                  fill="#f59e0b"
+                  fill="#3b82f6"
                   radius={[2, 2, 0, 0]}
                   opacity={0.7}
                 />
@@ -105,10 +115,10 @@ export function OralProficiencyCard() {
                   yAxisId="fillers"
                   dataKey="fillers"
                   type="monotone"
-                  stroke="#3b82f6"
+                  stroke="#f59e0b"
                   strokeWidth={2}
-                  dot={{ fill: '#3b82f6', strokeWidth: 2, r: 4 }}
-                  activeDot={{ r: 6, stroke: '#3b82f6', strokeWidth: 2 }}
+                  dot={{ fill: '#f59e0b', strokeWidth: 2, r: 4 }}
+                  activeDot={{ r: 6, stroke: '#f59e0b', strokeWidth: 2 }}
                 />
               </ComposedChart>
             </ResponsiveContainer>
@@ -117,12 +127,88 @@ export function OralProficiencyCard() {
 
         <div className="flex justify-center space-x-6 text-sm">
           <div className="flex items-center space-x-2">
-            <div className="w-3 h-3 bg-[#f59e0b] rounded-none"></div>
+            <div className="w-3 h-3 bg-[#3b82f6] rounded-none"></div>
             <span className="text-muted-foreground">Words per Minute</span>
           </div>
           <div className="flex items-center space-x-2">
-            <div className="w-3 h-0.5 bg-[#3b82f6] rounded-sm"></div>
+            <div className="w-3 h-0.5 bg-[#f59e0b] rounded-sm"></div>
             <span className="text-muted-foreground">Fillers per Minute</span>
+          </div>
+        </div>
+      </div>
+    )
+  }
+
+  const ParticipationChart = () => {
+    const chartData = weeklyData.map(item => ({
+      week: item.week,
+      participation: item.participation
+    }))
+
+    if (chartData.length === 0) {
+      return (
+        <div className="flex items-center justify-center h-64 text-muted-foreground">
+          No data available
+        </div>
+      )
+    }
+
+    return (
+      <div className="flex-1 flex flex-col space-y-4">
+        <div className="h-64 w-full">
+          <ChartContainer
+            config={{
+              participation: {
+                label: 'Contribution Percentage',
+                color: '#10b981', // Green
+              },
+            }}
+            className="h-full w-full"
+          >
+            <ResponsiveContainer width="100%" height="100%">
+              <ComposedChart data={chartData}>
+                <XAxis
+                  dataKey="week"
+                  tick={{ fontSize: 12 }}
+                  axisLine={false}
+                  tickLine={false}
+                />
+                <YAxis
+                  tick={{ fontSize: 12 }}
+                  axisLine={false}
+                  tickLine={false}
+                  domain={[0, 100]}
+                />
+                <ChartTooltip
+                  content={
+                    <ChartTooltipContent
+                      labelFormatter={(value) => `Week: ${value}`}
+                      formatter={(value, name) => [
+                        <div key={name} className="flex items-center space-x-2">
+                          <div className="w-3 h-3 bg-[#10b981] rounded-none"></div>
+                          <span className="text-muted-foreground">
+                            {value}%
+                          </span>
+                        </div>,
+                      ]}
+                    />
+                  }
+                />
+                <Bar
+                  dataKey="participation"
+                  fill="#10b981"
+                  radius={[2, 2, 0, 0]}
+                  opacity={0.7}
+                />
+              </ComposedChart>
+            </ResponsiveContainer>
+          </ChartContainer>
+        </div>
+
+        <div className="flex justify-center space-x-6 text-sm">
+          <div className="flex items-center space-x-2">
+            <div className="w-3 h-3 bg-[#10b981] rounded-none"></div>
+            <span className="text-muted-foreground">Contribution Percentage</span>
           </div>
         </div>
       </div>
@@ -134,13 +220,13 @@ export function OralProficiencyCard() {
       <CardHeader className="border-b [.border-b]:pb-3">
         <CardTitle>Oral Proficiency</CardTitle>
         <CardDescription>
-          Performance metrics with directional indicators
+          Weekly performance metrics and contribution analysis
         </CardDescription>
       </CardHeader>
       <CardContent className="p-0">
         <div className="mx-auto max-w-full grid grid-cols-2 gap-4">
-          <SnapshotItem />
-          <SnapshotItem />
+          <WPMFillersChart />
+          <ParticipationChart />
         </div>
       </CardContent>
     </Card>

@@ -11,6 +11,7 @@ import { api } from '@/lib/api'
 import type { Session, Persona } from '@/types/database'
 import { ChartRadarLegend } from '@/components/charts/radar-chart'
 import { OralProficiencyCard } from '@/components/oral-proficiency-card'
+import { useChartData } from '@/hooks/useChartData'
 
 interface SessionWithPersonas extends Session {
   personas: Persona[]
@@ -23,6 +24,9 @@ export default function Page() {
   const [sessionsLoading, setSessionsLoading] = useState(true)
   const [sessionsError, setSessionsError] = useState<string | null>(null)
   const [isStartingSession, setIsStartingSession] = useState(false)
+  
+  // Chart data hook
+  const { hasEnoughSessions, weeklyData, pisaData, loading: chartLoading } = useChartData()
 
   // Load sessions and their personas
   const loadSessions = async () => {
@@ -76,7 +80,7 @@ export default function Page() {
     router.push(`/chat/${sessionId}`)
   }
 
-  if (loading || sessionsLoading) {
+  if (loading || sessionsLoading || chartLoading) {
     return (
       <div className="min-h-screen flex items-center justify-center">
         <div className="text-center">
@@ -95,24 +99,36 @@ export default function Page() {
         <div className="mx-auto flex max-w-5xl flex-col gap-6 text-left">
           <div className="grid grid-cols-1 lg:grid-cols-3 gap-8 items-stretch">
             <div className="col-span-1 flex w-full relative">
-              <div className="w-full blur-[3px]">
-                <ChartRadarLegend />
-              </div>
-              <div className="absolute inset-0 flex items-center justify-center">
-                <div className="bg-black text-white px-4 py-2 rounded-lg text-sm font-semibold text-center">
-                  Progress will be updated after 1 week
-                </div>
-              </div>
+              {hasEnoughSessions ? (
+                <ChartRadarLegend pisaData={pisaData} />
+              ) : (
+                <>
+                  <div className="w-full blur-[3px]">
+                    <ChartRadarLegend />
+                  </div>
+                  <div className="absolute inset-0 flex items-center justify-center">
+                    <div className="bg-black text-white px-4 py-2 rounded-lg text-sm font-semibold text-center">
+                      Progress will be updated after 2 sessions
+                    </div>
+                  </div>
+                </>
+              )}
             </div>
             <div className="col-span-2 flex w-full relative">
-              <div className="w-full blur-[3px]">
-                <OralProficiencyCard />
-              </div>
-              <div className="absolute inset-0 flex items-center justify-center">
-                <div className="bg-black text-white px-4 py-2 rounded-lg text-sm font-semibold text-center">
-                  Progress will be updated after 1 week
-                </div>
-              </div>
+              {hasEnoughSessions ? (
+                <OralProficiencyCard weeklyData={weeklyData} />
+              ) : (
+                <>
+                  <div className="w-full blur-[3px]">
+                    <OralProficiencyCard />
+                  </div>
+                  <div className="absolute inset-0 flex items-center justify-center">
+                    <div className="bg-black text-white px-4 py-2 rounded-lg text-sm font-semibold text-center">
+                      Progress will be updated after 2 sessions
+                    </div>
+                  </div>
+                </>
+              )}
             </div>
           </div>
           <h1 className="mt-4 text-lg ml-2 font-semibold text-pretty lg:text-3xl">
