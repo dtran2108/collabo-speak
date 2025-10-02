@@ -38,12 +38,12 @@ export default function LoginPage() {
           <h1 className="text-3xl font-bold text-center">Welcome to</h1>
           <TextPressure
             text="CollaboSpeak"
-            flex={true}
+            flex={false}
             alpha={false}
             stroke={false}
-            width={true}
+            width={false}
             weight={true}
-            italic={false}
+            italic={true}
             textColor="#000000"
             strokeColor="#ff0000"
             minFontSize={36}
