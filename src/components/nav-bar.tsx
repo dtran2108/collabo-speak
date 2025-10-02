@@ -5,7 +5,7 @@ import Link from 'next/link'
 import { useRouter } from 'next/navigation'
 import { Button } from '@/components/ui/button'
 import { useAuth } from '@/contexts/AuthContext'
-import { User, LogIn, LogOut } from 'lucide-react'
+import { History, LogIn, LogOut } from 'lucide-react'
 import Image from 'next/image'
 
 export function Navbar() {
@@ -25,8 +25,8 @@ export function Navbar() {
     router.push('/login')
   }
 
-  const handleProfile = () => {
-    router.push('/dashboard')
+  const handleSessionHistory = () => {
+    router.push('/session-history')
   }
 
   return (
@@ -62,11 +62,11 @@ export function Navbar() {
                 <Button
                   variant="ghost"
                   size="sm"
-                  onClick={handleProfile}
+                  onClick={handleSessionHistory}
                   className="flex items-center space-x-2"
                 >
-                  <User className="h-4 w-4" />
-                  <span>My Profile</span>
+                  <History className="h-4 w-4" />
+                  <span>Session History</span>
                 </Button>
                 <Button
                   variant="ghost"

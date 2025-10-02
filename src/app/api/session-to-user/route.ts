@@ -22,7 +22,18 @@ export async function GET(request: NextRequest) {
       )
     }
 
-    const { data, error } = await supabase
+    // Get query parameters
+    const { searchParams } = new URL(request.url)
+    const page = parseInt(searchParams.get('page') || '1')
+    const limit = parseInt(searchParams.get('limit') || '10')
+    const sessionId = searchParams.get('sessionId')
+    const search = searchParams.get('search')
+
+    // Calculate offset
+    const offset = (page - 1) * limit
+
+    // Build query
+    let query = supabase
       .from('sessionToUser')
       .select(`
         *,
@@ -33,9 +44,24 @@ export async function GET(request: NextRequest) {
           agentId,
           isReady
         )
-      `)
+      `, { count: 'exact' })
       .eq('userId', user.id)
+
+    // Apply filters
+    if (sessionId) {
+      query = query.eq('sessionId', sessionId)
+    }
+
+    if (search) {
+      query = query.or(`sessions.name.ilike.%${search}%,sessions.description.ilike.%${search}%`)
+    }
+
+    // Apply ordering and pagination
+    query = query
       .order('created_at', { ascending: false })
+      .range(offset, offset + limit - 1)
+
+    const { data, error, count } = await query
 
     if (error) {
       console.error('Error getting user sessions:', error)
@@ -45,7 +71,19 @@ export async function GET(request: NextRequest) {
       )
     }
 
-    return NextResponse.json({ sessionToUser: data || [] })
+    const totalPages = Math.ceil((count || 0) / limit)
+
+    return NextResponse.json({ 
+      sessionToUser: data || [],
+      pagination: {
+        page,
+        limit,
+        total: count || 0,
+        totalPages,
+        hasNext: page < totalPages,
+        hasPrev: page > 1
+      }
+    })
   } catch (error) {
     console.error('User sessions API error:', error)
     return NextResponse.json(
