@@ -154,9 +154,9 @@ export function Conversation({ personas }: { personas: Persona[] }) {
 
   const handleStartConversation = async () => {
     try {
+      // Reset all conversation state before starting new session
+      resetConversationState()
       setIsConnecting(true)
-      // Clear previous messages when starting a new session
-      setMessages([])
       // Set conversation start time
       setConversationStartTime(new Date())
 
@@ -283,6 +283,22 @@ export function Conversation({ personas }: { personas: Persona[] }) {
       // Still show modal with default data
       setEvaluationData(null)
     }
+  }
+
+  // Function to reset conversation state
+  // This ensures a clean slate when starting a new conversation or closing evaluation
+  const resetConversationState = () => {
+    setMessages([])
+    setConversationStartTime(null)
+    setEvaluationData(null)
+    setIsCensored(true)
+    setIsSaving(false)
+    setIsReflectionPending(false)
+    setIsConnecting(false)
+    setIsEvaluating(false)
+    setErrorMessage('')
+    setShowReflectionModal(false)
+    setShowEvaluationModal(false)
   }
 
   const handleEvaluationClose = () => {
