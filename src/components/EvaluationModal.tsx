@@ -7,12 +7,7 @@ import {
   DialogHeader,
   DialogTitle,
 } from '@/components/ui/dialog'
-import {
-  CheckCircle,
-  Target,
-  Lightbulb,
-  Loader,
-} from 'lucide-react'
+import { CheckCircle, Target, Lightbulb, Loader } from 'lucide-react'
 
 interface EvaluationData {
   strengths: string[]
@@ -79,7 +74,7 @@ export function EvaluationModal({
               data?.participation_percentage ||
               data?.duration) && (
               <div className="space-y-3">
-                <div className="grid grid-cols-4 gap-3 pl-7">
+                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-3 pl-7">
                   {data?.words_per_min !== null && (
                     <div className="bg-gray-50 p-2 rounded-md text-center">
                       <div className="text-xs text-gray-600 mb-1">WPM</div>
