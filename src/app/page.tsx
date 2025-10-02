@@ -2,11 +2,11 @@
 
 import { Card, CardContent, CardFooter, CardHeader } from '@/components/ui/card'
 import { Button } from '@/components/ui/button'
-import { Loader } from 'lucide-react'
+import { Loader, Check } from 'lucide-react'
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar'
 import { useAuth } from '@/contexts/AuthContext'
 import { useRouter } from 'next/navigation'
-import { useEffect, useState } from 'react'
+import { useEffect, useState, useCallback } from 'react'
 import { api } from '@/lib/api'
 import type { Session, Persona } from '@/types/database'
 import { ChartRadarLegend } from '@/components/charts/radar-chart'
@@ -24,12 +24,25 @@ export default function Page() {
   const [sessionsLoading, setSessionsLoading] = useState(true)
   const [sessionsError, setSessionsError] = useState<string | null>(null)
   const [isStartingSession, setIsStartingSession] = useState(false)
+  const [sessionParticipation, setSessionParticipation] = useState<{ [sessionId: string]: boolean }>({})
   
   // Chart data hook - only load when user is authenticated
   const { hasEnoughSessions, weeklyData, pisaData, loading: chartLoading } = useChartData()
 
+  // Check session participation for authenticated users
+  const checkSessionParticipation = useCallback(async (sessionIds: string[]) => {
+    if (!user || sessionIds.length === 0) return
+
+    try {
+      const { participation } = await api.participation.checkSessionParticipation(sessionIds)
+      setSessionParticipation(participation)
+    } catch (error) {
+      console.error('Error checking session participation:', error)
+    }
+  }, [user])
+
   // Load sessions and their personas
-  const loadSessions = async () => {
+  const loadSessions = useCallback(async () => {
     try {
       setSessionsLoading(true)
       setSessionsError(null)
@@ -52,18 +65,34 @@ export default function Page() {
       )
 
       setSessions(sessionsWithPersonas)
+
+      // Check participation for authenticated users
+      if (user) {
+        const sessionIds = sessionsWithPersonas.map(session => session.id)
+        await checkSessionParticipation(sessionIds)
+      }
     } catch (error) {
       console.error('Error loading sessions:', error)
       setSessionsError('Failed to load sessions')
     } finally {
       setSessionsLoading(false)
     }
-  }
+  }, [user, checkSessionParticipation])
 
   // Load sessions on component mount
   useEffect(() => {
     loadSessions()
-  }, [])
+  }, [loadSessions])
+
+  // Check participation when user changes
+  useEffect(() => {
+    if (user && sessions.length > 0) {
+      const sessionIds = sessions.map(session => session.id)
+      checkSessionParticipation(sessionIds)
+    } else if (!user) {
+      setSessionParticipation({})
+    }
+  }, [user, sessions, checkSessionParticipation])
 
   const handleStartSession = (sessionId: string) => {
     if (!user) {
@@ -136,10 +165,18 @@ export default function Page() {
               {sessions.map((session) => (
                 <Card
                   key={session.id}
-                  className="w-full h-full flex-1 py-4 gap-2"
+                  className="w-full h-full flex-1 py-4 gap-2 relative"
                 >
                   <CardHeader className="pb-1 text-left">
-                    <h2 className="text-lg font-semibold">{session.name}</h2>
+                    <div className="flex flex-col justify-between">
+                      <h2 className="text-lg font-semibold">{session.name}</h2>
+                      {user && sessionParticipation[session.id] && (
+                        <div className="flex items-center space-x-1 text-green-600">
+                          <Check className="h-4 w-4" />
+                          <span className="text-xs font-medium">Completed</span>
+                        </div>
+                      )}
+                    </div>
                   </CardHeader>
                   <CardContent className="text-left h-full">
                     <div className="flex items-center space-x-2">

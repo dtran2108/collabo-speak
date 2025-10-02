@@ -166,4 +166,18 @@ export const api = {
       return handleResponse(response)
     },
   },
+
+  // Session participation endpoints
+  participation: {
+    async checkSessionParticipation(sessionIds: string[]): Promise<{ participation: { [sessionId: string]: boolean } }> {
+      const headers = await getAuthHeaders()
+      const searchParams = new URLSearchParams()
+      searchParams.set('sessionIds', sessionIds.join(','))
+      
+      const response = await fetch(`${API_BASE_URL}/session-participation?${searchParams.toString()}`, {
+        headers,
+      })
+      return handleResponse(response)
+    },
+  },
 }
