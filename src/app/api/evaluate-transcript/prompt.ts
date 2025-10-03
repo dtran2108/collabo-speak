@@ -97,9 +97,9 @@ You must return your complete evaluation in the **EXACT JSON FORMAT** specified 
 **EXACT JSON OUTPUT FORMAT (Required):**
 
 {
-  "strengths": ["string_list_of_strengths_with_examples"],
-  "improvements": ["string_list_of_improvements_with_examples"],
-  "tips": ["string_list_of_tips_with_examples"],
+  "strengths": ["strength1 + examples", "strength2 + examples", "strength3 + examples", "strength4 + examples",...],
+  "improvements": ["improvement1 + examples", "improvement2 + examples", "improvement3 + examples", "improvement4 + examples",...],
+  "tips": ["tip1 + examples", "tip2 + examples", "tip3 + examples", "tip4 + examples",...],
   "words_per_min": "an integer value for words per minute",
   "filler_words_per_min": "an integer value for fillers per minute",
   "participation_percentage": "a float value for turns percentage",
