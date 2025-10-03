@@ -5,11 +5,13 @@ import Link from 'next/link'
 import { useRouter } from 'next/navigation'
 import { Button } from '@/components/ui/button'
 import { useAuth } from '@/contexts/AuthContext'
-import { History, LogIn, LogOut, Menu, X } from 'lucide-react'
+import { useAdmin } from '@/hooks/useAdmin'
+import { History, LogIn, LogOut, Menu, X, Shield } from 'lucide-react'
 import Image from 'next/image'
 
 export function Navbar() {
   const { user, loading, signOut } = useAuth()
+  const { isAdmin: isAdminUser, loading: adminLoading } = useAdmin()
   const router = useRouter()
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false)
 
@@ -30,6 +32,11 @@ export function Navbar() {
 
   const handleSessionHistory = () => {
     router.push('/session-history')
+    setIsMobileMenuOpen(false)
+  }
+
+  const handleAdmin = () => {
+    router.push('/admin')
     setIsMobileMenuOpen(false)
   }
 
@@ -76,6 +83,17 @@ export function Navbar() {
                   <History className="h-4 w-4" />
                   <span>Session History</span>
                 </Button>
+                {!adminLoading && isAdminUser && (
+                  <Button
+                    variant="ghost"
+                    size="sm"
+                    onClick={handleAdmin}
+                    className="flex items-center space-x-2"
+                  >
+                    <Shield className="h-4 w-4" />
+                    <span>Admin</span>
+                  </Button>
+                )}
                 <Button
                   variant="ghost"
                   size="sm"
@@ -138,6 +156,17 @@ export function Navbar() {
                     <History className="h-4 w-4" />
                     <span>Session History</span>
                   </Button>
+                  {!adminLoading && isAdminUser && (
+                    <Button
+                      variant="ghost"
+                      size="sm"
+                      onClick={handleAdmin}
+                      className="w-full justify-start flex items-center space-x-2 px-3 py-2"
+                    >
+                      <Shield className="h-4 w-4" />
+                      <span>Admin</span>
+                    </Button>
+                  )}
                   <Button
                     variant="ghost"
                     size="sm"

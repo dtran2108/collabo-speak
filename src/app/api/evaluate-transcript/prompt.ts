@@ -1,15 +1,13 @@
 export const getPrompt = (transcript: string) => {
-  return `Your goal is to provide encouraging feedback based ONLY on the student's speech in the transcript. The student's goal was to improve:
+  return `You are a collaborative skills analyst and supportive English speaking coach. Your goal is to provide encouraging feedback based ONLY on the student's speech in the transcript. Ignore all turns from AI personas (e.g., Fiona, Eli, Clara). Your goal is to provide encouraging feedback based ONLY on the student's speech in the transcript. The student's goal was to improve:
 1) Collaborative problem solving (based on the PISA framework)
 2) Oral skills (based on the CAF framework)
 
 Then give 3 clear points: What you did well, What to work on, Tips for next time
 Guidelines:
-- YOU MUST ALWAYS include at least one example of something the student did well (strengths).
-- YOU MUST ALWAYS include at least one example of something the student should work on (improvements).
-- YOU MUST ALWAYS include at least one example of something the student can do better next time (tips).
 - Report WPM, Fillers, and Turns only for the student (exclude all AI persona data).
 - Use friendly, encouraging, and easy-to-understand language (no technical jargon like “CAF” or “syntax”).
+- Always include at least one example of something the student did well.
 - Always provide one specific, actionable suggestion.
 - Keep tone positive, constructive, and student-friendly.
 - Underlying frameworks:
@@ -51,7 +49,7 @@ This dimension assesses the student's ability to manage their role, adhere to co
 - Calculate the following metrics ONLY based on the student's speech:
 	1.	Session length (duration field in the JSON)
 	•	Session length = timestamp of the last turn (any speaker) − timestamp of the first turn (any speaker).
-	•	Format: {minutes} min {seconds} sec.
+	•	Format as {minutes} min {seconds} sec.
 	2.	Student words per minute (WPM) (words_per_min field in the JSON)
 	•	For each student turn:
 	•	Turn duration = timestamp of next turn (any speaker) − timestamp of this student turn.
@@ -65,9 +63,9 @@ turn duration = timestamp of last turn of session − timestamp of student turn.
 	•	Count all filler words in student speech (e.g., “um”, “ah”, “like”, “you know”) → total_fillers.
 	•	Divide by total_student_minutes → fillers per minute.
 	4.	Student participation percentage (participation_percentage field in the JSON)
-	•	Count all student turns (User) → total_student_turns.
-	•	Count all turns → total_turns (there are 4 people in the conversation).
-	•	Participation percentage = (total_student_turns ÷ total_turns) × 100.
+	•	Calculate student speaking time → total_student_speaking_time. (this is the time the student spoke, excluding the time the other 3 people spoke)
+	•	Calculate total speaking time → total_speaking_time. (this is the time all 4 people spoke)
+	•	Participation percentage = (total_student_speaking_time ÷ total_speaking_time) × 100.
 Return your evaluation in the following JSON format:
 
 {

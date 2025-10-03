@@ -73,15 +73,10 @@ export function Conversation({ personas }: { personas: Persona[] }) {
 
   const conversation = useConversation({
     onConnect: () => {
-      console.log('Connected to ElevenLabs')
       setIsConnecting(false)
     },
-    onDisconnect: () => {
-      console.log('Disconnected from ElevenLabs')
-    },
+    onDisconnect: () => {},
     onMessage: (message: unknown): void => {
-      console.log('Received message:', message)
-
       try {
         // Parse the message if it's a string
         const parsedMessage =
@@ -177,7 +172,7 @@ export function Conversation({ personas }: { personas: Persona[] }) {
   const handleEndConversation = async () => {
     try {
       setIsEnding(true)
-      
+
       // End the conversation
       await conversation.endSession()
 
@@ -188,7 +183,7 @@ export function Conversation({ personas }: { personas: Persona[] }) {
       if (user && messages.length > 0) {
         try {
           setIsSaving(true)
-          
+
           // Format the transcript
           const transcriptContent = formatTranscript(
             messages,
@@ -300,10 +295,14 @@ export function Conversation({ personas }: { personas: Persona[] }) {
       // Try to update the user session with the feedback (don't fail if this doesn't work)
       try {
         await api.participationLog.update(userSessionId, evaluation)
-        console.log('AI evaluation completed and saved:', evaluation)
       } catch (updateError) {
-        console.error('Error updating user session (but evaluation data is still shown):', updateError)
-        toast.warning('Failed to save evaluation data to database, but you can still view your feedback')
+        console.error(
+          'Error updating user session (but evaluation data is still shown):',
+          updateError,
+        )
+        toast.warning(
+          'Failed to save evaluation data to database, but you can still view your feedback',
+        )
       }
     } catch (error) {
       console.error('Error getting AI evaluation:', error)
@@ -359,7 +358,11 @@ export function Conversation({ personas }: { personas: Persona[] }) {
               className="flex-1"
             >
               <MicOff className="mr-2 h-4 w-4" />
-              {isEnding ? 'Please wait...' : isSaving ? 'Saving...' : 'End Conversation'}
+              {isEnding
+                ? 'Please wait...'
+                : isSaving
+                ? 'Saving...'
+                : 'End Conversation'}
             </Button>
           ) : isReflectionPending ? (
             <Button
