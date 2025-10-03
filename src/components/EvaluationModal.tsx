@@ -1,5 +1,6 @@
-import React from 'react'
+import React, { useState } from 'react'
 import { Button } from '@/components/ui/button'
+import { Textarea } from '@/components/ui/textarea'
 import {
   Dialog,
   DialogContent,
@@ -9,6 +10,8 @@ import {
 } from '@/components/ui/dialog'
 import { Loader } from 'lucide-react'
 import { Ratings } from './rating'
+import { api } from '@/lib/api'
+import { toast } from 'sonner'
 
 interface EvaluationData {
   strengths: string[]
@@ -28,6 +31,7 @@ interface EvaluationModalProps {
   onClose: () => void
   evaluationData?: EvaluationData | null
   isLoading?: boolean
+  userSessionId?: string
 }
 
 export function EvaluationModal({
@@ -35,11 +39,33 @@ export function EvaluationModal({
   onClose,
   evaluationData,
   isLoading = false,
+  userSessionId,
 }: EvaluationModalProps) {
   const data = evaluationData
+  const [feedback, setFeedback] = useState('')
+  const [isSubmitting, setIsSubmitting] = useState(false)
+
+  const handleClose = async () => {
+    if (feedback.trim() !== '' && userSessionId) {
+      try {
+        setIsSubmitting(true)
+        // Update the participation log with user feedback
+        await api.participationLog.update(userSessionId, {
+          user_question_or_feedback: feedback.trim(),
+        } as unknown as JSON)
+        toast.success('Thanks for your feedback!')
+      } catch (error) {
+        console.error('Error saving feedback:', error)
+        toast.error('Failed to save feedback')
+      } finally {
+        setIsSubmitting(false)
+      }
+    }
+    onClose()
+  }
 
   return (
-    <Dialog open={isOpen} onOpenChange={onClose}>
+    <Dialog open={isOpen} onOpenChange={(open) => !open && handleClose()}>
       <DialogContent className="sm:max-w-2xl max-h-[80vh] overflow-y-auto animate-in fade-in-0 zoom-in-95 duration-300">
         <DialogHeader>
           <DialogTitle className="text-2xl font-bold text-center">
@@ -256,12 +282,33 @@ export function EvaluationModal({
           </div>
         )}
 
+        {/* User Feedback Section */}
+        <div className=" p-4 rounded-lg">
+          <Textarea
+            id="feedback"
+            value={feedback}
+            onChange={(e) => setFeedback(e.target.value)}
+            placeholder="Any question or feedback"
+            className="min-h-[80px] resize-none"
+            disabled={isLoading || isSubmitting}
+          />
+        </div>
+
         <div className="flex justify-center pt-4">
-          <Button onClick={onClose} className="px-8" disabled={isLoading}>
+          <Button
+            onClick={handleClose}
+            className="px-8"
+            disabled={isLoading || isSubmitting}
+          >
             {isLoading ? (
               <>
                 <Loader className="mr-2 h-4 w-4 animate-spin" />
                 Analyzing...
+              </>
+            ) : isSubmitting ? (
+              <>
+                <Loader className="mr-2 h-4 w-4 animate-spin" />
+                Saving...
               </>
             ) : (
               'Close'

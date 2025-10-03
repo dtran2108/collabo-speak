@@ -16,22 +16,39 @@ export async function PATCH(
       )
     }
 
+    // Build update object with only provided fields
+    const updateData: Record<string, unknown> = {}
+    
+    // Handle feedback object (only update if all feedback fields are provided)
+    if (AIFeedback.strengths && AIFeedback.improvements && AIFeedback.tips) {
+      updateData.feedback = {
+        strengths: AIFeedback.strengths,
+        improvements: AIFeedback.improvements,
+        tips: AIFeedback.tips,
+      }
+    }
+    
+    // Handle all other fields - only include if they exist
+    const fieldsToUpdate = [
+      'words_per_min',
+      'filler_words_per_min', 
+      'participation_percentage',
+      'duration',
+      'pisa_shared_understanding',
+      'pisa_problem_solving_action',
+      'pisa_team_organization',
+      'user_question_or_feedback'
+    ]
+    
+    fieldsToUpdate.forEach(field => {
+      if (AIFeedback[field] !== undefined) {
+        updateData[field] = AIFeedback[field]
+      }
+    })
+
     const { data, error } = await supabase
       .from('participation_log')
-      .update({
-        feedback: {
-          strengths: AIFeedback.strengths,
-          improvements: AIFeedback.improvements,
-          tips: AIFeedback.tips,
-        },
-        words_per_min: AIFeedback.words_per_min,
-        filler_words_per_min: AIFeedback.filler_words_per_min,
-        participation_percentage: AIFeedback.participation_percentage,
-        duration: AIFeedback.duration,
-        pisa_shared_understanding: AIFeedback.pisa_shared_understanding,
-        pisa_problem_solving_action: AIFeedback.pisa_problem_solving_action,
-        pisa_team_organization: AIFeedback.pisa_team_organization,
-      })
+      .update(updateData)
       .eq('id', id)
       .select()
       .single()

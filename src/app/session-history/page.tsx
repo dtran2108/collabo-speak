@@ -26,6 +26,7 @@ import {
 import { toast } from 'sonner'
 import Link from 'next/link'
 
+// Type for the API response that includes joined sessions data
 interface SessionData {
   id: string
   sessionId: string
@@ -86,14 +87,14 @@ export default function SessionHistoryPage() {
           search: filters.search || undefined,
         })
 
-      // Type assertion since we know the API returns joined data
-      setSessions((sessionToUser as SessionData[]) || [])
+      // Type assertion since we know the API returns joined data with sessions
+      setSessions(sessionToUser as unknown as SessionData[])
       setPagination(paginationData)
 
       // Extract unique sessions for filter dropdown
       const uniqueSessions = Array.from(
         new Map(
-          ((sessionToUser as SessionData[]) || []).map((session) => [
+          ((sessionToUser as unknown as SessionData[]) || []).map((session) => [
             session.sessions.id,
             { id: session.sessions.id, name: session.sessions.name },
           ]),

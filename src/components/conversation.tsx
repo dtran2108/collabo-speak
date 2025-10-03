@@ -46,6 +46,7 @@ export function Conversation({ personas }: { personas: Persona[] }) {
   const [isReflectionPending, setIsReflectionPending] = useState(false)
   const [isConnecting, setIsConnecting] = useState(false)
   const [isEvaluating, setIsEvaluating] = useState(false)
+  const [userSessionId, setUserSessionId] = useState<string | null>(null)
   const [evaluationData, setEvaluationData] = useState<{
     strengths: string[]
     improvements: string[]
@@ -220,6 +221,9 @@ export function Conversation({ personas }: { personas: Persona[] }) {
               reflection,
             })
 
+            // Store the user session ID for feedback submission
+            setUserSessionId(userSession.id)
+
             console.log(
               'Transcript and reflection saved successfully:',
               transcriptUrl,
@@ -291,6 +295,7 @@ export function Conversation({ personas }: { personas: Persona[] }) {
     setMessages([])
     setConversationStartTime(null)
     setEvaluationData(null)
+    setUserSessionId(null)
     setIsCensored(true)
     setIsSaving(false)
     setIsReflectionPending(false)
@@ -390,6 +395,7 @@ export function Conversation({ personas }: { personas: Persona[] }) {
         onClose={handleEvaluationClose}
         evaluationData={evaluationData}
         isLoading={isEvaluating}
+        userSessionId={userSessionId || undefined}
       />
     </div>
   )
