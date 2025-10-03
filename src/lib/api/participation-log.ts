@@ -49,7 +49,7 @@ export const participationLogApi = {
 
   async update(id: string, feedback: JSON): Promise<{ userSession: SessionToUser }> {
     const headers = await getAuthHeaders()
-    const response = await fetch(`${API_BASE_URL}/user-sessions/${id}`, {
+    const response = await fetch(`${API_BASE_URL}/session-to-user/${id}`, {
       method: 'PATCH',
       headers: {
         'Content-Type': 'application/json',

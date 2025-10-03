@@ -5,9 +5,11 @@ export const getPrompt = (transcript: string) => {
 
 Then give 3 clear points: What you did well, What to work on, Tips for next time
 Guidelines:
+- YOU MUST ALWAYS include at least one example of something the student did well (strengths).
+- YOU MUST ALWAYS include at least one example of something the student should work on (improvements).
+- YOU MUST ALWAYS include at least one example of something the student can do better next time (tips).
 - Report WPM, Fillers, and Turns only for the student (exclude all AI persona data).
 - Use friendly, encouraging, and easy-to-understand language (no technical jargon like “CAF” or “syntax”).
-- Always include at least one example of something the student did well.
 - Always provide one specific, actionable suggestion.
 - Keep tone positive, constructive, and student-friendly.
 - Underlying frameworks:
@@ -49,7 +51,7 @@ This dimension assesses the student's ability to manage their role, adhere to co
 - Calculate the following metrics ONLY based on the student's speech:
 	1.	Session length (duration field in the JSON)
 	•	Session length = timestamp of the last turn (any speaker) − timestamp of the first turn (any speaker).
-	•	Format as {minutes} min {seconds} sec.
+	•	Format: {minutes} min {seconds} sec.
 	2.	Student words per minute (WPM) (words_per_min field in the JSON)
 	•	For each student turn:
 	•	Turn duration = timestamp of next turn (any speaker) − timestamp of this student turn.
@@ -63,8 +65,8 @@ turn duration = timestamp of last turn of session − timestamp of student turn.
 	•	Count all filler words in student speech (e.g., “um”, “ah”, “like”, “you know”) → total_fillers.
 	•	Divide by total_student_minutes → fillers per minute.
 	4.	Student participation percentage (participation_percentage field in the JSON)
-	•	Count all student turns → total_student_turns.
-	•	Count all turns → total_turns.
+	•	Count all student turns (User) → total_student_turns.
+	•	Count all turns → total_turns (there are 4 people in the conversation).
 	•	Participation percentage = (total_student_turns ÷ total_turns) × 100.
 Return your evaluation in the following JSON format:
 

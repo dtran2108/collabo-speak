@@ -41,6 +41,7 @@ export function Conversation({ personas }: { personas: Persona[] }) {
   const [conversationStartTime, setConversationStartTime] =
     useState<Date | null>(null)
   const [isSaving, setIsSaving] = useState(false)
+  const [isEnding, setIsEnding] = useState(false)
   const [showReflectionModal, setShowReflectionModal] = useState(false)
   const [showEvaluationModal, setShowEvaluationModal] = useState(false)
   const [isReflectionPending, setIsReflectionPending] = useState(false)
@@ -175,28 +176,19 @@ export function Conversation({ personas }: { personas: Persona[] }) {
 
   const handleEndConversation = async () => {
     try {
+      setIsEnding(true)
+      
       // End the conversation
       await conversation.endSession()
 
       // Uncover the transcript content when ending the session
       setIsCensored(false)
 
-      // Set reflection as pending and open modal
-      setIsReflectionPending(true)
-      setShowReflectionModal(true)
-    } catch (error) {
-      setErrorMessage('Failed to end conversation')
-      console.error('Error ending conversation:', error)
-    }
-  }
-
-  const handleReflectionSubmit = async (reflection: string) => {
-    try {
-      setIsSaving(true)
-
-      // Save transcript and reflection if user is logged in and we have messages
+      // Upload transcript and create participationLog immediately
       if (user && messages.length > 0) {
         try {
+          setIsSaving(true)
+          
           // Format the transcript
           const transcriptContent = formatTranscript(
             messages,
@@ -213,32 +205,65 @@ export function Conversation({ personas }: { personas: Persona[] }) {
           )
 
           if (transcriptUrl) {
-            // Create user session record with reflection
+            // Create user session record with transcriptUrl only (no reflection yet)
             const { userSession } = await api.participationLog.create({
               sessionId,
               userId: user.id,
               transcriptUrl,
-              reflection,
             })
 
-            // Store the user session ID for feedback submission
+            // Store the user session ID for later use
             setUserSessionId(userSession.id)
-
-            console.log(
-              'Transcript and reflection saved successfully:',
-              transcriptUrl,
-            )
-
-            // Now get AI evaluation
-            await getAIEvaluation(transcriptContent, userSession.id)
           } else {
             console.error('Failed to upload transcript')
             setErrorMessage('Failed to save transcript')
           }
         } catch (saveError) {
-          console.error('Error saving transcript and reflection:', saveError)
-          setErrorMessage('Failed to save transcript and reflection')
+          console.error('Error saving transcript:', saveError)
+          setErrorMessage('Failed to save transcript')
+        } finally {
+          setIsSaving(false)
         }
+      }
+
+      // Set reflection as pending and open modal
+      setIsReflectionPending(true)
+      setShowReflectionModal(true)
+    } catch (error) {
+      setErrorMessage('Failed to end conversation')
+      console.error('Error ending conversation:', error)
+    } finally {
+      setIsEnding(false)
+    }
+  }
+
+  const handleReflectionSubmit = async (reflection: string) => {
+    try {
+      setIsSaving(true)
+
+      // Update reflection field in existing participationLog
+      if (userSessionId) {
+        try {
+          console.log('Updating reflection for userSessionId:', userSessionId)
+          await api.participationLog.update(userSessionId, {
+            reflection,
+          } as unknown as JSON)
+
+          console.log('Reflection saved successfully')
+
+          // Now get AI evaluation
+          const transcriptContent = formatTranscript(
+            messages,
+            conversationStartTime || undefined,
+          )
+          await getAIEvaluation(transcriptContent, userSessionId)
+        } catch (updateError) {
+          console.error('Error updating reflection:', updateError)
+          setErrorMessage('Failed to save reflection')
+        }
+      } else {
+        console.error('No userSessionId available for reflection update')
+        setErrorMessage('Failed to save reflection - session not found')
       }
 
       // Close reflection modal
@@ -298,6 +323,7 @@ export function Conversation({ personas }: { personas: Persona[] }) {
     setUserSessionId(null)
     setIsCensored(true)
     setIsSaving(false)
+    setIsEnding(false)
     setIsReflectionPending(false)
     setIsConnecting(false)
     setIsEvaluating(false)
@@ -329,11 +355,11 @@ export function Conversation({ personas }: { personas: Persona[] }) {
             <Button
               variant="destructive"
               onClick={handleEndConversation}
-              disabled={isSaving || isConnecting}
+              disabled={isSaving || isConnecting || isEnding}
               className="flex-1"
             >
               <MicOff className="mr-2 h-4 w-4" />
-              {isSaving ? 'Saving...' : 'End Conversation'}
+              {isEnding ? 'Please wait...' : isSaving ? 'Saving...' : 'End Conversation'}
             </Button>
           ) : isReflectionPending ? (
             <Button

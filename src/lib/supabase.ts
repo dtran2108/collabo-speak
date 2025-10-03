@@ -6,13 +6,13 @@ const supabaseKey = process.env.NEXT_PUBLIC_SUPABASE_KEY!
 export const supabase = createClient(supabaseUrl, supabaseKey)
 
 // For server-side operations that require elevated permissions
-// export const supabaseAdmin = createClient(
-//   supabaseUrl,
-//   process.env.SUPABASE_SERVICE_ROLE_KEY!,
-//   {
-//     auth: {
-//       autoRefreshToken: false,
-//       persistSession: false
-//     }
-//   }
-// )
+export const supabaseAdmin = createClient(
+  supabaseUrl,
+  process.env.NEXT_PUBLIC_SUPABASE_SERVICE_ROLE_KEY!,
+  {
+    auth: {
+      autoRefreshToken: false,
+      persistSession: false,
+    },
+  },
+)
