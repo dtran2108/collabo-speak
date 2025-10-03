@@ -13,7 +13,7 @@ export type UserRole = {
   role: Role
 }
 
-type SupabaseUserRoleResponse = {
+type RawSupabaseUserRoleData = {
   id: string
   userId: string
   roleId: string
@@ -21,7 +21,7 @@ type SupabaseUserRoleResponse = {
     id: string
     name: string
     permissions: string[]
-  } | null
+  }[] | null
 }
 
 /**
@@ -49,15 +49,15 @@ export async function getUserRoles(userId: string): Promise<UserRole[]> {
 
   // Transform the data to match the expected type
   const transformedData = (data || [])
-    .filter((item: any) => item.role !== null && item.role !== undefined) // Filter out items without role data
-    .map((item: any) => ({
+    .filter((item: RawSupabaseUserRoleData) => item.role !== null && item.role !== undefined && item.role.length > 0) // Filter out items without role data
+    .map((item: RawSupabaseUserRoleData) => ({
       id: item.id,
       userId: item.userId,
       roleId: item.roleId,
       role: {
-        id: item.role.id,
-        name: item.role.name,
-        permissions: item.role.permissions
+        id: item.role![0].id,
+        name: item.role![0].name,
+        permissions: item.role![0].permissions
       }
     }))
 
