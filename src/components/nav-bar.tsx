@@ -7,9 +7,10 @@ import { Button } from '@/components/ui/button'
 import { useAuth } from '@/contexts/AuthContext'
 import { History, LogIn, LogOut, Menu, X, Shield } from 'lucide-react'
 import Image from 'next/image'
+import { getPersonalizedGreeting } from '@/lib/greeting-utils'
 
 export function Navbar() {
-  const { user, loading, signOut, isAdmin: isAdminUser } = useAuth()
+  const { user, userProfile, loading, signOut, isAdmin: isAdminUser } = useAuth()
   const router = useRouter()
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false)
 
@@ -71,36 +72,41 @@ export function Navbar() {
                 </span>
               </div>
             ) : user ? (
-              <div className="flex items-center space-x-2">
-                <Button
-                  variant="ghost"
-                  size="sm"
-                  onClick={handleSessionHistory}
-                  className="flex items-center space-x-2"
-                >
-                  <History className="h-4 w-4" />
-                  <span>Session History</span>
-                </Button>
-                {!loading && isAdminUser && (
+              <div className="flex items-center space-x-4">
+                <div className="hidden lg:block text-sm text-muted-foreground">
+                  {getPersonalizedGreeting(userProfile?.fullName)}
+                </div>
+                <div className="flex items-center space-x-2">
                   <Button
                     variant="ghost"
                     size="sm"
-                    onClick={handleAdmin}
+                    onClick={handleSessionHistory}
                     className="flex items-center space-x-2"
                   >
-                    <Shield className="h-4 w-4" />
-                    <span>Admin</span>
+                    <History className="h-4 w-4" />
+                    <span>Session History</span>
                   </Button>
-                )}
-                <Button
-                  variant="ghost"
-                  size="sm"
-                  onClick={handleSignOut}
-                  className="flex items-center space-x-2"
-                >
-                  <LogOut className="h-4 w-4" />
-                  <span>Sign Out</span>
-                </Button>
+                  {!loading && isAdminUser && (
+                    <Button
+                      variant="ghost"
+                      size="sm"
+                      onClick={handleAdmin}
+                      className="flex items-center space-x-2"
+                    >
+                      <Shield className="h-4 w-4" />
+                      <span>Admin</span>
+                    </Button>
+                  )}
+                  <Button
+                    variant="ghost"
+                    size="sm"
+                    onClick={handleSignOut}
+                    className="flex items-center space-x-2"
+                  >
+                    <LogOut className="h-4 w-4" />
+                    <span>Sign Out</span>
+                  </Button>
+                </div>
               </div>
             ) : (
               <Button
@@ -145,6 +151,9 @@ export function Navbar() {
                 </div>
               ) : user ? (
                 <>
+                  <div className="px-3 py-2 text-sm text-muted-foreground border-b">
+                    {getPersonalizedGreeting(userProfile?.fullName)}
+                  </div>
                   <Button
                     variant="ghost"
                     size="sm"
@@ -165,10 +174,6 @@ export function Navbar() {
                       <span>Admin</span>
                     </Button>
                   )}
-                  {/* Debug info - remove this later */}
-                  <div className="text-xs text-muted-foreground px-3 py-2">
-                    Admin: {isAdminUser ? 'Yes' : 'No'} | Loading: {loading ? 'Yes' : 'No'}
-                  </div>
                   <Button
                     variant="ghost"
                     size="sm"

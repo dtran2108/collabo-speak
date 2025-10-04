@@ -123,17 +123,19 @@ export async function GET(request: NextRequest) {
       query = query.ilike('full_name', `%${search}%`)
     }
 
-    // Apply sorting
-    if (sortBy === 'full_name') {
+    // For fields that can be sorted at database level, apply sorting
+    if (sortBy === 'displayName' || sortBy === 'full_name') {
       query = query.order('full_name', { ascending: sortOrder === 'asc' })
-    } else if (sortBy === 'ielts_score') {
+    } else if (sortBy === 'ieltsScore' || sortBy === 'ielts_score') {
       query = query.order('ielts_score', { ascending: sortOrder === 'asc' })
+    } else if (sortBy === 'userId') {
+      query = query.order('user_id', { ascending: sortOrder === 'asc' })
     } else {
-      query = query.order('created_at', { ascending: sortOrder === 'asc' })
+      // For other fields (email, sessionParticipationCount), we'll sort after fetching all data
+      query = query.order('created_at', { ascending: true }) // Default sort
     }
 
-    // Apply pagination
-    query = query.range(offset, offset + limit - 1)
+    // Don't apply pagination yet - we need to sort all data first for some fields
 
     const { data: userProfiles, error: profilesError } = await query
 
@@ -147,58 +149,7 @@ export async function GET(request: NextRequest) {
 
     console.log('Debug - userProfiles returned:', JSON.stringify(userProfiles, null, 2))
 
-    // Get total count for pagination (accounting for role filtering)
-    let countQuery = supabaseAdmin
-      .from('user_profiles')
-      .select('*', { count: 'exact', head: true })
-    
-    // If filtering by role, apply the same filter to count query
-    if (roleNameFilter) {
-      // Get the role ID first (we already have this from above, but let's be safe)
-      const { data: roleData } = await supabaseAdmin
-        .from('roles')
-        .select('id')
-        .eq('name', roleNameFilter)
-        .single()
-
-      if (roleData) {
-        const { data: usersWithRole } = await supabaseAdmin
-          .from('roleToUser')
-          .select('userId')
-          .eq('roleId', roleData.id)
-        
-        const userIdsWithRole = usersWithRole?.map(item => item.userId) || []
-        if (userIdsWithRole.length > 0) {
-          countQuery = countQuery.in('user_id', userIdsWithRole)
-        } else {
-          // No users with this role, count is 0
-          await supabaseAdmin
-            .from('user_profiles')
-            .select('*', { count: 'exact', head: true })
-            .eq('user_id', '00000000-0000-0000-0000-000000000000') // Non-existent ID to get 0 count
-          
-          return NextResponse.json({
-            users: [],
-            pagination: {
-              page,
-              limit,
-              total: 0,
-              totalPages: 0
-            }
-          })
-        }
-      }
-    }
-    
-    const { count: totalCount, error: countError } = await countQuery
-
-    if (countError) {
-      console.error('Error getting total count:', countError)
-      return NextResponse.json(
-        { error: 'Failed to get total count' },
-        { status: 500 }
-      )
-    }
+    // We'll calculate the total count after filtering and sorting all data
 
     // Get participation counts for each user
     const userIds = userProfiles?.map(profile => profile.user_id) || []
@@ -290,7 +241,7 @@ export async function GET(request: NextRequest) {
     }
 
     // Format the response
-    const users = filteredProfiles.map(profile => ({
+    let users = filteredProfiles.map(profile => ({
       userId: profile.user_id,
       displayName: profile.full_name || 'N/A',
       email: authUsersMap[profile.user_id]?.email || 'N/A',
@@ -300,13 +251,39 @@ export async function GET(request: NextRequest) {
       createdAt: profile.created_at
     }))
 
+    // Apply client-side sorting for fields that need it (email, sessionParticipationCount)
+    if (sortBy === 'email') {
+      users = users.sort((a, b) => {
+        const aEmail = a.email.toLowerCase()
+        const bEmail = b.email.toLowerCase()
+        if (sortOrder === 'asc') {
+          return aEmail.localeCompare(bEmail)
+        } else {
+          return bEmail.localeCompare(aEmail)
+        }
+      })
+    } else if (sortBy === 'sessionParticipationCount') {
+      users = users.sort((a, b) => {
+        if (sortOrder === 'asc') {
+          return a.sessionParticipationCount - b.sessionParticipationCount
+        } else {
+          return b.sessionParticipationCount - a.sessionParticipationCount
+        }
+      })
+    }
+
+    // Apply pagination after sorting all data
+    const startIndex = offset
+    const endIndex = offset + limit
+    const paginatedUsers = users.slice(startIndex, endIndex)
+
     return NextResponse.json({
-      users,
+      users: paginatedUsers,
       pagination: {
         page,
         limit,
-        total: totalCount || 0,
-        totalPages: Math.ceil((totalCount || 0) / limit)
+        total: users.length, // Use the total count of all users after filtering
+        totalPages: Math.ceil(users.length / limit)
       }
     })
   } catch (error) {

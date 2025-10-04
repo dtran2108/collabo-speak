@@ -46,6 +46,9 @@ import {
   Trash2,
   Search,
   Filter,
+  ArrowUpDown,
+  ArrowUp,
+  ArrowDown,
 } from 'lucide-react'
 
 interface User {
@@ -218,7 +221,11 @@ export default function AdminUsersPage() {
     () => [
       {
         accessorKey: 'userId',
-        header: 'User ID',
+        header: ({ column }) => (
+          <SortableHeader column={column}>
+            User ID
+          </SortableHeader>
+        ),
         size: 200,
         cell: ({ row }) => (
           <div className="font-mono text-sm whitespace-nowrap">
@@ -228,7 +235,11 @@ export default function AdminUsersPage() {
       },
       {
         accessorKey: 'displayName',
-        header: 'Display Name',
+        header: ({ column }) => (
+          <SortableHeader column={column}>
+            Display Name
+          </SortableHeader>
+        ),
         size: 150,
         cell: ({ row }) => (
           <div className="font-medium">{row.getValue('displayName')}</div>
@@ -236,7 +247,11 @@ export default function AdminUsersPage() {
       },
       {
         accessorKey: 'email',
-        header: 'Email',
+        header: ({ column }) => (
+          <SortableHeader column={column}>
+            Email
+          </SortableHeader>
+        ),
         size: 200,
         cell: ({ row }) => (
           <div className="text-sm text-muted-foreground">
@@ -246,7 +261,11 @@ export default function AdminUsersPage() {
       },
       {
         accessorKey: 'ieltsScore',
-        header: 'IELTS Score',
+        header: ({ column }) => (
+          <SortableHeader column={column}>
+            IELTS Score
+          </SortableHeader>
+        ),
         size: 100,
         cell: ({ row }) => (
           <div className="text-center">{row.getValue('ieltsScore')}</div>
@@ -254,7 +273,11 @@ export default function AdminUsersPage() {
       },
       {
         accessorKey: 'sessionParticipationCount',
-        header: 'Sessions',
+        header: ({ column }) => (
+          <SortableHeader column={column}>
+            Sessions
+          </SortableHeader>
+        ),
         size: 100,
         cell: ({ row }) => (
           <div className="text-center font-medium">
@@ -264,7 +287,12 @@ export default function AdminUsersPage() {
       },
       {
         accessorKey: 'roles',
-        header: 'Roles',
+        header: ({ column }) => (
+          <SortableHeader column={column}>
+            Roles
+          </SortableHeader>
+        ),
+        enableSorting: false,
         size: 150,
         cell: ({ row }) => {
           const roles = row.getValue('roles') as string[]
@@ -293,7 +321,12 @@ export default function AdminUsersPage() {
       },
       {
         id: 'actions',
-        header: 'Actions',
+        header: ({ column }) => (
+          <SortableHeader column={column}>
+            Actions
+          </SortableHeader>
+        ),
+        enableSorting: false,
         size: 150,
         cell: ({ row }) => (
           <div className="flex items-center gap-2">
@@ -362,6 +395,35 @@ export default function AdminUsersPage() {
   const handleRoleFilter = (value: string) => {
     setRoleFilter(value)
     setPagination((prev) => ({ ...prev, page: 1 }))
+  }
+
+  // Sortable header component
+  const SortableHeader = ({ column, children }: { column: any; children: React.ReactNode }) => {
+    const canSort = column.getCanSort()
+    
+    if (!canSort) {
+      return <div className="flex items-center">{children}</div>
+    }
+
+    return (
+      <Button
+        variant="ghost"
+        size="sm"
+        className="h-auto p-0 font-semibold hover:bg-transparent"
+        onClick={() => column.toggleSorting(column.getIsSorted() === 'asc')}
+      >
+        <div className="flex items-center gap-2">
+          {children}
+          {column.getIsSorted() === 'asc' ? (
+            <ArrowUp className="h-4 w-4" />
+          ) : column.getIsSorted() === 'desc' ? (
+            <ArrowDown className="h-4 w-4" />
+          ) : (
+            <ArrowUpDown className="h-4 w-4 opacity-50" />
+          )}
+        </div>
+      </Button>
+    )
   }
 
   // Only show page-level loading for auth, not for data fetching

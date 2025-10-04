@@ -6,6 +6,7 @@ import { authClient, type AuthUser } from '@/lib/auth-client'
 interface UserProfile {
   id: string
   email: string
+  fullName: string | null
   isAdmin: boolean
   roles: string[]
   permissions: string[]
@@ -43,6 +44,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
         return {
           id: userId,
           email: userEmail || '',
+          fullName: data.fullName || null,
           isAdmin: data.isAdmin || false,
           roles: data.roles?.map((role: { role: { name: string } }) => role.role.name) || [],
           permissions: data.permissions || []

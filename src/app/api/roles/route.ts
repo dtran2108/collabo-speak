@@ -24,6 +24,15 @@ type RawSupabaseUserRoleData = {
     name: string
     permissions: string[]
   } | null
+} | {
+  id: string
+  userId: string
+  roleId: string
+  role: {
+    id: string
+    name: string
+    permissions: string[]
+  }[]
 }
 
 // Helper function to get user roles from the database
@@ -49,17 +58,28 @@ async function getUserRoles(userId: string): Promise<UserRole[]> {
 
   // Transform the data to match the expected type
   const transformedData = (data || [])
-    .filter((item: RawSupabaseUserRoleData) => item.role !== null && item.role !== undefined)
-    .map((item: RawSupabaseUserRoleData) => ({
-      id: item.id,
-      userId: item.userId,
-      roleId: item.roleId,
-      role: {
-        id: item.role.id,
-        name: item.role.name,
-        permissions: item.role.permissions
+    .filter((item: RawSupabaseUserRoleData) => {
+      if (Array.isArray(item.role)) {
+        return item.role.length > 0
       }
-    }))
+      return item.role !== null && item.role !== undefined
+    })
+    .map((item: RawSupabaseUserRoleData) => {
+      const role = Array.isArray(item.role) ? item.role[0] : item.role
+      if (!role) {
+        throw new Error('Role is null or undefined')
+      }
+      return {
+        id: item.id,
+        userId: item.userId,
+        roleId: item.roleId,
+        role: {
+          id: role.id,
+          name: role.name,
+          permissions: role.permissions
+        }
+      }
+    })
 
   return transformedData
 }
@@ -147,11 +167,19 @@ export async function GET(request: NextRequest) {
         const allPermissions = await getUserPermissions(user.id)
         const isAdminResult = await hasRole(user.id, 'ADMIN')
         
+        // Get user's full name from user_profiles
+        const { data: userProfile } = await supabaseAdmin
+          .from('user_profiles')
+          .select('full_name')
+          .eq('user_id', user.id)
+          .single()
+        
         return NextResponse.json({
           userId: user.id,
           roles: allRoles,
           permissions: allPermissions,
-          isAdmin: isAdminResult
+          isAdmin: isAdminResult,
+          fullName: userProfile?.full_name || null
         })
       }
     }
