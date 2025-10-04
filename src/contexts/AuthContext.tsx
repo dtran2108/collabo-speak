@@ -29,7 +29,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
   const [loading, setLoading] = useState(true)
 
   // Function to fetch user profile with roles and admin status
-  const fetchUserProfile = useCallback(async (userId: string, token: string): Promise<UserProfile | null> => {
+  const fetchUserProfile = useCallback(async (userId: string, token: string, userEmail?: string): Promise<UserProfile | null> => {
     try {
       const response = await fetch('/api/roles', {
         headers: {
@@ -42,7 +42,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
         const data = await response.json()
         return {
           id: userId,
-          email: user?.email || '',
+          email: userEmail || '',
           isAdmin: data.isAdmin || false,
           roles: data.roles?.map((role: { role: { name: string } }) => role.role.name) || [],
           permissions: data.permissions || []
@@ -52,7 +52,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
       console.error('Error fetching user profile:', error)
     }
     return null
-  }, [user])
+  }, [])
 
   // Function to refresh user profile
   const refreshUserProfile = async () => {
@@ -64,7 +64,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     try {
       const { data: { session } } = await authClient.getSession()
       if (session?.access_token) {
-        const profile = await fetchUserProfile(user.id, session.access_token)
+        const profile = await fetchUserProfile(user.id, session.access_token, user.email)
         setUserProfile(profile)
       }
     } catch (error) {
@@ -85,7 +85,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
           
           // Fetch user profile with roles
           if (currentUser) {
-            const profile = await fetchUserProfile(currentUser.id, storedToken)
+            const profile = await fetchUserProfile(currentUser.id, storedToken, currentUser.email)
             setUserProfile(profile)
           }
         }
@@ -115,7 +115,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
         
         // Fetch user profile with roles
         if (currentUser) {
-          const profile = await fetchUserProfile(currentUser.id, result.data.session.access_token)
+          const profile = await fetchUserProfile(currentUser.id, result.data.session.access_token, currentUser.email)
           setUserProfile(profile)
         }
       }
