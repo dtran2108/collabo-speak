@@ -14,7 +14,7 @@ export async function POST(request: NextRequest) {
 
     if (error) {
       return NextResponse.json(
-        { error: error.message },
+        { error: error instanceof Error ? error.message : 'Signout failed' },
         { status: 400 }
       )
     }

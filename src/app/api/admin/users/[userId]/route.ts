@@ -4,7 +4,7 @@ import { isAdmin } from '../../../lib/admin-utils'
 
 export async function PUT(
   request: NextRequest,
-  { params }: { params: { userId: string } }
+  { params }: { params: Promise<{ userId: string }> }
 ) {
   try {
     // Get user from Authorization header
@@ -35,7 +35,7 @@ export async function PUT(
       )
     }
 
-    const { userId } = params
+    const { userId } = await params
 
     if (!userId) {
       return NextResponse.json(
@@ -157,7 +157,7 @@ export async function PUT(
 
 export async function DELETE(
   request: NextRequest,
-  { params }: { params: { userId: string } }
+  { params }: { params: Promise<{ userId: string }> }
 ) {
   try {
     // Get user from Authorization header
@@ -188,7 +188,7 @@ export async function DELETE(
       )
     }
 
-    const { userId } = params
+    const { userId } = await params
 
     if (!userId) {
       return NextResponse.json(

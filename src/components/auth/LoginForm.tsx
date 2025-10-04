@@ -30,7 +30,7 @@ export function LoginForm() {
 
       if (error) {
         console.error(error)
-        setError(error.message)
+        setError(typeof error === 'string' ? error : 'Authentication failed')
       }
     } catch {
       setError('An unexpected error occurred')

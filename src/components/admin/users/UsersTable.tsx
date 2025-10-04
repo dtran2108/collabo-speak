@@ -647,16 +647,16 @@ export function UsersTable({
         onConfirm={handleDeleteConfirm}
         title="Delete User"
         description={
-          <div>
-            <p>Are you sure you want to delete this user:</p>
+          <>
+            <p>You are deleting this user:</p>
             <strong className="text-orange-500">
-              {deleteModal.userEmail}?
+              {deleteModal.userEmail}
             </strong>
             <p className="mt-2">
               This action cannot be undone and will permanently remove all user
               data including participation logs and profile information.
             </p>
-          </div>
+          </>
         }
         confirmText="Delete User"
         cancelText="Cancel"

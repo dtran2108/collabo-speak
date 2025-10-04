@@ -1,8 +1,7 @@
 'use client'
 
 import { useState, useEffect } from 'react'
-import { db } from '@/lib/database'
-import { auth } from '@/lib/auth'
+import { authClient } from '@/lib/auth-client'
 import type { SessionToUser, Session } from '@/types/database'
 
 export function useSessionToUser() {
@@ -18,14 +17,25 @@ export function useSessionToUser() {
     setError(null)
     
     try {
-      const user = await auth.getCurrentUser()
-      if (!user) {
+      const { data: { session } } = await authClient.getSession()
+      if (!session?.access_token) {
         setError('User not authenticated')
         return
       }
 
-      const sessions = await db.participationLog.getByUserId(user.id)
-      setParticipationLog(sessions)
+      const response = await fetch('/api/session-to-user', {
+        headers: {
+          Authorization: `Bearer ${session.access_token}`,
+          'Content-Type': 'application/json',
+        },
+      })
+
+      if (!response.ok) {
+        throw new Error('Failed to fetch user sessions')
+      }
+
+      const result = await response.json()
+      setParticipationLog(result.sessionToUser || [])
     } catch (err) {
       setError(err instanceof Error ? err.message : 'Failed to load user sessions')
     } finally {
@@ -39,8 +49,14 @@ export function useSessionToUser() {
     setError(null)
     
     try {
-      const availableSessions = await db.sessions.getAll()
-      setSessions(availableSessions)
+      const response = await fetch('/api/sessions')
+
+      if (!response.ok) {
+        throw new Error('Failed to fetch sessions')
+      }
+
+      const result = await response.json()
+      setSessions(result.sessions || [])
     } catch (err) {
       setError(err instanceof Error ? err.message : 'Failed to load sessions')
     } finally {
@@ -54,17 +70,30 @@ export function useSessionToUser() {
     setError(null)
     
     try {
-      const user = await auth.getCurrentUser()
-      if (!user) {
+      const { data: { session } } = await authClient.getSession()
+      if (!session?.access_token) {
         setError('User not authenticated')
         return null
       }
 
-      const userSession = await db.participationLog.create({
-        userId: user.id,
-        sessionId,
-        transcriptUrl
+      const response = await fetch('/api/session-to-user', {
+        method: 'POST',
+        headers: {
+          Authorization: `Bearer ${session.access_token}`,
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          sessionId,
+          transcriptUrl,
+        }),
       })
+
+      if (!response.ok) {
+        throw new Error('Failed to create user session')
+      }
+
+      const result = await response.json()
+      const userSession = result.userSession
 
       if (userSession) {
         setParticipationLog(prev => [userSession, ...prev])
@@ -83,7 +112,27 @@ export function useSessionToUser() {
   // Update user session
   const updateUserSession = async (id: string, updates: { transcriptUrl?: string }) => {
     try {
-      const updatedUserSession = await db.participationLog.update(id, updates)
+      const { data: { session } } = await authClient.getSession()
+      if (!session?.access_token) {
+        setError('User not authenticated')
+        return null
+      }
+
+      const response = await fetch(`/api/session-to-user/${id}`, {
+        method: 'PATCH',
+        headers: {
+          Authorization: `Bearer ${session.access_token}`,
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify(updates),
+      })
+
+      if (!response.ok) {
+        throw new Error('Failed to update user session')
+      }
+
+      const result = await response.json()
+      const updatedUserSession = result.userSession
       
       if (updatedUserSession) {
         setParticipationLog(prev => 
@@ -107,7 +156,26 @@ export function useSessionToUser() {
   // Delete user session
   const deleteUserSession = async (id: string) => {
     try {
-      const success = await db.participationLog.delete(id)
+      const { data: { session } } = await authClient.getSession()
+      if (!session?.access_token) {
+        setError('User not authenticated')
+        return false
+      }
+
+      const response = await fetch(`/api/session-to-user/${id}`, {
+        method: 'DELETE',
+        headers: {
+          Authorization: `Bearer ${session.access_token}`,
+          'Content-Type': 'application/json',
+        },
+      })
+
+      if (!response.ok) {
+        throw new Error('Failed to delete user session')
+      }
+
+      const result = await response.json()
+      const success = result.success
       
       if (success) {
         setParticipationLog(prev => prev.filter(session => session.id !== id))

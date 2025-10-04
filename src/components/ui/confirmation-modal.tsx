@@ -51,9 +51,9 @@ export function ConfirmationModal({
             </div>
             <DialogTitle className="text-lg font-semibold">{title}</DialogTitle>
           </div>
-          <DialogDescription className="text-sm text-muted-foreground mt-2">
+          <div className="text-sm text-muted-foreground mt-2">
             {description}
-          </DialogDescription>
+          </div>
         </DialogHeader>
         <DialogFooter className="space-x-2 sm:gap-0">
           <Button
