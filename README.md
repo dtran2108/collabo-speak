@@ -30,4 +30,5 @@ CollaboSpeak is a web application that enhances collaborative problem-solving sk
 
 ## Core Contributors
 
-- **dtran2108** - Lead Developer & Project Maintainer ([GitHub](https://github.com/dtran2108))
+- **vuhuongnam** - The Mastermind Who Convinced AI to Behave [![LinkedIn](https://img.shields.io/badge/LinkedIn-0077B5?logo=linkedin&logoColor=white)](https://www.linkedin.com/in/vuhuongnam/)
+- **dtran2108** - The Code Monkey Who Made It Actually Work [![GitHub](https://img.shields.io/badge/GitHub-181717?logo=github&logoColor=white)](https://github.com/dtran2108)
