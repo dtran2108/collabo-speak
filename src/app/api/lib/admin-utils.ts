@@ -23,8 +23,11 @@ export async function isAdmin(userId: string): Promise<boolean> {
 
     console.log('Raw admin check data:', JSON.stringify(data, null, 2))
     
-    return data?.some((item: any) => {
+    return data?.some((item: { role: { name: string } | null } | { role: { name: string }[] } | { role: null }) => {
       console.log('Item role:', item.role, 'Type:', typeof item.role, 'Is array:', Array.isArray(item.role))
+      if (Array.isArray(item.role)) {
+        return item.role.some((role: { name: string }) => role.name === 'ADMIN')
+      }
       return item.role?.name === 'ADMIN'
     }) || false
   } catch (error) {
@@ -55,9 +58,12 @@ export async function hasRole(userId: string, roleName: string): Promise<boolean
       return false
     }
 
-    return data?.some((item: any) => 
-      item.role?.name === roleName
-    ) || false
+    return data?.some((item: { role: { name: string } | null } | { role: { name: string }[] } | { role: null }) => {
+      if (Array.isArray(item.role)) {
+        return item.role.some((role: { name: string }) => role.name === roleName)
+      }
+      return item.role?.name === roleName
+    }) || false
   } catch (error) {
     console.error('Error in hasRole function:', error)
     return false

@@ -1,15 +1,14 @@
 import { useCallback } from 'react'
 import { api } from '@/lib/api'
 import { formatTranscript, generateTranscriptFileName } from '@/lib/transcript'
-import { toast } from 'sonner'
-import { ConversationState, ConversationActions, Message } from '@/types/conversation'
+import { ConversationState, ConversationActions } from '@/types/conversation'
 
 interface UseConversationAPIProps {
   state: ConversationState
   actions: ConversationActions
   sessionId: string
   userId: string
-  conversation: any // ElevenLabs conversation object
+  conversation: unknown // ElevenLabs conversation object
 }
 
 export const useConversationAPI = ({ state, actions, sessionId, userId, conversation }: UseConversationAPIProps) => {
@@ -18,7 +17,9 @@ export const useConversationAPI = ({ state, actions, sessionId, userId, conversa
       actions.setIsEnding(true)
 
       // End the conversation first to stop the agent from speaking
-      await conversation.endSession()
+      if (conversation && typeof conversation === 'object' && 'endSession' in conversation) {
+        await (conversation as { endSession: () => Promise<void> }).endSession()
+      }
 
       // Uncover the transcript content when ending the session
       actions.setIsCensored(false)
@@ -74,7 +75,29 @@ export const useConversationAPI = ({ state, actions, sessionId, userId, conversa
     } finally {
       actions.setIsEnding(false)
     }
-  }, [state, actions, sessionId, userId])
+  }, [conversation, state, actions, sessionId, userId])
+
+  const getAIEvaluation = useCallback(async (transcript: string, userSessionId: string) => {
+    try {
+      actions.setIsEvaluating(true)
+      actions.setShowEvaluationModal(true)
+
+      // Get evaluation from ChatGPT
+      const { evaluation } = await api.evaluation.evaluateTranscript(transcript)
+
+      if (evaluation) {
+        actions.setEvaluationData(evaluation)
+        actions.setUserSessionId(userSessionId)
+      } else {
+        actions.setErrorMessage('Failed to get AI evaluation')
+      }
+    } catch (error) {
+      actions.setErrorMessage('Failed to get AI evaluation')
+      console.error('Error getting AI evaluation:', error)
+    } finally {
+      actions.setIsEvaluating(false)
+    }
+  }, [actions])
 
   const handleReflectionSubmit = useCallback(async (reflection: string) => {
     try {
@@ -114,40 +137,8 @@ export const useConversationAPI = ({ state, actions, sessionId, userId, conversa
     } finally {
       actions.setIsSaving(false)
     }
-  }, [state, actions])
+  }, [state, actions, getAIEvaluation])
 
-  const getAIEvaluation = useCallback(async (transcript: string, userSessionId: string) => {
-    try {
-      actions.setIsEvaluating(true)
-      actions.setShowEvaluationModal(true)
-
-      // Get evaluation from ChatGPT
-      const { evaluation } = await api.evaluation.evaluateTranscript(transcript)
-
-      // Set evaluation data first so it shows even if PATCH fails
-      actions.setEvaluationData(evaluation)
-      actions.setIsEvaluating(false)
-
-      // Try to update the user session with the feedback (don't fail if this doesn't work)
-      try {
-        await api.participationLog.update(userSessionId, evaluation)
-      } catch (updateError) {
-        console.error(
-          'Error updating user session (but evaluation data is still shown):',
-          updateError,
-        )
-        toast.warning(
-          'Failed to save evaluation data to database, but you can still view your feedback',
-        )
-      }
-    } catch (error) {
-      console.error('Error getting AI evaluation:', error)
-      actions.setErrorMessage('Failed to get AI evaluation')
-      actions.setIsEvaluating(false)
-      // Still show modal with default data
-      actions.setEvaluationData(null)
-    }
-  }, [actions])
 
   return {
     handleEndConversation,

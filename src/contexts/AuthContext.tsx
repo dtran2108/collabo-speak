@@ -1,6 +1,6 @@
 'use client'
 
-import React, { createContext, useContext, useEffect, useState } from 'react'
+import React, { createContext, useContext, useEffect, useState, useCallback } from 'react'
 import { authClient, type AuthUser } from '@/lib/auth-client'
 
 interface UserProfile {
@@ -29,7 +29,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
   const [loading, setLoading] = useState(true)
 
   // Function to fetch user profile with roles and admin status
-  const fetchUserProfile = async (userId: string, token: string): Promise<UserProfile | null> => {
+  const fetchUserProfile = useCallback(async (userId: string, token: string): Promise<UserProfile | null> => {
     try {
       const response = await fetch('/api/roles', {
         headers: {
@@ -44,7 +44,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
           id: userId,
           email: user?.email || '',
           isAdmin: data.isAdmin || false,
-          roles: data.roles?.map((role: any) => role.role.name) || [],
+          roles: data.roles?.map((role: { role: { name: string } }) => role.role.name) || [],
           permissions: data.permissions || []
         }
       }
@@ -52,7 +52,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
       console.error('Error fetching user profile:', error)
     }
     return null
-  }
+  }, [user])
 
   // Function to refresh user profile
   const refreshUserProfile = async () => {
@@ -98,7 +98,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     }
 
     getInitialSession()
-  }, [])
+  }, [fetchUserProfile])
 
   const signIn = async (email: string, password: string) => {
     try {
