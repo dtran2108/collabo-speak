@@ -24,7 +24,7 @@ export function getPersonalizedGreeting(fullName?: string | null, hour?: number)
   const greeting = getTimeBasedGreeting(currentHour)
   
   if (fullName) {
-    return `${greeting}, ${fullName}`
+    return `${greeting}, ${fullName}!`
   }
   
   return greeting

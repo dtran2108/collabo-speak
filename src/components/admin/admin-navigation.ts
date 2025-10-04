@@ -5,7 +5,9 @@ import {
   UserCheck, 
   Calendar, 
   FileText, 
-  BarChart3 
+  BarChart3, 
+  Bot,
+  MessagesSquare
 } from 'lucide-react'
 
 export interface AdminNavItem {
@@ -26,33 +28,18 @@ export const adminNavItems: AdminNavItem[] = [
     icon: Users,
   },
   {
-    title: 'User Roles',
-    href: '/admin/users/roles',
-    icon: UserCheck,
-  },
-  {
     title: 'All Sessions',
     href: '/admin/sessions',
-    icon: Calendar,
+    icon: MessagesSquare,
   },
   {
     title: 'All Personas',
     href: '/admin/personas',
-    icon: UserCheck,
+    icon: Bot,
   },
   {
-    title: 'Create Persona',
-    href: '/admin/personas/create',
-    icon: UserCheck,
-  },
-  {
-    title: 'All Logs',
+    title: 'All Participation Logs',
     href: '/admin/participation',
     icon: FileText,
-  },
-  {
-    title: 'Analytics',
-    href: '/admin/participation/analytics',
-    icon: BarChart3,
   },
 ]

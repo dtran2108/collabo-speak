@@ -45,7 +45,7 @@ export function Navbar() {
 
   return (
     <nav className="fixed top-0 left-0 right-0 z-50 border-b bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/60">
-      <div className="container mx-auto px-4">
+      <div className="mx-2 px-4">
         <div className="flex h-12 items-center justify-between">
           {/* Logo */}
           <Link href="/" className="flex items-center space-x-2">
@@ -158,7 +158,7 @@ export function Navbar() {
                     variant="ghost"
                     size="sm"
                     onClick={handleSessionHistory}
-                    className="w-full justify-start flex items-center space-x-2 px-3 py-2"
+                    className="w-full justify-start flex items-center space-x-1 px-3 py-2"
                   >
                     <History className="h-4 w-4" />
                     <span>Session History</span>
@@ -168,7 +168,7 @@ export function Navbar() {
                       variant="ghost"
                       size="sm"
                       onClick={handleAdmin}
-                      className="w-full justify-start flex items-center space-x-2 px-3 py-2"
+                      className="w-full justify-start flex items-center space-x-1 px-3 py-2"
                     >
                       <Shield className="h-4 w-4" />
                       <span>Admin</span>
@@ -178,7 +178,7 @@ export function Navbar() {
                     variant="ghost"
                     size="sm"
                     onClick={handleSignOut}
-                    className="w-full justify-start flex items-center space-x-2 px-3 py-2"
+                    className="w-full justify-start flex items-center space-x-1 px-3 py-2"
                   >
                     <LogOut className="h-4 w-4" />
                     <span>Sign Out</span>
@@ -189,7 +189,7 @@ export function Navbar() {
                   variant="default"
                   size="sm"
                   onClick={handleSignIn}
-                  className="w-full justify-start flex items-center space-x-2 px-3 py-2"
+                  className="w-full justify-start flex items-center space-x-1 px-3 py-2"
                 >
                   <LogIn className="h-4 w-4" />
                   <span>Sign In</span>

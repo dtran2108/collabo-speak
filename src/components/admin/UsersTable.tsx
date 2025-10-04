@@ -1,6 +1,6 @@
 'use client'
 
-import React, { useMemo, useCallback } from 'react'
+import React, { useMemo, useCallback, useState } from 'react'
 import { ColumnDef } from '@tanstack/react-table'
 import { Button } from '@/components/ui/button'
 import { Badge } from '@/components/ui/badge'
@@ -11,6 +11,7 @@ import {
 } from './AdminDataTable'
 import { useAdminTable } from '@/hooks/useAdminTable'
 import { authClient } from '@/lib/auth-client'
+import { ConfirmationModal } from '@/components/ui/confirmation-modal'
 import { Edit, Trash2 } from 'lucide-react'
 
 // User interface
@@ -111,6 +112,19 @@ export function UsersTable({
   onDeleteUser,
   availableRoles = [],
 }: UsersTableProps) {
+  // Delete confirmation modal state
+  const [deleteModal, setDeleteModal] = useState<{
+    isOpen: boolean
+    userId: string | null
+    userEmail: string | null
+    isLoading: boolean
+  }>({
+    isOpen: false,
+    userId: null,
+    userEmail: null,
+    isLoading: false,
+  })
+
   // Create a wrapper function that includes availableRoles
   const fetchUsersWithRoles = useCallback(
     (params: {
@@ -144,11 +158,96 @@ export function UsersTable({
     handleSortingChange,
     handleSearchChange,
     handleRoleFilterChange,
+    refetch: loadData,
   } = useAdminTable({
     fetchData: fetchUsersWithRoles,
     initialLimit: 10,
     initialSorting: [{ id: 'created_at', desc: true }],
   })
+
+  // Delete user function
+  const deleteUser = useCallback(
+    async (userId: string) => {
+      try {
+        setDeleteModal((prev) => ({ ...prev, isLoading: true }))
+
+        const {
+          data: { session },
+        } = await authClient.getSession()
+
+        if (!session?.access_token) {
+          throw new Error('No valid session found')
+        }
+
+        const response = await fetch(`/api/admin/users/${userId}`, {
+          method: 'DELETE',
+          headers: {
+            Authorization: `Bearer ${session.access_token}`,
+            'Content-Type': 'application/json',
+          },
+        })
+
+        if (!response.ok) {
+          const errorData = await response.json()
+          throw new Error(errorData.error || 'Failed to delete user')
+        }
+
+        const result = await response.json()
+        console.log('User deleted successfully:', result)
+
+        // Close modal and refresh data
+        setDeleteModal({
+          isOpen: false,
+          userId: null,
+          userEmail: null,
+          isLoading: false,
+        })
+
+        // Refresh the table data
+        await loadData()
+
+        // Call parent callback if provided
+        onDeleteUser?.(userId)
+      } catch (error) {
+        console.error('Error deleting user:', error)
+        setDeleteModal((prev) => ({ ...prev, isLoading: false }))
+        // You might want to show a toast notification here
+        alert(
+          `Error deleting user: ${
+            error instanceof Error ? error.message : 'Unknown error'
+          }`,
+        )
+      }
+    },
+    [loadData, onDeleteUser],
+  )
+
+  // Handle delete button click
+  const handleDeleteClick = useCallback((userId: string, userEmail: string) => {
+    setDeleteModal({
+      isOpen: true,
+      userId,
+      userEmail,
+      isLoading: false,
+    })
+  }, [])
+
+  // Handle delete confirmation
+  const handleDeleteConfirm = useCallback(() => {
+    if (deleteModal.userId) {
+      deleteUser(deleteModal.userId)
+    }
+  }, [deleteModal.userId, deleteUser])
+
+  // Handle delete modal close
+  const handleDeleteCancel = useCallback(() => {
+    setDeleteModal({
+      isOpen: false,
+      userId: null,
+      userEmail: null,
+      isLoading: false,
+    })
+  }, [])
 
   // Define columns
   const columns: ColumnDef<User>[] = useMemo(
@@ -284,41 +383,68 @@ export function UsersTable({
                 <Edit className="h-4 w-4" />
               </Button>
             )}
-            {onDeleteUser && (
-              <Button
-                variant="outline"
-                size="sm"
-                onClick={() => onDeleteUser(row.original.userId)}
-              >
-                <Trash2 className="h-4 w-4" />
-              </Button>
-            )}
+            <Button
+              variant="outline"
+              size="sm"
+              onClick={() =>
+                handleDeleteClick(row.original.userId, row.original.email)
+              }
+              className="text-red-600 hover:text-red-700 hover:bg-red-50"
+            >
+              <Trash2 className="h-4 w-4" />
+            </Button>
           </div>
         ),
       },
     ],
-    [onEditUser, onDeleteUser],
+    [onEditUser, handleDeleteClick],
   )
 
   return (
-    <AdminDataTable
-      data={users}
-      columns={columns}
-      loading={loading}
-      error={error}
-      pagination={pagination}
-      onPaginationChange={handlePaginationChange}
-      sorting={sorting}
-      onSortingChange={handleSortingChange}
-      searchValue={search}
-      onSearchChange={handleSearchChange}
-      searchPlaceholder="Search by name or email..."
-      roleFilter={roleFilter}
-      onRoleFilterChange={handleRoleFilterChange}
-      availableRoles={availableRoles}
-      onAddItem={onAddUser}
-      addButtonText="Add User"
-      emptyStateMessage="No users found."
-    />
+    <>
+      <AdminDataTable
+        data={users}
+        columns={columns}
+        loading={loading}
+        error={error}
+        pagination={pagination}
+        onPaginationChange={handlePaginationChange}
+        sorting={sorting}
+        onSortingChange={handleSortingChange}
+        searchValue={search}
+        onSearchChange={handleSearchChange}
+        searchPlaceholder="Search by name or email..."
+        roleFilter={roleFilter}
+        onRoleFilterChange={handleRoleFilterChange}
+        availableRoles={availableRoles}
+        onAddItem={onAddUser}
+        addButtonText="Add User"
+        emptyStateMessage="No users found."
+      />
+
+      {/* Delete Confirmation Modal */}
+      <ConfirmationModal
+        isOpen={deleteModal.isOpen}
+        onClose={handleDeleteCancel}
+        onConfirm={handleDeleteConfirm}
+        title="Delete User"
+        description={
+          <div>
+            <p>Are you sure you want to delete this user:</p>
+            <strong className="text-orange-500">
+              {deleteModal.userEmail}?
+            </strong>
+            <p className="mt-2">
+              This action cannot be undone and will permanently remove all user
+              data including participation logs and profile information.
+            </p>
+          </div>
+        }
+        confirmText="Delete User"
+        cancelText="Cancel"
+        variant="destructive"
+        isLoading={deleteModal.isLoading}
+      />
+    </>
   )
 }
