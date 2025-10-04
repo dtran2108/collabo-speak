@@ -13,13 +13,6 @@ CollaboSpeak is a web application that enhances collaborative problem-solving sk
 - **Role-based Access Control**: Secure authentication with admin privileges and user permission management
 - **Reflection & Evaluation System**: Post-conversation reflection prompts and skill assessment tools
 
-## Key Techniques
-
-- **Real-time Audio Processing**: Integration with [ElevenLabs API](https://elevenlabs.io/) for voice synthesis and real-time conversation management
-- **Advanced State Management**: Custom hooks pattern with [useConversationState](src/hooks/useConversationState.ts) and [useConversationManager](src/hooks/useConversationManager.ts) for complex conversation flow
-- **Debounced Operations**: Custom [useDebounce](src/hooks/useDebounce.ts) hook for performance optimization
-- **Theme-aware Rendering**: Dynamic theme switching with [MutationObserver](https://developer.mozilla.org/en-US/docs/Web/API/MutationObserver) for real-time visual updates
-
 ## Technologies & Libraries
 
 - **Framework**: ![Next.js](https://img.shields.io/badge/Next.js-15.5.4-black?logo=next.js&logoColor=white) [Next.js 15.5.4](https://nextjs.org/) with App Router
@@ -30,14 +23,6 @@ CollaboSpeak is a web application that enhances collaborative problem-solving sk
 - **Voice AI**: ![ElevenLabs](https://img.shields.io/badge/ElevenLabs-000000?logo=elevenlabs&logoColor=white) [ElevenLabs](https://elevenlabs.io/) for conversational AI
 - **Forms**: ![React Hook Form](https://img.shields.io/badge/React_Hook_Form-EC5990?logo=react-hook-form&logoColor=white) [React Hook Form](https://react-hook-form.com/) with ![Zod](https://img.shields.io/badge/Zod-3E67B1?logo=zod&logoColor=white) [Zod](https://zod.dev/) validation
 - **State Management**: Custom hooks with React Context
-
-**Notable Directories:**
-- `src/app/api/` - REST API with admin controls, authentication, and ElevenLabs integration
-- `src/components/ui/` - shadcn/ui component library built on Radix UI primitives
-- `src/hooks/` - Custom hooks for conversation management, debouncing, and state synchronization
-- `src/lib/` - Centralized API clients and utility functions for clean separation of concerns
-
-The application features a sophisticated conversation system with real-time voice interaction, comprehensive admin controls, and detailed analytics for tracking collaborative problem-solving progress.
 
 ## Core Contributors
 
