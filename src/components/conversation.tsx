@@ -160,7 +160,7 @@ export function Conversation({ personas }: { personas: Persona[] }) {
       // Replace with your actual agent ID or URL
       const conversationId = await conversation.startSession({
         agentId: process.env.NEXT_PUBLIC_AGENT_ID!,
-        connectionType: 'websocket',
+        connectionType: 'webrtc',
       })
       console.log('Started conversation:', conversationId)
     } catch (error) {
@@ -350,21 +350,7 @@ export function Conversation({ personas }: { personas: Persona[] }) {
 
       <div className="flex flex-col">
         <div className="flex items-center p-2 space-x-4">
-          {status === 'connected' ? (
-            <Button
-              variant="destructive"
-              onClick={handleEndConversation}
-              disabled={isSaving || isConnecting || isEnding}
-              className="flex-1"
-            >
-              <MicOff className="mr-2 h-4 w-4" />
-              {isEnding
-                ? 'Please wait...'
-                : isSaving
-                ? 'Saving...'
-                : 'End Conversation'}
-            </Button>
-          ) : isReflectionPending ? (
+          {isReflectionPending ? (
             <Button
               onClick={handleReopenReflection}
               disabled={isSaving}
@@ -372,6 +358,30 @@ export function Conversation({ personas }: { personas: Persona[] }) {
               variant="default"
             >
               Reflection
+            </Button>
+          ) : status === 'connected' ? (
+            <Button
+              variant="destructive"
+              onClick={handleEndConversation}
+              disabled={isSaving || isConnecting || isEnding}
+              className="flex-1"
+            >
+              {isSaving ? (
+                <div className="flex items-center">
+                  <Loader className="mr-2 h-4 w-4 animate-spin" />
+                  Saving your progress, please wait...
+                </div>
+              ) : isEnding ? (
+                <div className="flex items-center">
+                  <Loader className="mr-2 h-4 w-4 animate-spin" />
+                  Please wait...
+                </div>
+              ) : (
+                <div className="flex items-center">
+                  <MicOff className="mr-2 h-4 w-4" />
+                  End Conversation
+                </div>
+              )}
             </Button>
           ) : (
             <Button
@@ -385,6 +395,11 @@ export function Conversation({ personas }: { personas: Persona[] }) {
                   <Loader className="animate-spin w-4 h-4 mr-2" />
                   Connecting...
                 </>
+              ) : isSaving ? (
+                <div className="flex items-center">
+                  <Loader className="mr-2 h-4 w-4 animate-spin" />
+                  Saving your progress, please wait...
+                </div>
               ) : (
                 <>
                   <Phone className="mr-2 h-4 w-4" />

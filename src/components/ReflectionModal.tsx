@@ -1,7 +1,8 @@
 'use client'
 
-import React, { useState } from 'react'
+import { useState } from 'react'
 import { Button } from '@/components/ui/button'
+import { Textarea } from '@/components/ui/textarea'
 import {
   Dialog,
   DialogContent,
@@ -9,50 +10,37 @@ import {
   DialogHeader,
   DialogTitle,
 } from '@/components/ui/dialog'
-import { Textarea } from '@/components/ui/textarea'
 import { Loader2 } from 'lucide-react'
 
 interface ReflectionModalProps {
   isOpen: boolean
   onClose: () => void
-  onSubmit: (reflection: string) => Promise<void>
+  onSubmit: (reflection: string) => void
   onViewTranscript: () => void
-  isSubmitting?: boolean
+  isSubmitting: boolean
 }
 
-export function ReflectionModal({ 
-  isOpen, 
-  onClose, 
-  onSubmit, 
+export function ReflectionModal({
+  isOpen,
+  onClose,
+  onSubmit,
   onViewTranscript,
-  isSubmitting = false 
+  isSubmitting,
 }: ReflectionModalProps) {
   const [reflection, setReflection] = useState('')
-  const [error, setError] = useState('')
 
-  const handleSubmit = async (e: React.FormEvent) => {
+  const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault()
-    
-    // Validate reflection
-    if (!reflection.trim()) {
-      setError('Please share your reflection about the conversation')
-      return
+    if (reflection.trim()) {
+      onSubmit(reflection.trim())
+      setReflection('')
     }
-
-    if (reflection.length > 150) {
-      setError('Reflection must be 150 characters or less')
-      return
-    }
-
-    setError('')
-    await onSubmit(reflection.trim())
   }
 
   const handleClose = () => {
     if (!isSubmitting) {
-      setReflection('')
-      setError('')
       onClose()
+      setReflection('')
     }
   }
 
@@ -68,53 +56,50 @@ export function ReflectionModal({
           </DialogDescription>
         </DialogHeader>
         
-        <form onSubmit={handleSubmit} className="space-y-4">
-          <div className="space-y-2">
-            <Textarea
-              value={reflection}
-              onChange={(e) => setReflection(e.target.value)}
-              placeholder="Share your thoughts about the conversation..."
-              className="min-h-[100px] resize-none"
-              maxLength={300}
-              disabled={isSubmitting}
-              required
-            />
-            <div className="flex justify-between text-sm text-muted-foreground">
-              <span className={reflection.length > 150 ? 'text-red-500' : ''}>
-                {reflection.length}/150 characters
-              </span>
-            </div>
-            {error && (
-              <p className="text-sm text-red-500">{error}</p>
-            )}
-          </div>
-          
-          <div className="flex justify-between">
-            <Button
-              type="button"
-              variant="outline"
-              onClick={onViewTranscript}
-              disabled={isSubmitting}
-            >
-              See transcript
-            </Button>
-            <div className="flex space-x-2">
-              <Button
-                type="submit"
-                disabled={isSubmitting || !reflection.trim() || reflection.length > 300}
-              >
-                {isSubmitting ? (
-                  <>
-                    <Loader2 className="mr-2 h-4 w-4 animate-spin" />
-                    Submitting...
-                  </>
-                ) : (
-                  'Submit'
-                )}
-              </Button>
-            </div>
-          </div>
-        </form>
+         <form onSubmit={handleSubmit} className="space-y-4">
+           <div className="space-y-2">
+             <Textarea
+               value={reflection}
+               onChange={(e) => setReflection(e.target.value)}
+               placeholder="Share your thoughts about the conversation..."
+               className="min-h-[100px] resize-none"
+               maxLength={300}
+               disabled={isSubmitting}
+               required
+             />
+             <div className="flex justify-between text-sm text-muted-foreground">
+               <span className={reflection.length > 150 ? 'text-red-500' : ''}>
+                 {reflection.length}/300 characters
+               </span>
+             </div>
+           </div>
+           
+           <div className="flex justify-between">
+             <Button
+               type="button"
+               variant="outline"
+               onClick={onViewTranscript}
+               disabled={isSubmitting}
+             >
+               See transcript
+             </Button>
+             <div className="flex space-x-2">
+               <Button
+                 type="submit"
+                 disabled={isSubmitting || !reflection.trim() || reflection.length > 300}
+               >
+                 {isSubmitting ? (
+                   <>
+                     <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                     Submitting...
+                   </>
+                 ) : (
+                   'Submit'
+                 )}
+               </Button>
+             </div>
+           </div>
+         </form>
       </DialogContent>
     </Dialog>
   )

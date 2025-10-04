@@ -3,7 +3,6 @@
 import React, { useEffect, useState, useCallback } from 'react'
 import { useRouter } from 'next/navigation'
 import { useAuth } from '@/contexts/AuthContext'
-import { api } from '@/lib/api'
 import {
   Card,
   CardContent,
@@ -25,6 +24,9 @@ import {
 } from 'lucide-react'
 import { toast } from 'sonner'
 import Link from 'next/link'
+import { ReflectionModal } from '@/components/ReflectionModal'
+import { EvaluationModal } from '@/components/EvaluationModal'
+import { api } from '@/lib/api'
 
 // Type for the API response that includes joined sessions data
 interface SessionData {
@@ -33,6 +35,7 @@ interface SessionData {
   userId: string
   transcriptUrl: string | null
   reflection: string | null
+  user_question_or_feedback: string | null
   feedback: {
     strengths: string[]
     improvements: string[]
@@ -75,6 +78,29 @@ export default function SessionHistoryPage() {
   const [availableSessions, setAvailableSessions] = useState<
     Array<{ id: string; name: string }>
   >([])
+  const [reflectionModal, setReflectionModal] = useState<{
+    isOpen: boolean
+    participationId: string
+  }>({
+    isOpen: false,
+    participationId: '',
+  })
+  const [showEvaluationModal, setShowEvaluationModal] = useState(false)
+  const [evaluationSessionId, setEvaluationSessionId] = useState<string>('')
+  const [isSaving, setIsSaving] = useState(false)
+  const [isEvaluating, setIsEvaluating] = useState(false)
+  const [evaluationData, setEvaluationData] = useState<{
+    strengths: string[]
+    improvements: string[]
+    tips: string[]
+    words_per_min?: number
+    filler_words_per_min?: number
+    participation_percentage?: number
+    duration?: string
+    pisa_shared_understanding?: number
+    pisa_problem_solving_action?: number
+    pisa_team_organization?: number
+  } | null>(null)
 
   const loadSessionHistory = useCallback(async () => {
     try {
@@ -146,6 +172,119 @@ export default function SessionHistoryPage() {
   const handleClearFilters = () => {
     setFilters({ search: '', sessionId: '' })
     setPagination((prev) => ({ ...prev, page: 1 }))
+  }
+
+  const handleWriteReflection = (participationId: string) => {
+    setReflectionModal({
+      isOpen: true,
+      participationId,
+    })
+  }
+
+
+  const handleReflectionSubmit = async (reflection: string) => {
+    try {
+      setIsSaving(true)
+
+      // Update reflection field in existing participationLog
+      if (reflectionModal.participationId) {
+        try {
+          console.log('Updating reflection for participationId:', reflectionModal.participationId)
+          await api.participationLog.update(reflectionModal.participationId, {
+            reflection,
+          } as unknown as JSON)
+
+          console.log('Reflection saved successfully')
+
+          // Now get AI evaluation - we need to get the transcript from the session
+          const currentSession = sessions.find(s => s.id === reflectionModal.participationId)
+          if (currentSession?.transcriptUrl) {
+            try {
+              // Fetch the transcript content
+              const transcriptResponse = await fetch(currentSession.transcriptUrl)
+              if (transcriptResponse.ok) {
+                const transcriptText = await transcriptResponse.text()
+                await getAIEvaluation(transcriptText, reflectionModal.participationId)
+              } else {
+                console.error('Failed to fetch transcript')
+                toast.warning('Reflection saved, but transcript not available for evaluation')
+              }
+            } catch (transcriptError) {
+              console.error('Error fetching transcript:', transcriptError)
+              toast.warning('Reflection saved, but failed to fetch transcript for evaluation')
+            }
+          } else {
+            console.error('No transcript URL available for evaluation')
+            toast.warning('Reflection saved, but no transcript available for evaluation')
+          }
+        } catch (updateError) {
+          console.error('Error updating reflection:', updateError)
+          toast.error('Failed to save reflection')
+        }
+      } else {
+        console.error('No participationId available for reflection update')
+        toast.error('Failed to save reflection - session not found')
+      }
+
+      // Close reflection modal
+      setReflectionModal({ isOpen: false, participationId: '' })
+    } catch (error) {
+      toast.error('Failed to save reflection')
+      console.error('Error saving reflection:', error)
+    } finally {
+      setIsSaving(false)
+    }
+  }
+
+  const getAIEvaluation = async (transcript: string, userSessionId: string) => {
+    try {
+      setIsEvaluating(true)
+      setEvaluationSessionId(userSessionId)
+      setShowEvaluationModal(true)
+
+      // Get evaluation from ChatGPT
+      const { evaluation } = await api.evaluation.evaluateTranscript(transcript)
+
+      // Set evaluation data first so it shows even if PATCH fails
+      setEvaluationData({
+        ...evaluation,
+        duration: evaluation.duration?.toString()
+      })
+      setIsEvaluating(false)
+
+      // Try to update the user session with the feedback (don't fail if this doesn't work)
+      try {
+        await api.participationLog.update(userSessionId, evaluation)
+        // Reload session history to show updated data
+        loadSessionHistory()
+      } catch (updateError) {
+        console.error(
+          'Error updating user session (but evaluation data is still shown):',
+          updateError,
+        )
+        toast.warning(
+          'Failed to save evaluation data to database, but you can still view your feedback',
+        )
+      }
+    } catch (error) {
+      console.error('Error getting AI evaluation:', error)
+      toast.error('Failed to get AI evaluation')
+      setIsEvaluating(false)
+      // Still show modal with default data
+      setEvaluationData(null)
+    }
+  }
+
+  const handleViewTranscript = () => {
+    setReflectionModal({ isOpen: false, participationId: '' })
+  }
+
+  const handleEvaluationClose = () => {
+    setShowEvaluationModal(false)
+    setEvaluationData(null)
+    setEvaluationSessionId('')
+    // Reload session history to show updated data
+    loadSessionHistory()
   }
 
   // Load data when filters or pagination change
@@ -497,8 +636,35 @@ export default function SessionHistoryPage() {
                     </div>
                   )}
 
+                  {/* User Question or Feedback */}
+                  {session.user_question_or_feedback !== null && (
+                    <div>
+                      <div className="flex items-center space-x-2 mb-2">
+                        <MessageSquare className="h-4 w-4 text-blue-500" />
+                        <h5 className="font-medium text-blue-700">
+                          Your Question or Feedback
+                        </h5>
+                      </div>
+                      <p className="text-sm text-gray-700 bg-blue-50 p-3 rounded-lg">
+                        {session.user_question_or_feedback}
+                      </p>
+                    </div>
+                  )}
+
                   {/* Actions */}
-                  <div className="flex justify-end pt-4 border-t">
+                  <div className="flex justify-between items-center pt-4 border-t">
+                    <div>
+                      {session.reflection === null && (
+                        <Button
+                          onClick={() => handleWriteReflection(session.id)}
+                          size="sm"
+                          className="bg-purple-600 hover:bg-purple-700 text-white"
+                        >
+                          <MessageSquare className="h-4 w-4 mr-2" />
+                          Write Reflection Now
+                        </Button>
+                      )}
+                    </div>
                     <Link href={`/chat/${session.sessionId}`}>
                       <Button variant="outline" size="sm">
                         View Session
@@ -590,6 +756,24 @@ export default function SessionHistoryPage() {
             </CardContent>
           </Card>
         )}
+
+        {/* Reflection Modal */}
+        <ReflectionModal
+          isOpen={reflectionModal.isOpen}
+          onClose={() => setReflectionModal({ isOpen: false, participationId: '' })}
+          onSubmit={handleReflectionSubmit}
+          onViewTranscript={handleViewTranscript}
+          isSubmitting={isSaving}
+        />
+
+        {/* Evaluation Modal */}
+        <EvaluationModal
+          isOpen={showEvaluationModal}
+          onClose={handleEvaluationClose}
+          evaluationData={evaluationData}
+          isLoading={isEvaluating}
+          userSessionId={evaluationSessionId || undefined}
+        />
       </div>
     </div>
   )

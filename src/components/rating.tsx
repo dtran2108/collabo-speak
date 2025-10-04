@@ -35,6 +35,7 @@ const Ratings = ({ ...props }: RatingsProps) => {
     fill = true,
     Icon = Star,
     variant = 'default',
+    ...restProps
   } = props
 
   const fullStars = Math.floor(rating)
@@ -49,7 +50,7 @@ const Ratings = ({ ...props }: RatingsProps) => {
     ) : null
 
   return (
-    <div className={cn('flex items-center gap-2')} {...props}>
+    <div className={cn('flex items-center gap-2')} {...restProps}>
       {[...Array(fullStars)].map((_, i) => (
         <Icon
           key={i}
