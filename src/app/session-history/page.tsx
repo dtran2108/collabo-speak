@@ -13,6 +13,7 @@ import {
 import { Badge } from '@/components/ui/badge'
 import { Button } from '@/components/ui/button'
 import { Ratings } from '@/components/rating'
+import { PageLoading } from '@/components/ui/loading-spinner'
 import {
   History,
   Calendar,
@@ -310,20 +311,7 @@ export default function SessionHistoryPage() {
   }, [pagination.page, filters, user, loadSessionHistory])
 
   if (loading || isLoading) {
-    return (
-      <div className="min-h-screen pt-16">
-        <div className="container mx-auto px-4 py-8">
-          <div className="flex items-center justify-center py-12">
-            <div className="flex items-center space-x-2">
-              <div className="h-6 w-6 animate-spin rounded-full border-2 border-primary border-t-transparent"></div>
-              <span className="text-lg text-muted-foreground">
-                Loading session history...
-              </span>
-            </div>
-          </div>
-        </div>
-      </div>
-    )
+    return <PageLoading message="Loading session history..." />
   }
 
   if (!user) {

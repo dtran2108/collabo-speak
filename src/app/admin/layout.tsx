@@ -8,7 +8,7 @@ import {
   SidebarInset,
   SidebarTrigger
 } from '@/components/ui/sidebar'
-import { Loader2 } from 'lucide-react'
+import { PageLoading } from '@/components/ui/loading-spinner'
 
 // Function to get page title based on pathname
 function getPageTitle(pathname: string): string {
@@ -46,14 +46,7 @@ export default function AdminLayout({
 
   // Show loading state
   if (loading) {
-    return (
-      <div className="flex items-center justify-center min-h-screen">
-        <div className="text-center">
-          <Loader2 className="h-8 w-8 animate-spin mx-auto mb-4" />
-          <p>Loading admin dashboard...</p>
-        </div>
-      </div>
-    )
+    return <PageLoading message="Loading admin dashboard..." />
   }
 
   // Redirect if not authenticated

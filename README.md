@@ -32,5 +32,5 @@ CollaboSpeak is where humans and AI finally learn to play nice together! Think o
 
 ## Core Contributors
 
-- **vuhuongnam** - The Mastermind who convinced AI to behave [![LinkedIn](https://img.shields.io/badge/LinkedIn-0077B5?logo=linkedin&logoColor=white)](https://www.linkedin.com/in/vuhuongnam/)
+- **huongnam** - The Mastermind who convinced (and begged, and prayed) the AI and the Code Monkey to work [![LinkedIn](https://img.shields.io/badge/LinkedIn-0077B5?logo=linkedin&logoColor=white)](https://www.linkedin.com/in/vuhuongnam/)
 - **dtran2108** - The Code Monkey who made it actually work [![GitHub](https://img.shields.io/badge/GitHub-181717?logo=github&logoColor=white)](https://github.com/dtran2108)

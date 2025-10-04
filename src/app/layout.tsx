@@ -5,6 +5,7 @@ import { AuthProvider } from '@/contexts/AuthContext'
 import { Toaster } from '@/components/ui/sonner'
 import { Navbar } from '@/components/nav-bar'
 import { Analytics } from '@vercel/analytics/next'
+import NextTopLoader from 'nextjs-toploader'
 
 const geistSans = Geist({
   variable: '--font-geist-sans',
@@ -19,7 +20,7 @@ const geistMono = Geist_Mono({
 export const metadata: Metadata = {
   title: 'CollaboSpeak',
   description:
-    'Sharpen your collaborative problem-solving skills with by engaging in realistic role-play discussions with AI-powered personas',
+    'Practice your collaborative problem-solving skills with by engaging in realistic role-play discussions with AI-powered personas',
 }
 
 export default function RootLayout({
@@ -32,6 +33,17 @@ export default function RootLayout({
       <body
         className={`${geistSans.variable} ${geistMono.variable} antialiased`}
       >
+        <NextTopLoader
+          color="#3b82f6"
+          initialPosition={0.08}
+          crawlSpeed={200}
+          height={3}
+          crawl={true}
+          showSpinner={false}
+          easing="ease"
+          speed={200}
+          shadow="0 0 10px #3b82f6,0 0 5px #3b82f6"
+        />
         <AuthProvider>
           <Navbar />
           <div className="pt-16">{children}</div>

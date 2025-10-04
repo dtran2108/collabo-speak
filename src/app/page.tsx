@@ -12,6 +12,7 @@ import type { Session, Persona } from '@/types/database'
 import { ChartRadarLegend } from '@/components/charts/radar-chart'
 import { OralProficiencyCard } from '@/components/oral-proficiency-card'
 import { useChartData } from '@/hooks/useChartData'
+import { PageLoading } from '@/components/ui/loading-spinner'
 
 interface SessionWithPersonas extends Session {
   personas: Persona[]
@@ -121,16 +122,7 @@ export default function Page() {
   }
 
   if (loading || sessionsLoading || (user && chartLoading)) {
-    return (
-      <div className="min-h-screen flex items-center justify-center">
-        <div className="text-center">
-          <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-indigo-600 mx-auto"></div>
-          <p className="mt-2 text-gray-600">
-            {loading ? 'Loading...' : 'Loading sessions...'}
-          </p>
-        </div>
-      </div>
-    )
+    return <PageLoading message={loading ? 'Loading...' : 'Loading sessions...'} variant="logo" />
   }
 
   return (
