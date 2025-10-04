@@ -1,0 +1,67 @@
+-- WARNING: This schema is for context only and is not meant to be run.
+-- Table order and constraints may not be valid for execution.
+
+CREATE TABLE public.participation_log (
+  id uuid NOT NULL DEFAULT gen_random_uuid(),
+  created_at timestamp with time zone NOT NULL DEFAULT now(),
+  sessionId uuid NOT NULL,
+  transcriptUrl text,
+  userId uuid NOT NULL,
+  reflection text,
+  pisa_shared_understanding smallint,
+  pisa_problem_solving_action smallint,
+  pisa_team_organization smallint,
+  words_per_min smallint,
+  filler_words_per_min smallint,
+  feedback jsonb,
+  participation_percentage real,
+  duration text,
+  user_question_or_feedback text,
+  CONSTRAINT participation_log_pkey PRIMARY KEY (id),
+  CONSTRAINT userSessions_sessionId_fkey FOREIGN KEY (sessionId) REFERENCES public.sessions(id),
+  CONSTRAINT userSessions_userId_fkey FOREIGN KEY (userId) REFERENCES auth.users(id)
+);
+CREATE TABLE public.personas (
+  id uuid NOT NULL DEFAULT gen_random_uuid(),
+  created_at timestamp with time zone NOT NULL DEFAULT now(),
+  name character varying NOT NULL,
+  description text,
+  sessionId uuid,
+  avatarUrl text,
+  CONSTRAINT personas_pkey PRIMARY KEY (id),
+  CONSTRAINT personas_sessionId_fkey FOREIGN KEY (sessionId) REFERENCES public.sessions(id)
+);
+CREATE TABLE public.roleToUser (
+  id bigint GENERATED ALWAYS AS IDENTITY NOT NULL,
+  created_at timestamp with time zone NOT NULL DEFAULT now(),
+  userId uuid NOT NULL,
+  roleId uuid NOT NULL,
+  CONSTRAINT roleToUser_pkey PRIMARY KEY (id),
+  CONSTRAINT userRoles_roleId_fkey FOREIGN KEY (roleId) REFERENCES public.roles(id),
+  CONSTRAINT roleToUser_userId_fkey FOREIGN KEY (userId) REFERENCES auth.users(id)
+);
+CREATE TABLE public.roles (
+  id uuid NOT NULL DEFAULT gen_random_uuid(),
+  created_at timestamp with time zone NOT NULL DEFAULT now(),
+  name text NOT NULL DEFAULT ''::text UNIQUE,
+  permissions ARRAY NOT NULL,
+  CONSTRAINT roles_pkey PRIMARY KEY (id)
+);
+CREATE TABLE public.sessions (
+  id uuid NOT NULL DEFAULT gen_random_uuid(),
+  created_at timestamp with time zone NOT NULL DEFAULT now(),
+  name text NOT NULL,
+  description text NOT NULL,
+  agentId text NOT NULL,
+  isReady boolean,
+  CONSTRAINT sessions_pkey PRIMARY KEY (id)
+);
+CREATE TABLE public.user_profiles (
+  id bigint GENERATED ALWAYS AS IDENTITY NOT NULL,
+  created_at timestamp with time zone NOT NULL DEFAULT now(),
+  user_id uuid NOT NULL,
+  full_name text,
+  ielts_score character varying,
+  CONSTRAINT user_profiles_pkey PRIMARY KEY (id),
+  CONSTRAINT user_profiles_user_id_fkey FOREIGN KEY (user_id) REFERENCES auth.users(id)
+);
