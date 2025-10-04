@@ -7,8 +7,11 @@ import { Badge } from '@/components/ui/badge'
 import {
   AdminDataTable,
   SortableHeader,
-  PaginationState,
 } from '../AdminDataTable'
+import {
+  PaginationState,
+  FilterConfig,
+} from '../helpers'
 import { useAdminTable } from '@/hooks/useAdminTable'
 import { authClient } from '@/lib/auth-client'
 import { ConfirmationModal } from '@/components/ui/confirmation-modal'
@@ -97,14 +100,12 @@ async function fetchUsers(
   }
 
   const result = await response.json()
-  console.log('DEBUG ~ fetchUsers ~ API response:', result)
 
   // Transform API response to match useAdminTable expected format
   const transformedResult = {
     data: result.users,
     pagination: result.pagination,
   }
-  console.log('DEBUG ~ fetchUsers ~ transformed result:', transformedResult)
 
   return transformedResult
 }
@@ -178,12 +179,6 @@ export function UsersTable({
       sortOrder: 'asc' | 'desc'
       roleId?: string
     }) => {
-      console.log('DEBUG ~ fetchUsersWithRoles ~ params:', params)
-      console.log(
-        'DEBUG ~ fetchUsersWithRoles ~ availableRoles:',
-        availableRoles,
-      )
-      
       // Map the sortBy field to API field name
       const mappedParams = {
         ...params,
@@ -214,6 +209,52 @@ export function UsersTable({
     initialLimit: 10,
     initialSorting: [{ id: 'createdAt', desc: true }],
   })
+
+  // Create dynamic filters configuration
+  const filters: FilterConfig[] = useMemo(() => {
+    const roleFilterConfig: FilterConfig = {
+      id: 'role',
+      label: 'Roles',
+      type: 'select',
+      options: availableRoles,
+      value: roleFilter || 'all',
+      onChange: handleRoleFilterChange,
+      disabled: loading,
+      width: 'w-full sm:w-48'
+    }
+
+    // Example: You can easily add more filters for different field types
+    // const ieltsScoreFilter: FilterConfig = {
+    //   id: 'ieltsScore',
+    //   label: 'IELTS Score',
+    //   type: 'select',
+    //   options: [
+    //     { id: 'all', name: 'All Scores' },
+    //     { id: '9', name: '9.0' },
+    //     { id: '8.5', name: '8.5' },
+    //     { id: '8', name: '8.0' },
+    //     { id: '7.5', name: '7.5' },
+    //     { id: '7', name: '7.0' },
+    //   ],
+    //   value: 'all',
+    //   onChange: (value) => console.log('IELTS Score filter:', value),
+    //   disabled: loading,
+    //   width: 'w-full sm:w-40'
+    // }
+
+    // const participationFilter: FilterConfig = {
+    //   id: 'participation',
+    //   label: 'Min Participation',
+    //   type: 'number',
+    //   placeholder: 'Min sessions',
+    //   value: '',
+    //   onChange: (value) => console.log('Participation filter:', value),
+    //   disabled: loading,
+    //   width: 'w-full sm:w-40'
+    // }
+
+    return [roleFilterConfig]
+  }, [availableRoles, roleFilter, handleRoleFilterChange, loading])
 
   // Delete user function
   const deleteUser = useCallback(
@@ -489,10 +530,10 @@ export function UsersTable({
         header: ({ column }) => (
           <SortableHeader column={column}>Created At</SortableHeader>
         ),
+        enableSorting: true,
         size: 200,
         cell: ({ row }) => {
           const date = new Date(row.getValue('createdAt') as string)
-          console.log('DEBUG ~ date:', date)
           return (
             <div className="font-mono text-sm whitespace-nowrap">
               {date.toLocaleDateString('en-US', {
@@ -514,6 +555,7 @@ export function UsersTable({
         header: ({ column }) => (
           <SortableHeader column={column}>Display Name</SortableHeader>
         ),
+        enableSorting: true,
         size: 150,
         cell: ({ row }) => (
           <div className="font-medium">{row.getValue('displayName')}</div>
@@ -524,6 +566,7 @@ export function UsersTable({
         header: ({ column }) => (
           <SortableHeader column={column}>Email</SortableHeader>
         ),
+        enableSorting: true,
         size: 200,
         cell: ({ row }) => (
           <div className="text-sm text-muted-foreground">
@@ -536,6 +579,7 @@ export function UsersTable({
         header: ({ column }) => (
           <SortableHeader column={column}>IELTS Score</SortableHeader>
         ),
+        enableSorting: true,
         size: 100,
         cell: ({ row }) => (
           <div className="text-center">{row.getValue('ieltsScore')}</div>
@@ -546,6 +590,7 @@ export function UsersTable({
         header: ({ column }) => (
           <SortableHeader column={column}>Sessions</SortableHeader>
         ),
+        enableSorting: true,
         size: 100,
         cell: ({ row }) => (
           <div className="text-center font-medium">
@@ -632,9 +677,7 @@ export function UsersTable({
         searchValue={search}
         onSearchChange={handleSearchChange}
         searchPlaceholder="Search by name or email..."
-        roleFilter={roleFilter}
-        onRoleFilterChange={handleRoleFilterChange}
-        availableRoles={availableRoles}
+        filters={filters}
         onAddItem={handleAddUserClick}
         addButtonText="Add User"
         emptyStateMessage="No users found."

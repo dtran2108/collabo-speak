@@ -278,6 +278,7 @@ export async function GET(request: NextRequest) {
       'full_name',
       'ielts_score',
       'session_participation_count',
+      'email', // Add email to valid sort fields
     ]
     let sortField = validSortFields.includes(params.sortBy)
       ? params.sortBy
@@ -285,15 +286,43 @@ export async function GET(request: NextRequest) {
     const sortDirection =
       params.sortOrder === 'asc' ? { ascending: true } : { ascending: false }
 
-    // Handle session participation count sorting differently since it's calculated
+    // Handle special sorting cases
+    let needsInMemorySorting = false
     if (sortField === 'session_participation_count') {
-      // For now, just sort by created_at and we'll sort by participation count in memory
+      // We'll fetch all users and sort by participation count in memory
+      needsInMemorySorting = true
+      sortField = 'created_at' // Use a default sort for the initial query
+    } else if (sortField === 'email') {
+      // Email sorting will be handled after fetching auth users data
+      needsInMemorySorting = true
       sortField = 'created_at'
     }
 
-    const { data: userProfiles, error: profilesError } = await userProfilesQuery
-      .order(sortField, sortDirection)
-      .range(offset, offset + params.limit - 1)
+
+    let userProfiles
+    let profilesError
+
+    if (needsInMemorySorting) {
+      // Fetch all users first, then sort and paginate in memory
+      const { data: allUserProfiles, error: allProfilesError } = await userProfilesQuery
+        .order(sortField, sortDirection)
+      
+      if (allProfilesError) {
+        throw new Error('Failed to fetch user profiles')
+      }
+
+      // We'll sort and paginate after getting all the data
+      userProfiles = allUserProfiles
+      profilesError = null
+    } else {
+      // Normal database-level sorting and pagination
+      const result = await userProfilesQuery
+        .order(sortField, sortDirection)
+        .range(offset, offset + params.limit - 1)
+      
+      userProfiles = result.data
+      profilesError = result.error
+    }
 
     if (profilesError) {
       throw new Error('Failed to fetch user profiles')
@@ -333,13 +362,30 @@ export async function GET(request: NextRequest) {
       rolesMap,
     )
 
-    // Sort by session participation count if requested (in memory)
-    if (params.sortBy === 'session_participation_count') {
-      users = users.sort((a, b) => {
-        const aCount = a.sessionParticipationCount
-        const bCount = b.sessionParticipationCount
-        return params.sortOrder === 'asc' ? aCount - bCount : bCount - aCount
-      })
+    // Apply in-memory sorting if needed
+    if (needsInMemorySorting) {
+      if (params.sortBy === 'session_participation_count') {
+        users = users.sort((a, b) => {
+          const aCount = a.sessionParticipationCount
+          const bCount = b.sessionParticipationCount
+          return params.sortOrder === 'asc' ? aCount - bCount : bCount - aCount
+        })
+      } else if (params.sortBy === 'email') {
+        users = users.sort((a, b) => {
+          const aEmail = a.email.toLowerCase()
+          const bEmail = b.email.toLowerCase()
+          if (params.sortOrder === 'asc') {
+            return aEmail.localeCompare(bEmail)
+          } else {
+            return bEmail.localeCompare(aEmail)
+          }
+        })
+      }
+
+      // Apply pagination after sorting
+      const startIndex = offset
+      const endIndex = offset + params.limit
+      users = users.slice(startIndex, endIndex)
     }
 
     // Calculate pagination info

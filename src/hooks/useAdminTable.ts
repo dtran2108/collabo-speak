@@ -1,6 +1,6 @@
 import { useState, useEffect, useCallback, useMemo, useRef } from 'react'
 import { SortingState } from '@tanstack/react-table'
-import { PaginationState } from '@/components/admin/AdminDataTable'
+import { PaginationState } from '@/components/admin/helpers'
 import { useDebounce } from './useDebounce'
 
 export interface UseAdminTableProps<TData = unknown> {
@@ -60,15 +60,26 @@ export function useAdminTable<TData = unknown>({
   const paginationRef = useRef(pagination)
   paginationRef.current = pagination
   
+  // Field mapping function to convert frontend field names to API field names
+  const mapSortField = (frontendField: string): string => {
+    const fieldMap: Record<string, string> = {
+      'createdAt': 'created_at',
+      'displayName': 'full_name', 
+      'email': 'email',
+      'ieltsScore': 'ielts_score',
+      'sessionParticipationCount': 'session_participation_count'
+    }
+    return fieldMap[frontendField] || frontendField
+  }
+
   // Fetch data function
   const loadData = useCallback(async () => {
-    console.log('DEBUG ~ useAdminTable ~ loadData called')
     try {
       setLoading(true)
       setError(null)
-      console.log('DEBUG ~ useAdminTable ~ setLoading(true)')
       
-      const sortBy = sorting[0]?.id || 'created_at'
+      const frontendSortBy = sorting[0]?.id || 'createdAt'
+      const sortBy = mapSortField(frontendSortBy)
       const sortOrder = sorting[0]?.desc ? 'desc' : 'asc'
       
       const result = await fetchData({
@@ -80,31 +91,20 @@ export function useAdminTable<TData = unknown>({
         roleId: roleFilter !== 'all' ? roleFilter : undefined
       })
       
-      console.log('DEBUG ~ useAdminTable ~ fetchData result:', result)
-      console.log('DEBUG ~ useAdminTable ~ result.data:', result.data)
-      console.log('DEBUG ~ useAdminTable ~ result.pagination:', result.pagination)
-      
       setData(result.data)
       setPagination(result.pagination)
-      console.log('DEBUG ~ useAdminTable ~ data set successfully')
     } catch (err) {
       console.error('Error fetching data:', err)
       setError(err instanceof Error ? err.message : 'An error occurred')
     } finally {
       setLoading(false)
-      console.log('DEBUG ~ useAdminTable ~ setLoading(false)')
     }
-  }, [fetchData, debouncedSearch, sorting, roleFilter]) // Removed pagination.page and pagination.limit from dependencies
-  
-  // Load data when non-pagination dependencies change
-  useEffect(() => {
-    loadData()
   }, [fetchData, debouncedSearch, sorting, roleFilter])
   
-  // Load data when pagination changes (separate effect to avoid infinite loop)
+  // Load data when dependencies change
   useEffect(() => {
     loadData()
-  }, [pagination.page, pagination.limit])
+  }, [loadData])
   
   // Handlers
   const handlePaginationChange = useCallback((newPagination: PaginationState) => {
@@ -127,7 +127,10 @@ export function useAdminTable<TData = unknown>({
   }, [])
   
   // Computed values
-  const sortBy = useMemo(() => sorting[0]?.id || 'created_at', [sorting])
+  const sortBy = useMemo(() => {
+    const frontendField = sorting[0]?.id || 'createdAt'
+    return mapSortField(frontendField)
+  }, [sorting])
   const sortOrder = useMemo(() => sorting[0]?.desc ? 'desc' : 'asc', [sorting])
   
   return {
