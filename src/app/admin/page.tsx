@@ -2,7 +2,6 @@
 
 import { useEffect, useState } from 'react'
 import { useAuth } from '@/contexts/AuthContext'
-import { useAdmin } from '@/hooks/useAdmin'
 import { useRouter } from 'next/navigation'
 import { authClient } from '@/lib/auth-client'
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
@@ -19,8 +18,7 @@ interface AdminStats {
 }
 
 export default function AdminPage() {
-  const { user, loading } = useAuth()
-  const { isAdmin: isAdminUser, loading: adminLoading } = useAdmin()
+  const { user, loading, isAdmin: isAdminUser } = useAuth()
   const router = useRouter()
   const [stats, setStats] = useState<AdminStats | null>(null)
   const [isLoading, setIsLoading] = useState(true)
@@ -32,7 +30,7 @@ export default function AdminPage() {
       return
     }
 
-    if (!adminLoading && user && !isAdminUser) {
+    if (!loading && user && !isAdminUser) {
       router.push('/')
       return
     }
@@ -41,7 +39,7 @@ export default function AdminPage() {
       // Check if user is admin and fetch admin data
       fetchAdminData()
     }
-  }, [user, loading, adminLoading, isAdminUser, router])
+  }, [user, loading, isAdminUser, router])
 
   const fetchAdminData = async () => {
     try {
@@ -79,7 +77,7 @@ export default function AdminPage() {
     }
   }
 
-  if (loading || adminLoading || isLoading) {
+  if (loading || isLoading) {
     return (
       <div className="flex items-center justify-center min-h-[400px]">
         <div className="text-center">

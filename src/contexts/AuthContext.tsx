@@ -3,18 +3,74 @@
 import React, { createContext, useContext, useEffect, useState } from 'react'
 import { authClient, type AuthUser } from '@/lib/auth-client'
 
+interface UserProfile {
+  id: string
+  email: string
+  isAdmin: boolean
+  roles: string[]
+  permissions: string[]
+}
+
 interface AuthContextType {
   user: AuthUser | null
+  userProfile: UserProfile | null
   loading: boolean
+  isAdmin: boolean
   signIn: (email: string, password: string) => Promise<{ data: { session: { access_token: string } } | null; error: string | null }>
   signOut: () => Promise<{ error: string | null }>
+  refreshUserProfile: () => Promise<void>
 }
 
 const AuthContext = createContext<AuthContextType | undefined>(undefined)
 
 export function AuthProvider({ children }: { children: React.ReactNode }) {
   const [user, setUser] = useState<AuthUser | null>(null)
+  const [userProfile, setUserProfile] = useState<UserProfile | null>(null)
   const [loading, setLoading] = useState(true)
+
+  // Function to fetch user profile with roles and admin status
+  const fetchUserProfile = async (userId: string, token: string): Promise<UserProfile | null> => {
+    try {
+      const response = await fetch('/api/roles', {
+        headers: {
+          'Authorization': `Bearer ${token}`,
+          'Content-Type': 'application/json',
+        },
+      })
+
+      if (response.ok) {
+        const data = await response.json()
+        return {
+          id: userId,
+          email: user?.email || '',
+          isAdmin: data.isAdmin || false,
+          roles: data.roles?.map((role: any) => role.role.name) || [],
+          permissions: data.permissions || []
+        }
+      }
+    } catch (error) {
+      console.error('Error fetching user profile:', error)
+    }
+    return null
+  }
+
+  // Function to refresh user profile
+  const refreshUserProfile = async () => {
+    if (!user) {
+      setUserProfile(null)
+      return
+    }
+
+    try {
+      const { data: { session } } = await authClient.getSession()
+      if (session?.access_token) {
+        const profile = await fetchUserProfile(user.id, session.access_token)
+        setUserProfile(profile)
+      }
+    } catch (error) {
+      console.error('Error refreshing user profile:', error)
+    }
+  }
 
   useEffect(() => {
     // Get initial session
@@ -26,6 +82,12 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
           authClient.setToken(storedToken)
           const currentUser = await authClient.getCurrentUser()
           setUser(currentUser)
+          
+          // Fetch user profile with roles
+          if (currentUser) {
+            const profile = await fetchUserProfile(currentUser.id, storedToken)
+            setUserProfile(profile)
+          }
         }
       } catch (error) {
         console.error('Error getting initial session:', error)
@@ -50,6 +112,12 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
         // Get user info
         const currentUser = await authClient.getCurrentUser()
         setUser(currentUser)
+        
+        // Fetch user profile with roles
+        if (currentUser) {
+          const profile = await fetchUserProfile(currentUser.id, result.data.session.access_token)
+          setUserProfile(profile)
+        }
       }
       
       return result
@@ -63,10 +131,11 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     try {
       const result = await authClient.signOut()
       
-      // Clear token and user
+      // Clear token, user, and profile
       localStorage.removeItem('auth_token')
       authClient.setToken(null)
       setUser(null)
+      setUserProfile(null)
       
       return result
     } catch (error) {
@@ -77,9 +146,12 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
 
   const value = {
     user,
+    userProfile,
     loading,
+    isAdmin: userProfile?.isAdmin || false,
     signIn,
-    signOut
+    signOut,
+    refreshUserProfile
   }
 
   return (

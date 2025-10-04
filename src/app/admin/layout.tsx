@@ -1,7 +1,6 @@
 'use client'
 
 import { useAuth } from '@/contexts/AuthContext'
-import { useAdmin } from '@/hooks/useAdmin'
 import { useRouter } from 'next/navigation'
 import { AdminSidebar } from '@/components/admin/AdminSidebar'
 import { 
@@ -16,12 +15,11 @@ export default function AdminLayout({
 }: {
   children: React.ReactNode
 }) {
-  const { user, loading } = useAuth()
-  const { isAdmin: isAdminUser, loading: adminLoading } = useAdmin()
+  const { user, loading, isAdmin: isAdminUser } = useAuth()
   const router = useRouter()
 
   // Show loading state
-  if (loading || adminLoading) {
+  if (loading) {
     return (
       <div className="flex items-center justify-center min-h-screen">
         <div className="text-center">

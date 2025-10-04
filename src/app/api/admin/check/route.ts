@@ -1,6 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server'
-import { supabaseAdmin } from '../../lib/supabase'
-import { isAdmin } from '@/lib/roles'
+import { authServer } from '@/lib/auth-server'
+import { isAdmin } from '../../lib/admin-utils'
 
 export async function GET(request: NextRequest) {
   try {
@@ -14,20 +14,22 @@ export async function GET(request: NextRequest) {
     }
 
     const token = authHeader.replace('Bearer ', '')
-    const { data: { user }, error: userError } = await supabaseAdmin.auth.getUser(token)
+    const user = await authServer.getCurrentUser(token)
 
-    if (userError || !user) {
+    if (!user) {
       return NextResponse.json(
         { error: 'Invalid token' },
-        
         { status: 401 }
       )
     }
 
-    // Check if user has admin role
-    const adminCheck = await isAdmin(user.id)
+    // Check admin status directly using the shared utility
+    const adminStatus = await isAdmin(user.id)
     
-    return NextResponse.json({ isAdmin: adminCheck })
+    console.log('Checking admin status for user:', user.id)
+    console.log('Admin check result:', adminStatus)
+    
+    return NextResponse.json({ isAdmin: adminStatus })
   } catch (error) {
     console.error('Admin check API error:', error)
     return NextResponse.json(

@@ -5,13 +5,11 @@ import Link from 'next/link'
 import { useRouter } from 'next/navigation'
 import { Button } from '@/components/ui/button'
 import { useAuth } from '@/contexts/AuthContext'
-import { useAdmin } from '@/hooks/useAdmin'
 import { History, LogIn, LogOut, Menu, X, Shield } from 'lucide-react'
 import Image from 'next/image'
 
 export function Navbar() {
-  const { user, loading, signOut } = useAuth()
-  const { isAdmin: isAdminUser, loading: adminLoading } = useAdmin()
+  const { user, loading, signOut, isAdmin: isAdminUser } = useAuth()
   const router = useRouter()
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false)
 
@@ -83,7 +81,7 @@ export function Navbar() {
                   <History className="h-4 w-4" />
                   <span>Session History</span>
                 </Button>
-                {!adminLoading && isAdminUser && (
+                {!loading && isAdminUser && (
                   <Button
                     variant="ghost"
                     size="sm"
@@ -156,7 +154,7 @@ export function Navbar() {
                     <History className="h-4 w-4" />
                     <span>Session History</span>
                   </Button>
-                  {!adminLoading && isAdminUser && (
+                  {!loading && isAdminUser && (
                     <Button
                       variant="ghost"
                       size="sm"
@@ -167,6 +165,10 @@ export function Navbar() {
                       <span>Admin</span>
                     </Button>
                   )}
+                  {/* Debug info - remove this later */}
+                  <div className="text-xs text-muted-foreground px-3 py-2">
+                    Admin: {isAdminUser ? 'Yes' : 'No'} | Loading: {loading ? 'Yes' : 'No'}
+                  </div>
                   <Button
                     variant="ghost"
                     size="sm"

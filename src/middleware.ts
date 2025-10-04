@@ -1,7 +1,7 @@
 import { NextResponse } from 'next/server'
 import type { NextRequest } from 'next/server'
 import { supabaseAdmin } from '@/app/api/lib/supabase'
-import { isAdmin } from '@/lib/roles'
+import { isAdmin } from '@/app/api/lib/admin-utils'
 
 export async function middleware(request: NextRequest) {
   // Check if the route is an admin route
@@ -23,10 +23,9 @@ export async function middleware(request: NextRequest) {
           return NextResponse.redirect(new URL('/login', request.url))
         }
 
-        // Check if user has admin role
-        const adminCheck = await isAdmin(user.id)
-
-        if (!adminCheck) {
+        // Check if user has admin role using the shared utility
+        const adminStatus = await isAdmin(user.id)
+        if (!adminStatus) {
           return NextResponse.redirect(new URL('/', request.url))
         }
       }
