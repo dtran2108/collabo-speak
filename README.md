@@ -1,36 +1,41 @@
-This is a [Next.js](https://nextjs.org) project bootstrapped with [`create-next-app`](https://nextjs.org/docs/app/api-reference/cli/create-next-app).
+# CollaboSpeak
 
-## Getting Started
+CollaboSpeak is a web application that enhances collaborative problem-solving skills through AI-powered role-play discussions. Users engage in realistic conversations with AI personas to practice and improve their collaborative communication abilities.
 
-First, run the development server:
+## Key Features
 
-```bash
-npm run dev
-# or
-yarn dev
-# or
-pnpm dev
-# or
-bun dev
-```
+- **AI-Powered Conversations**: Real-time voice interactions with ElevenLabs AI personas for immersive role-play scenarios
+- **Collaborative Problem Solving Assessment**: PISA-based evaluation system tracking user progress across multiple skill dimensions
+- **Admin Dashboard**: Comprehensive user management, session monitoring, and analytics for educators and administrators
+- **Session History & Analytics**: Detailed tracking of user performance with radar charts and progress visualization
+- **Real-time Audio Processing**: Advanced voice synthesis and recognition for natural conversation flow
+- **Responsive Design**: Mobile-first interface with adaptive layouts and touch-friendly controls
+- **Role-based Access Control**: Secure authentication with admin privileges and user permission management
+- **Reflection & Evaluation System**: Post-conversation reflection prompts and skill assessment tools
 
-Open [http://localhost:3000](http://localhost:3000) with your browser to see the result.
+## Key Techniques
 
-You can start editing the page by modifying `app/page.tsx`. The page auto-updates as you edit the file.
+- **Real-time Audio Processing**: Integration with [ElevenLabs API](https://elevenlabs.io/) for voice synthesis and real-time conversation management
+- **Advanced State Management**: Custom hooks pattern with [useConversationState](src/hooks/useConversationState.ts) and [useConversationManager](src/hooks/useConversationManager.ts) for complex conversation flow
+- **Debounced Operations**: Custom [useDebounce](src/hooks/useDebounce.ts) hook for performance optimization
+- **Theme-aware Rendering**: Dynamic theme switching with [MutationObserver](https://developer.mozilla.org/en-US/docs/Web/API/MutationObserver) for real-time visual updates
 
-This project uses [`next/font`](https://nextjs.org/docs/app/building-your-application/optimizing/fonts) to automatically optimize and load [Geist](https://vercel.com/font), a new font family for Vercel.
+## Technologies & Libraries
 
-## Learn More
+- **Framework**: [Next.js 15.5.4](https://nextjs.org/) with App Router
+- **UI Library**: [shadcn/ui](https://ui.shadcn.com/) components built on [Radix UI](https://www.radix-ui.com/) with [Tailwind CSS 4](https://tailwindcss.com/)
+- **Charts**: [Recharts](https://recharts.org/) for data visualization
+- **Database**: [Supabase](https://supabase.com/) for backend services
+- **Authentication**: Custom auth system with Supabase integration
+- **Voice AI**: [ElevenLabs](https://elevenlabs.io/) for conversational AI
+- **Forms**: [React Hook Form](https://react-hook-form.com/) with [Zod](https://zod.dev/) validation
+- **State Management**: Custom hooks with React Context
+- **Fonts**: [Geist](https://vercel.com/font) and [Geist Mono](https://vercel.com/font) from Vercel
 
-To learn more about Next.js, take a look at the following resources:
+**Notable Directories:**
+- `src/app/api/` - REST API with admin controls, authentication, and ElevenLabs integration
+- `src/components/ui/` - shadcn/ui component library built on Radix UI primitives
+- `src/hooks/` - Custom hooks for conversation management, debouncing, and state synchronization
+- `src/lib/` - Centralized API clients and utility functions for clean separation of concerns
 
-- [Next.js Documentation](https://nextjs.org/docs) - learn about Next.js features and API.
-- [Learn Next.js](https://nextjs.org/learn) - an interactive Next.js tutorial.
-
-You can check out [the Next.js GitHub repository](https://github.com/vercel/next.js) - your feedback and contributions are welcome!
-
-## Deploy on Vercel
-
-The easiest way to deploy your Next.js app is to use the [Vercel Platform](https://vercel.com/new?utm_medium=default-template&filter=next.js&utm_source=create-next-app&utm_campaign=create-next-app-readme) from the creators of Next.js.
-
-Check out our [Next.js deployment documentation](https://nextjs.org/docs/app/building-your-application/deploying) for more details.
+The application features a sophisticated conversation system with real-time voice interaction, comprehensive admin controls, and detailed analytics for tracking collaborative problem-solving progress.
