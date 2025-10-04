@@ -46,16 +46,13 @@ export function EvaluationModal({
   const [isSubmitting, setIsSubmitting] = useState(false)
 
   const handleClose = async () => {
-    console.log('EvaluationModal handleClose called with:', { feedback: feedback.trim(), userSessionId })
     if (feedback.trim() !== '' && userSessionId) {
       try {
         setIsSubmitting(true)
-        console.log('Saving feedback for userSessionId:', userSessionId)
         // Update the participation log with user feedback
         await api.participationLog.update(userSessionId, {
           user_question_or_feedback: feedback.trim(),
         } as unknown as JSON)
-        console.log('Feedback saved successfully')
         toast.success('Thanks for your feedback!')
       } catch (error) {
         console.error('Error saving feedback:', error)
@@ -63,8 +60,6 @@ export function EvaluationModal({
       } finally {
         setIsSubmitting(false)
       }
-    } else {
-      console.log('No feedback to save or no userSessionId:', { feedback: feedback.trim(), userSessionId })
     }
     onClose()
   }

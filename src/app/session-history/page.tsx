@@ -181,7 +181,6 @@ export default function SessionHistoryPage() {
     })
   }
 
-
   const handleReflectionSubmit = async (reflection: string) => {
     try {
       setIsSaving(true)
@@ -189,7 +188,10 @@ export default function SessionHistoryPage() {
       // Update reflection field in existing participationLog
       if (reflectionModal.participationId) {
         try {
-          console.log('Updating reflection for participationId:', reflectionModal.participationId)
+          console.log(
+            'Updating reflection for participationId:',
+            reflectionModal.participationId,
+          )
           await api.participationLog.update(reflectionModal.participationId, {
             reflection,
           } as unknown as JSON)
@@ -197,25 +199,38 @@ export default function SessionHistoryPage() {
           console.log('Reflection saved successfully')
 
           // Now get AI evaluation - we need to get the transcript from the session
-          const currentSession = sessions.find(s => s.id === reflectionModal.participationId)
+          const currentSession = sessions.find(
+            (s) => s.id === reflectionModal.participationId,
+          )
           if (currentSession?.transcriptUrl) {
             try {
               // Fetch the transcript content
-              const transcriptResponse = await fetch(currentSession.transcriptUrl)
+              const transcriptResponse = await fetch(
+                currentSession.transcriptUrl,
+              )
               if (transcriptResponse.ok) {
                 const transcriptText = await transcriptResponse.text()
-                await getAIEvaluation(transcriptText, reflectionModal.participationId)
+                await getAIEvaluation(
+                  transcriptText,
+                  reflectionModal.participationId,
+                )
               } else {
                 console.error('Failed to fetch transcript')
-                toast.warning('Reflection saved, but transcript not available for evaluation')
+                toast.warning(
+                  'Reflection saved, but transcript not available for evaluation',
+                )
               }
             } catch (transcriptError) {
               console.error('Error fetching transcript:', transcriptError)
-              toast.warning('Reflection saved, but failed to fetch transcript for evaluation')
+              toast.warning(
+                'Reflection saved, but failed to fetch transcript for evaluation',
+              )
             }
           } else {
             console.error('No transcript URL available for evaluation')
-            toast.warning('Reflection saved, but no transcript available for evaluation')
+            toast.warning(
+              'Reflection saved, but no transcript available for evaluation',
+            )
           }
         } catch (updateError) {
           console.error('Error updating reflection:', updateError)
@@ -248,15 +263,15 @@ export default function SessionHistoryPage() {
       // Set evaluation data first so it shows even if PATCH fails
       setEvaluationData({
         ...evaluation,
-        duration: evaluation.duration?.toString()
+        duration: evaluation.duration?.toString(),
       })
       setIsEvaluating(false)
 
       // Try to update the user session with the feedback (don't fail if this doesn't work)
       try {
         await api.participationLog.update(userSessionId, evaluation)
-        // Reload session history to show updated data
-        loadSessionHistory()
+        // Don't reload here - let the modal stay open until user closes it
+        console.log('Evaluation data saved successfully')
       } catch (updateError) {
         console.error(
           'Error updating user session (but evaluation data is still shown):',
@@ -497,7 +512,7 @@ export default function SessionHistoryPage() {
                             </div>
                             <div className="flex justify-center">
                               <Ratings
-                                rating={session.pisa_shared_understanding}
+                                rating={session?.pisa_shared_understanding || 0}
                                 totalStars={4}
                                 size={16}
                                 variant="yellow"
@@ -512,7 +527,9 @@ export default function SessionHistoryPage() {
                             </div>
                             <div className="flex justify-center">
                               <Ratings
-                                rating={session.pisa_problem_solving_action}
+                                rating={
+                                  session?.pisa_problem_solving_action || 0
+                                }
                                 totalStars={4}
                                 size={16}
                                 variant="yellow"
@@ -527,7 +544,7 @@ export default function SessionHistoryPage() {
                             </div>
                             <div className="flex justify-center">
                               <Ratings
-                                rating={session.pisa_team_organization}
+                                rating={session?.pisa_team_organization || 0}
                                 totalStars={4}
                                 size={16}
                                 variant="yellow"
@@ -760,7 +777,9 @@ export default function SessionHistoryPage() {
         {/* Reflection Modal */}
         <ReflectionModal
           isOpen={reflectionModal.isOpen}
-          onClose={() => setReflectionModal({ isOpen: false, participationId: '' })}
+          onClose={() =>
+            setReflectionModal({ isOpen: false, participationId: '' })
+          }
           onSubmit={handleReflectionSubmit}
           onViewTranscript={handleViewTranscript}
           isSubmitting={isSaving}
