@@ -13,6 +13,7 @@ import { useAdminTable } from '@/hooks/useAdminTable'
 import { authClient } from '@/lib/auth-client'
 import { ConfirmationModal } from '@/components/ui/confirmation-modal'
 import { AddUserModal } from '@/components/admin/users/add-user-modal'
+import { UserForm } from '@/components/admin/users/user-form'
 import { Edit, Trash2 } from 'lucide-react'
 import { toast } from 'sonner'
 
@@ -134,6 +135,24 @@ export function UsersTable({
   }>({
     isOpen: false,
     isLoading: false,
+  })
+
+  // Update user modal state
+  const [updateUserModal, setUpdateUserModal] = useState<{
+    isOpen: boolean
+    isLoading: boolean
+    userId: string | null
+    userData: {
+      fullName: string
+      ieltsScore: string
+      role: 'USER' | 'ADMIN'
+      email: string
+    } | null
+  }>({
+    isOpen: false,
+    isLoading: false,
+    userId: null,
+    userData: null,
   })
 
   // Map frontend column names to API field names
@@ -359,6 +378,97 @@ export function UsersTable({
     })
   }, [])
 
+  // Update user function
+  const updateUser = useCallback(
+    async (userData: {
+      fullName: string
+      ieltsScore?: string
+      role: 'USER' | 'ADMIN'
+    }) => {
+      if (!updateUserModal.userId) return
+
+      try {
+        setUpdateUserModal((prev) => ({ ...prev, isLoading: true }))
+
+        const {
+          data: { session },
+        } = await authClient.getSession()
+
+        if (!session?.access_token) {
+          throw new Error('No valid session found')
+        }
+
+        const response = await fetch(`/api/admin/users/${updateUserModal.userId}`, {
+          method: 'PUT',
+          headers: {
+            Authorization: `Bearer ${session.access_token}`,
+            'Content-Type': 'application/json',
+          },
+          body: JSON.stringify(userData),
+        })
+
+        if (!response.ok) {
+          const errorData = await response.json()
+          throw new Error(errorData.error || 'Failed to update user')
+        }
+
+        const result = await response.json()
+        console.log('User updated successfully:', result)
+
+        // Close modal and refresh data
+        setUpdateUserModal({
+          isOpen: false,
+          isLoading: false,
+          userId: null,
+          userData: null,
+        })
+
+        // Refresh the table data
+        await loadData()
+
+        // Call parent callback if provided
+        onEditUser?.(updateUserModal.userId)
+
+        // Show success message
+        toast.success(`User updated successfully!`)
+      } catch (error) {
+        console.error('Error updating user:', error)
+        setUpdateUserModal((prev) => ({ ...prev, isLoading: false }))
+        toast.error(
+          `Error updating user: ${
+            error instanceof Error ? error.message : 'Unknown error'
+          }`,
+        )
+      }
+    },
+    [updateUserModal.userId, loadData, onEditUser],
+  )
+
+  // Handle edit button click
+  const handleEditClick = useCallback((userId: string, user: User) => {
+    setUpdateUserModal({
+      isOpen: true,
+      isLoading: false,
+      userId,
+      userData: {
+        fullName: user.displayName,
+        ieltsScore: user.ieltsScore === 'N/A' ? '' : user.ieltsScore,
+        role: user.roles.includes('ADMIN') ? 'ADMIN' : 'USER',
+        email: user.email,
+      },
+    })
+  }, [])
+
+  // Handle update user modal close
+  const handleUpdateUserClose = useCallback(() => {
+    setUpdateUserModal({
+      isOpen: false,
+      isLoading: false,
+      userId: null,
+      userData: null,
+    })
+  }, [])
+
   // Define columns
   const columns: ColumnDef<User>[] = useMemo(
     () => [
@@ -484,15 +594,13 @@ export function UsersTable({
         size: 150,
         cell: ({ row }) => (
           <div className="flex items-center gap-2">
-            {onEditUser && (
-              <Button
-                variant="outline"
-                size="sm"
-                onClick={() => onEditUser(row.original.userId)}
-              >
-                <Edit className="h-4 w-4" />
-              </Button>
-            )}
+            <Button
+              variant="outline"
+              size="sm"
+              onClick={() => handleEditClick(row.original.userId, row.original)}
+            >
+              <Edit className="h-4 w-4" />
+            </Button>
             <Button
               variant="outline"
               size="sm"
@@ -507,7 +615,7 @@ export function UsersTable({
         ),
       },
     ],
-    [onEditUser, handleDeleteClick],
+    [handleEditClick, handleDeleteClick],
   )
 
   return (
@@ -563,6 +671,18 @@ export function UsersTable({
         onSubmit={addUser}
         isLoading={addUserModal.isLoading}
       />
+
+      {/* Update User Modal */}
+      {updateUserModal.userData && (
+        <UserForm
+          isOpen={updateUserModal.isOpen}
+          onClose={handleUpdateUserClose}
+          onSubmit={updateUser}
+          isLoading={updateUserModal.isLoading}
+          mode="update"
+          initialData={updateUserModal.userData}
+        />
+      )}
     </>
   )
 }

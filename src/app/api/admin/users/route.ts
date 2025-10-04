@@ -80,7 +80,6 @@ function parseQueryParams(request: NextRequest): QueryParams {
   }
 }
 
-
 async function getTotalCount(params: QueryParams, userIds?: string[]) {
   let countQuery = supabaseAdmin
     .from('user_profiles')
@@ -106,8 +105,10 @@ async function getTotalCount(params: QueryParams, userIds?: string[]) {
 
 async function fetchUserData(userIds: string[]) {
   // Fetch auth users data
-  const { data: authUsers, error: authError } = await supabaseAdmin
-    .rpc('get_auth_users', { user_ids: userIds })
+  const { data: authUsers, error: authError } = await supabaseAdmin.rpc(
+    'get_auth_users',
+    { user_ids: userIds },
+  )
 
   if (authError) {
     throw new Error('Failed to fetch auth users')
@@ -116,12 +117,14 @@ async function fetchUserData(userIds: string[]) {
   // Fetch user roles
   const { data: userRoles, error: rolesError } = await supabaseAdmin
     .from('roleToUser')
-    .select(`
+    .select(
+      `
       userId,
       roles:roleId (
         name
       )
-    `)
+    `,
+    )
     .in('userId', userIds)
 
   if (rolesError) {
@@ -129,10 +132,11 @@ async function fetchUserData(userIds: string[]) {
   }
 
   // Fetch participation counts
-  const { data: participationCounts, error: participationError } = await supabaseAdmin
-    .from('participation_log')
-    .select('userId')
-    .in('userId', userIds)
+  const { data: participationCounts, error: participationError } =
+    await supabaseAdmin
+      .from('participation_log')
+      .select('userId')
+      .in('userId', userIds)
 
   if (participationError) {
     throw new Error('Failed to fetch participation counts')
@@ -141,7 +145,10 @@ async function fetchUserData(userIds: string[]) {
   return { authUsers, userRoles, participationCounts }
 }
 
-function createDataMaps(userRoles: UserRoleData[], participationCounts: ParticipationData[]) {
+function createDataMaps(
+  userRoles: UserRoleData[],
+  participationCounts: ParticipationData[],
+) {
   // Create participation map
   const participationMap = new Map<string, number>()
   participationCounts?.forEach((participation: ParticipationData) => {
@@ -160,7 +167,10 @@ function createDataMaps(userRoles: UserRoleData[], participationCounts: Particip
           existingRoles.push(role.name)
         }
       })
-    } else if (userRole.roles?.name && !existingRoles.includes(userRole.roles.name)) {
+    } else if (
+      userRole.roles?.name &&
+      !existingRoles.includes(userRole.roles.name)
+    ) {
       existingRoles.push(userRole.roles.name)
     }
     if (existingRoles.length > 0) {
@@ -175,10 +185,12 @@ function transformUserData(
   userProfiles: UserProfileData[],
   authUsers: AuthUserData[],
   participationMap: Map<string, number>,
-  rolesMap: Map<string, string[]>
+  rolesMap: Map<string, string[]>,
 ): UserData[] {
   return userProfiles.map((profile: UserProfileData) => {
-    const authUser = authUsers?.find((au: AuthUserData) => au.id === profile.user_id)
+    const authUser = authUsers?.find(
+      (au: AuthUserData) => au.id === profile.user_id,
+    )
     const roles = rolesMap.get(profile.user_id) || []
     const sessionParticipationCount = participationMap.get(profile.user_id) || 0
 
@@ -201,7 +213,7 @@ export async function GET(request: NextRequest) {
     if ('error' in authResult) {
       return NextResponse.json(
         { error: authResult.error },
-        { status: authResult.status }
+        { status: authResult.status },
       )
     }
 
@@ -221,7 +233,7 @@ export async function GET(request: NextRequest) {
         throw new Error('Failed to fetch role users')
       }
 
-      userIds = roleUsers?.map(ru => ru.userId) || []
+      userIds = roleUsers?.map((ru) => ru.userId) || []
       if (userIds.length === 0) {
         // No users with this role, return empty result
         return NextResponse.json({
@@ -237,9 +249,7 @@ export async function GET(request: NextRequest) {
     }
 
     // Build user profiles query
-    let userProfilesQuery = supabaseAdmin
-      .from('user_profiles')
-      .select(`
+    let userProfilesQuery = supabaseAdmin.from('user_profiles').select(`
         user_id,
         full_name,
         ielts_score,
@@ -248,7 +258,10 @@ export async function GET(request: NextRequest) {
 
     // Apply search filter
     if (params.search) {
-      userProfilesQuery = userProfilesQuery.ilike('full_name', `%${params.search}%`)
+      userProfilesQuery = userProfilesQuery.ilike(
+        'full_name',
+        `%${params.search}%`,
+      )
     }
 
     // Apply role filter
@@ -260,16 +273,24 @@ export async function GET(request: NextRequest) {
     const totalCount = await getTotalCount(params, userIds || undefined)
 
     // Apply sorting and pagination
-    const validSortFields = ['created_at', 'full_name', 'ielts_score', 'session_participation_count']
-    let sortField = validSortFields.includes(params.sortBy) ? params.sortBy : 'created_at'
-    const sortDirection = params.sortOrder === 'asc' ? { ascending: true } : { ascending: false }
-    
+    const validSortFields = [
+      'created_at',
+      'full_name',
+      'ielts_score',
+      'session_participation_count',
+    ]
+    let sortField = validSortFields.includes(params.sortBy)
+      ? params.sortBy
+      : 'created_at'
+    const sortDirection =
+      params.sortOrder === 'asc' ? { ascending: true } : { ascending: false }
+
     // Handle session participation count sorting differently since it's calculated
     if (sortField === 'session_participation_count') {
       // For now, just sort by created_at and we'll sort by participation count in memory
       sortField = 'created_at'
     }
-    
+
     const { data: userProfiles, error: profilesError } = await userProfilesQuery
       .order(sortField, sortDirection)
       .range(offset, offset + params.limit - 1)
@@ -291,14 +312,26 @@ export async function GET(request: NextRequest) {
     }
 
     // Fetch additional user data
-    const profileUserIds = userProfiles.map((profile: UserProfileData) => profile.user_id)
-    const { authUsers, userRoles, participationCounts } = await fetchUserData(profileUserIds)
+    const profileUserIds = userProfiles.map(
+      (profile: UserProfileData) => profile.user_id,
+    )
+    const { authUsers, userRoles, participationCounts } = await fetchUserData(
+      profileUserIds,
+    )
 
     // Create data maps
-    const { participationMap, rolesMap } = createDataMaps(userRoles, participationCounts)
+    const { participationMap, rolesMap } = createDataMaps(
+      userRoles,
+      participationCounts,
+    )
 
     // Transform data
-    let users = transformUserData(userProfiles, authUsers, participationMap, rolesMap)
+    let users = transformUserData(
+      userProfiles,
+      authUsers,
+      participationMap,
+      rolesMap,
+    )
 
     // Sort by session participation count if requested (in memory)
     if (params.sortBy === 'session_participation_count') {
@@ -321,12 +354,11 @@ export async function GET(request: NextRequest) {
         totalPages,
       },
     })
-
   } catch (error) {
     console.error('Get users API error:', error)
     return NextResponse.json(
       { error: 'Internal server error' },
-      { status: 500 }
+      { status: 500 },
     )
   }
 }
@@ -338,7 +370,7 @@ export async function POST(request: NextRequest) {
     if (!authHeader) {
       return NextResponse.json(
         { error: 'Authorization header required' },
-        { status: 401 }
+        { status: 401 },
       )
     }
 
@@ -357,7 +389,7 @@ export async function POST(request: NextRequest) {
     if (!adminCheck) {
       return NextResponse.json(
         { error: 'Admin access required' },
-        { status: 403 }
+        { status: 403 },
       )
     }
 
@@ -369,7 +401,7 @@ export async function POST(request: NextRequest) {
     if (!email || !password || !fullName) {
       return NextResponse.json(
         { error: 'Email, password, and full name are required' },
-        { status: 400 }
+        { status: 400 },
       )
     }
 
@@ -377,7 +409,7 @@ export async function POST(request: NextRequest) {
     if (password.length < 4) {
       return NextResponse.json(
         { error: 'Password must be at least 4 characters long' },
-        { status: 400 }
+        { status: 400 },
       )
     }
 
@@ -386,7 +418,7 @@ export async function POST(request: NextRequest) {
     if (!emailRegex.test(email)) {
       return NextResponse.json(
         { error: 'Invalid email format' },
-        { status: 400 }
+        { status: 400 },
       )
     }
 
@@ -394,22 +426,23 @@ export async function POST(request: NextRequest) {
     if (!['USER', 'ADMIN'].includes(role)) {
       return NextResponse.json(
         { error: 'Role must be either USER or ADMIN' },
-        { status: 400 }
+        { status: 400 },
       )
     }
 
     // Create user in auth.users with auto-confirm
-    const { data: newUser, error: createError } = await supabaseAdmin.auth.admin.createUser({
-      email,
-      password,
-      email_confirm: true,
-    })
+    const { data: newUser, error: createError } =
+      await supabaseAdmin.auth.admin.createUser({
+        email,
+        password,
+        email_confirm: true,
+      })
 
     if (createError || !newUser.user) {
       console.error('Error creating user:', createError)
       return NextResponse.json(
         { error: 'Failed to create user account' },
-        { status: 500 }
+        { status: 500 },
       )
     }
 
@@ -426,7 +459,7 @@ export async function POST(request: NextRequest) {
       console.error('Error fetching role:', roleError)
       return NextResponse.json(
         { error: 'Failed to fetch role information' },
-        { status: 500 }
+        { status: 500 },
       )
     }
 
@@ -447,7 +480,7 @@ export async function POST(request: NextRequest) {
       await supabaseAdmin.auth.admin.deleteUser(userId)
       return NextResponse.json(
         { error: 'Failed to create user profile' },
-        { status: 500 }
+        { status: 500 },
       )
     }
 
@@ -458,11 +491,12 @@ export async function POST(request: NextRequest) {
       .eq('userId', userId)
       .single()
 
-    if (checkError && checkError.code !== 'PGRST116') { // PGRST116 = no rows returned
+    if (checkError && checkError.code !== 'PGRST116') {
+      // PGRST116 = no rows returned
       console.error('Error checking existing role:', checkError)
       return NextResponse.json(
         { error: 'Failed to check existing role' },
-        { status: 500 }
+        { status: 500 },
       )
     }
 
@@ -473,7 +507,7 @@ export async function POST(request: NextRequest) {
       await supabaseAdmin.auth.admin.deleteUser(userId)
       return NextResponse.json(
         { error: 'User already has a role assigned' },
-        { status: 400 }
+        { status: 400 },
       )
     }
 
@@ -494,7 +528,7 @@ export async function POST(request: NextRequest) {
       await supabaseAdmin.auth.admin.deleteUser(userId)
       return NextResponse.json(
         { error: 'Failed to assign role to user' },
-        { status: 500 }
+        { status: 500 },
       )
     }
 
@@ -508,14 +542,13 @@ export async function POST(request: NextRequest) {
         fullName,
         ieltsScore: ieltsScore || null,
         role,
-      }
+      },
     })
-
   } catch (error) {
     console.error('Create user API error:', error)
     return NextResponse.json(
       { error: 'Internal server error' },
-      { status: 500 }
+      { status: 500 },
     )
   }
 }
