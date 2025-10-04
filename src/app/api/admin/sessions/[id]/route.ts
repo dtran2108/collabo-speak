@@ -29,7 +29,7 @@ async function validateAdminAccess(request: NextRequest) {
 
 export async function PUT(
   request: NextRequest,
-  { params }: { params: { id: string } }
+  { params }: { params: Promise<{ id: string }> }
 ) {
   try {
     // Validate admin access
@@ -41,7 +41,7 @@ export async function PUT(
       )
     }
 
-    const sessionId = params.id
+    const { id: sessionId } = await params
 
     // Parse request body
     const body = await request.json()
@@ -138,7 +138,7 @@ export async function PUT(
 
 export async function DELETE(
   request: NextRequest,
-  { params }: { params: { id: string } }
+  { params }: { params: Promise<{ id: string }> }
 ) {
   try {
     // Validate admin access
@@ -150,7 +150,7 @@ export async function DELETE(
       )
     }
 
-    const sessionId = params.id
+    const { id: sessionId } = await params
 
     // Check if session exists and get its name for logging
     const { data: existingSession, error: fetchError } = await supabaseAdmin
