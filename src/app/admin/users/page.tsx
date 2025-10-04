@@ -3,7 +3,7 @@
 import { useState, useEffect } from 'react'
 import { useAuth } from '@/contexts/AuthContext'
 import { useRouter } from 'next/navigation'
-import { UsersTable } from '@/components/admin/UsersTable'
+import { UsersTable } from '@/components/admin/users/UsersTable'
 import { authClient } from '@/lib/auth-client'
 
 export default function AdminUsersPage() {

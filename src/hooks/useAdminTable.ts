@@ -1,4 +1,4 @@
-import { useState, useEffect, useCallback, useMemo } from 'react'
+import { useState, useEffect, useCallback, useMemo, useRef } from 'react'
 import { SortingState } from '@tanstack/react-table'
 import { PaginationState } from '@/components/admin/AdminDataTable'
 import { useDebounce } from './useDebounce'
@@ -56,6 +56,10 @@ export function useAdminTable<TData = unknown>({
   // Role filter state
   const [roleFilter, setRoleFilter] = useState<string>('all')
   
+  // Use refs to track current pagination values to avoid circular dependencies
+  const paginationRef = useRef(pagination)
+  paginationRef.current = pagination
+  
   // Fetch data function
   const loadData = useCallback(async () => {
     console.log('DEBUG ~ useAdminTable ~ loadData called')
@@ -68,8 +72,8 @@ export function useAdminTable<TData = unknown>({
       const sortOrder = sorting[0]?.desc ? 'desc' : 'asc'
       
       const result = await fetchData({
-        page: pagination.page,
-        limit: pagination.limit,
+        page: paginationRef.current.page,
+        limit: paginationRef.current.limit,
         search: debouncedSearch,
         sortBy,
         sortOrder,
@@ -90,12 +94,17 @@ export function useAdminTable<TData = unknown>({
       setLoading(false)
       console.log('DEBUG ~ useAdminTable ~ setLoading(false)')
     }
-  }, [fetchData, pagination.page, pagination.limit, debouncedSearch, sorting, roleFilter])
+  }, [fetchData, debouncedSearch, sorting, roleFilter]) // Removed pagination.page and pagination.limit from dependencies
   
-  // Load data when dependencies change
+  // Load data when non-pagination dependencies change
   useEffect(() => {
     loadData()
-  }, [loadData])
+  }, [fetchData, debouncedSearch, sorting, roleFilter])
+  
+  // Load data when pagination changes (separate effect to avoid infinite loop)
+  useEffect(() => {
+    loadData()
+  }, [pagination.page, pagination.limit])
   
   // Handlers
   const handlePaginationChange = useCallback((newPagination: PaginationState) => {

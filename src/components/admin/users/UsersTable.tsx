@@ -8,11 +8,13 @@ import {
   AdminDataTable,
   SortableHeader,
   PaginationState,
-} from './AdminDataTable'
+} from '../AdminDataTable'
 import { useAdminTable } from '@/hooks/useAdminTable'
 import { authClient } from '@/lib/auth-client'
 import { ConfirmationModal } from '@/components/ui/confirmation-modal'
+import { AddUserModal } from '@/components/admin/users/add-user-modal'
 import { Edit, Trash2 } from 'lucide-react'
+import { toast } from 'sonner'
 
 // User interface
 export interface User {
@@ -125,6 +127,28 @@ export function UsersTable({
     isLoading: false,
   })
 
+  // Add user modal state
+  const [addUserModal, setAddUserModal] = useState<{
+    isOpen: boolean
+    isLoading: boolean
+  }>({
+    isOpen: false,
+    isLoading: false,
+  })
+
+  // Map frontend column names to API field names
+  const mapColumnToApiField = (columnId: string): string => {
+    const mapping: Record<string, string> = {
+      'createdAt': 'created_at',
+      'displayName': 'full_name',
+      'ieltsScore': 'ielts_score',
+      'sessionParticipationCount': 'session_participation_count',
+      'email': 'email',
+      'roles': 'roles'
+    }
+    return mapping[columnId] || columnId
+  }
+
   // Create a wrapper function that includes availableRoles
   const fetchUsersWithRoles = useCallback(
     (params: {
@@ -140,7 +164,14 @@ export function UsersTable({
         'DEBUG ~ fetchUsersWithRoles ~ availableRoles:',
         availableRoles,
       )
-      return fetchUsers(params, availableRoles)
+      
+      // Map the sortBy field to API field name
+      const mappedParams = {
+        ...params,
+        sortBy: mapColumnToApiField(params.sortBy)
+      }
+      
+      return fetchUsers(mappedParams, availableRoles)
     },
     [availableRoles],
   )
@@ -162,7 +193,7 @@ export function UsersTable({
   } = useAdminTable({
     fetchData: fetchUsersWithRoles,
     initialLimit: 10,
-    initialSorting: [{ id: 'created_at', desc: true }],
+    initialSorting: [{ id: 'createdAt', desc: true }],
   })
 
   // Delete user function
@@ -211,8 +242,7 @@ export function UsersTable({
       } catch (error) {
         console.error('Error deleting user:', error)
         setDeleteModal((prev) => ({ ...prev, isLoading: false }))
-        // You might want to show a toast notification here
-        alert(
+        toast.error(
           `Error deleting user: ${
             error instanceof Error ? error.message : 'Unknown error'
           }`,
@@ -245,6 +275,86 @@ export function UsersTable({
       isOpen: false,
       userId: null,
       userEmail: null,
+      isLoading: false,
+    })
+  }, [])
+
+  // Add user function
+  const addUser = useCallback(
+    async (userData: {
+      email: string
+      password: string
+      fullName: string
+      ieltsScore?: string
+      role: 'USER' | 'ADMIN'
+    }) => {
+      try {
+        setAddUserModal((prev) => ({ ...prev, isLoading: true }))
+
+        const {
+          data: { session },
+        } = await authClient.getSession()
+
+        if (!session?.access_token) {
+          throw new Error('No valid session found')
+        }
+
+        const response = await fetch('/api/admin/users', {
+          method: 'POST',
+          headers: {
+            Authorization: `Bearer ${session.access_token}`,
+            'Content-Type': 'application/json',
+          },
+          body: JSON.stringify(userData),
+        })
+
+        if (!response.ok) {
+          const errorData = await response.json()
+          throw new Error(errorData.error || 'Failed to create user')
+        }
+
+        const result = await response.json()
+        console.log('User created successfully:', result)
+
+        // Close modal and refresh data
+        setAddUserModal({
+          isOpen: false,
+          isLoading: false,
+        })
+
+        // Refresh the table data
+        await loadData()
+
+        // Call parent callback if provided
+        onAddUser?.()
+
+        // Show success message
+        toast.success(`User ${userData.email} created successfully!`)
+      } catch (error) {
+        console.error('Error creating user:', error)
+        setAddUserModal((prev) => ({ ...prev, isLoading: false }))
+        toast.error(
+          `Error creating user: ${
+            error instanceof Error ? error.message : 'Unknown error'
+          }`,
+        )
+      }
+    },
+    [loadData, onAddUser],
+  )
+
+  // Handle add user button click
+  const handleAddUserClick = useCallback(() => {
+    setAddUserModal({
+      isOpen: true,
+      isLoading: false,
+    })
+  }, [])
+
+  // Handle add user modal close
+  const handleAddUserClose = useCallback(() => {
+    setAddUserModal({
+      isOpen: false,
       isLoading: false,
     })
   }, [])
@@ -417,7 +527,7 @@ export function UsersTable({
         roleFilter={roleFilter}
         onRoleFilterChange={handleRoleFilterChange}
         availableRoles={availableRoles}
-        onAddItem={onAddUser}
+        onAddItem={handleAddUserClick}
         addButtonText="Add User"
         emptyStateMessage="No users found."
       />
@@ -444,6 +554,14 @@ export function UsersTable({
         cancelText="Cancel"
         variant="destructive"
         isLoading={deleteModal.isLoading}
+      />
+
+      {/* Add User Modal */}
+      <AddUserModal
+        isOpen={addUserModal.isOpen}
+        onClose={handleAddUserClose}
+        onSubmit={addUser}
+        isLoading={addUserModal.isLoading}
       />
     </>
   )

@@ -2,10 +2,7 @@ import React from 'react'
 import { 
   Shield, 
   Users, 
-  UserCheck, 
-  Calendar, 
   FileText, 
-  BarChart3, 
   Bot,
   MessagesSquare
 } from 'lucide-react'
@@ -23,22 +20,22 @@ export const adminNavItems: AdminNavItem[] = [
     icon: Shield,
   },
   {
-    title: 'All Users',
+    title: 'Manage Users',
     href: '/admin/users',
     icon: Users,
   },
   {
-    title: 'All Sessions',
+    title: 'Manage Sessions',
     href: '/admin/sessions',
     icon: MessagesSquare,
   },
   {
-    title: 'All Personas',
+    title: 'Manage Personas',
     href: '/admin/personas',
     icon: Bot,
   },
   {
-    title: 'All Participation Logs',
+    title: 'Participation Logs',
     href: '/admin/participation',
     icon: FileText,
   },
