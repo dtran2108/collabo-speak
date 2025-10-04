@@ -1,14 +1,13 @@
 'use client'
 
 import React, { createContext, useContext, useEffect, useState } from 'react'
-import { auth, type AuthUser } from '@/lib/auth'
-import type { AuthResponse, AuthError } from '@supabase/supabase-js'
+import { authClient, type AuthUser } from '@/lib/auth-client'
 
 interface AuthContextType {
   user: AuthUser | null
   loading: boolean
-  signIn: (email: string, password: string) => Promise<{ data: AuthResponse['data']; error: AuthError | null }>
-  signOut: () => Promise<{ error: AuthError | null }>
+  signIn: (email: string, password: string) => Promise<{ data: { session: { access_token: string } } | null; error: string | null }>
+  signOut: () => Promise<{ error: string | null }>
 }
 
 const AuthContext = createContext<AuthContextType | undefined>(undefined)
@@ -21,32 +20,59 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     // Get initial session
     const getInitialSession = async () => {
       try {
-        const currentUser = await auth.getCurrentUser()
-        setUser(currentUser)
+        // Check if there's a stored token
+        const storedToken = localStorage.getItem('auth_token')
+        if (storedToken) {
+          authClient.setToken(storedToken)
+          const currentUser = await authClient.getCurrentUser()
+          setUser(currentUser)
+        }
       } catch (error) {
         console.error('Error getting initial session:', error)
+        localStorage.removeItem('auth_token')
       } finally {
         setLoading(false)
       }
     }
 
     getInitialSession()
-
-    // Listen for auth changes
-    const { data: { subscription } } = auth.onAuthStateChange((user) => {
-      setUser(user)
-      setLoading(false)
-    })
-
-    return () => subscription.unsubscribe()
   }, [])
 
   const signIn = async (email: string, password: string) => {
-    return await auth.signIn(email, password)
+    try {
+      const result = await authClient.signIn(email, password)
+      
+      if (result.data && result.data.session?.access_token) {
+        // Store token in localStorage
+        localStorage.setItem('auth_token', result.data.session.access_token)
+        authClient.setToken(result.data.session.access_token)
+        
+        // Get user info
+        const currentUser = await authClient.getCurrentUser()
+        setUser(currentUser)
+      }
+      
+      return result
+    } catch (error) {
+      console.error('Sign in error:', error)
+      return { data: null, error: 'Sign in failed' }
+    }
   }
 
   const signOut = async () => {
-    return await auth.signOut()
+    try {
+      const result = await authClient.signOut()
+      
+      // Clear token and user
+      localStorage.removeItem('auth_token')
+      authClient.setToken(null)
+      setUser(null)
+      
+      return result
+    } catch (error) {
+      console.error('Sign out error:', error)
+      return { error: 'Sign out failed' }
+    }
   }
 
   const value = {

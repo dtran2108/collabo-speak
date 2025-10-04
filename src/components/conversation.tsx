@@ -76,7 +76,6 @@ export function Conversation({ personas, agentId }: ConversationProps) {
       {/* Conversation Controls */}
       <ConversationControls
         state={state}
-        actions={actions}
         status={status}
         isSpeaking={isSpeaking}
         onStartConversation={handleStartConversation}

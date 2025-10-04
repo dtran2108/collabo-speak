@@ -4,7 +4,7 @@ import { useEffect, useState } from 'react'
 import { useAuth } from '@/contexts/AuthContext'
 import { useAdmin } from '@/hooks/useAdmin'
 import { useRouter } from 'next/navigation'
-import { supabase } from '@/lib/supabase'
+import { authClient } from '@/lib/auth-client'
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
 import { Button } from '@/components/ui/button'
 import { Badge } from '@/components/ui/badge'
@@ -49,7 +49,7 @@ export default function AdminPage() {
       setError(null)
 
       // Get auth token
-      const { data: { session } } = await supabase.auth.getSession()
+      const { data: { session } } = await authClient.getSession()
       if (!session?.access_token) {
         throw new Error('No valid session found')
       }

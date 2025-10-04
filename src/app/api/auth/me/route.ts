@@ -1,5 +1,5 @@
 import { NextRequest, NextResponse } from 'next/server'
-import { authServer } from '@/lib/auth-server'
+import { supabase } from '../../lib/supabase'
 
 export async function GET(request: NextRequest) {
   try {
@@ -11,18 +11,17 @@ export async function GET(request: NextRequest) {
     }
 
     const token = authHeader.replace('Bearer ', '')
-    const user = await authServer.getCurrentUser(token)
-
-    if (!user) {
+    
+    // Verify the token and get user
+    const { data: { user }, error } = await supabase.auth.getUser(token)
+    
+    if (error || !user) {
       return NextResponse.json({ user: null }, { status: 401 })
     }
 
     return NextResponse.json({ user })
   } catch (error) {
-    console.error('Get user error:', error)
-    return NextResponse.json(
-      { error: 'Internal server error' },
-      { status: 500 }
-    )
+    console.error('Error getting current user:', error)
+    return NextResponse.json({ user: null }, { status: 500 })
   }
 }

@@ -1,9 +1,16 @@
-import { NextResponse } from 'next/server'
-import { supabase } from '@/lib/supabase'
+import { NextRequest, NextResponse } from 'next/server'
+import { authServer } from '@/lib/auth-server'
 
-export async function POST() {
+export async function POST(request: NextRequest) {
   try {
-    const { error } = await supabase.auth.signOut()
+    // Get the authorization header
+    const authHeader = request.headers.get('authorization')
+    
+    if (!authHeader) {
+      return NextResponse.json({ success: true }) // Allow signout without token
+    }
+
+    const { error } = await authServer.signOut()
 
     if (error) {
       return NextResponse.json(

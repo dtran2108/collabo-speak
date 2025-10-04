@@ -1,4 +1,4 @@
-import { supabaseAdmin } from './supabase'
+import { supabaseAdmin } from '@/app/api/lib/supabase'
 
 export type Role = {
   id: string

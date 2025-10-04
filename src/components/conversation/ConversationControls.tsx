@@ -1,11 +1,10 @@
 import React from 'react'
 import { Button } from '@/components/ui/button'
 import { Loader, MicOff, Phone } from 'lucide-react'
-import { ConversationState, ConversationActions } from '@/types/conversation'
+import { ConversationState } from '@/types/conversation'
 
 interface ConversationControlsProps {
   state: ConversationState
-  actions: ConversationActions
   status: string
   isSpeaking: boolean
   onStartConversation: () => void
@@ -15,7 +14,6 @@ interface ConversationControlsProps {
 
 export const ConversationControls: React.FC<ConversationControlsProps> = ({
   state,
-  actions,
   status,
   isSpeaking,
   onStartConversation,

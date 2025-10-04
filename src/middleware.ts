@@ -1,6 +1,6 @@
 import { NextResponse } from 'next/server'
 import type { NextRequest } from 'next/server'
-import { supabaseAdmin } from '@/lib/supabase'
+import { supabaseAdmin } from '@/app/api/lib/supabase'
 import { isAdmin } from '@/lib/roles'
 
 export async function middleware(request: NextRequest) {

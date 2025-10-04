@@ -1,6 +1,6 @@
 import { useState, useEffect } from 'react'
 import { useAuth } from '@/contexts/AuthContext'
-import { supabase } from '@/lib/supabase'
+import { authClient } from '@/lib/auth-client'
 
 export function useAdmin() {
   const { user } = useAuth()
@@ -19,7 +19,7 @@ export function useAdmin() {
         setLoading(true)
         
         // Get auth token
-        const { data: { session } } = await supabase.auth.getSession()
+        const { data: { session } } = await authClient.getSession()
         if (!session?.access_token) {
           setIsAdminUser(false)
           return
