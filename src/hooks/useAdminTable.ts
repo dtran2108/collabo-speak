@@ -11,11 +11,15 @@ export interface UseAdminTableProps<TData = unknown> {
     search: string
     sortBy: string
     sortOrder: 'asc' | 'desc'
-    roleId?: string
+    [key: string]: unknown // Allow any additional filter parameters
   }) => Promise<{
     data: TData[]
     pagination: PaginationState
   }>
+  
+  // Filter configuration
+  filterKey?: string // The key name for the filter parameter (e.g., 'roleId', 'isReady')
+  filterValue?: string // The current filter value
   
   // Initial state
   initialPage?: number
@@ -26,6 +30,8 @@ export interface UseAdminTableProps<TData = unknown> {
 
 export function useAdminTable<TData = unknown>({
   fetchData,
+  filterKey = 'roleId', // Default to 'roleId' for backward compatibility
+  filterValue,
   initialPage = 1,
   initialLimit = 10,
   initialSearch = '',
@@ -53,8 +59,9 @@ export function useAdminTable<TData = unknown>({
   // Debounced search to prevent too many API calls
   const debouncedSearch = useDebounce(search, 500)
   
-  // Role filter state
-  const [roleFilter, setRoleFilter] = useState<string>('all')
+  // Filter state - use internal state if no external filterValue provided
+  const [internalFilter, setInternalFilter] = useState<string>('all')
+  const currentFilter = filterValue !== undefined ? filterValue : internalFilter
   
   // Use refs to track current pagination values to avoid circular dependencies
   const paginationRef = useRef(pagination)
@@ -80,16 +87,26 @@ export function useAdminTable<TData = unknown>({
       
       const frontendSortBy = sorting[0]?.id || 'createdAt'
       const sortBy = mapSortField(frontendSortBy)
-      const sortOrder = sorting[0]?.desc ? 'desc' : 'asc'
+      const sortOrder: 'asc' | 'desc' = sorting[0]?.desc ? 'desc' : 'asc'
       
-      const result = await fetchData({
+      // Build parameters object with filter
+      const params: {
+        page: number
+        limit: number
+        search: string
+        sortBy: string
+        sortOrder: 'asc' | 'desc'
+        [key: string]: unknown
+      } = {
         page: paginationRef.current.page,
         limit: paginationRef.current.limit,
         search: debouncedSearch,
         sortBy,
         sortOrder,
-        roleId: roleFilter !== 'all' ? roleFilter : undefined
-      })
+        ...(currentFilter !== 'all' && filterKey ? { [filterKey]: currentFilter } : {}),
+      }
+      
+      const result = await fetchData(params)
       
       setData(result.data)
       setPagination(result.pagination)
@@ -99,7 +116,7 @@ export function useAdminTable<TData = unknown>({
     } finally {
       setLoading(false)
     }
-  }, [fetchData, debouncedSearch, sorting, roleFilter])
+  }, [fetchData, debouncedSearch, sorting, currentFilter, filterKey])
   
   // Load data when dependencies change
   useEffect(() => {
@@ -121,10 +138,13 @@ export function useAdminTable<TData = unknown>({
     setPagination(prev => ({ ...prev, page: 1 })) // Reset to first page when searching
   }, [])
   
-  const handleRoleFilterChange = useCallback((newRoleFilter: string) => {
-    setRoleFilter(newRoleFilter)
+  const handleFilterChange = useCallback((newFilter: string) => {
+    if (filterValue === undefined) {
+      // Only update internal state if no external filterValue is provided
+      setInternalFilter(newFilter)
+    }
     setPagination(prev => ({ ...prev, page: 1 })) // Reset to first page when filtering
-  }, [])
+  }, [filterValue])
   
   // Computed values
   const sortBy = useMemo(() => {
@@ -143,13 +163,13 @@ export function useAdminTable<TData = unknown>({
     pagination,
     sorting,
     search,
-    roleFilter,
+    filter: currentFilter,
     
     // Handlers
     handlePaginationChange,
     handleSortingChange,
     handleSearchChange,
-    handleRoleFilterChange,
+    handleFilterChange,
     
     // Computed
     sortBy,

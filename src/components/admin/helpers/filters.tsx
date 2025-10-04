@@ -31,7 +31,7 @@ export function DynamicFilter({ filter }: DynamicFilterProps) {
             <SelectContent>
               <SelectItem value="all">All {label}</SelectItem>
               {options.map((option) => (
-                <SelectItem key={option.id} value={option.name}>
+                <SelectItem key={option.id} value={option.id}>
                   {option.name}
                 </SelectItem>
               ))}

@@ -198,14 +198,15 @@ export function UsersTable({
     pagination,
     sorting,
     search,
-    roleFilter,
+    filter: roleFilter,
     handlePaginationChange,
     handleSortingChange,
     handleSearchChange,
-    handleRoleFilterChange,
+    handleFilterChange: handleRoleFilterChange,
     refetch: loadData,
   } = useAdminTable({
     fetchData: fetchUsersWithRoles,
+    filterKey: 'roleId',
     initialLimit: 10,
     initialSorting: [{ id: 'createdAt', desc: true }],
   })
