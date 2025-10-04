@@ -4,6 +4,8 @@
 
 # CollaboSpeak
 
+![Under Development](https://img.shields.io/badge/Status-Under%20Development-orange?logo=construction&logoColor=white)
+
 CollaboSpeak is where humans and AI finally learn to play nice together! Think of it as a digital playground where you practice your people skills with AI personas who are surprisingly good listeners (and occasionally sassy). Perfect for when you want to level up your collaboration game without the awkwardness of real human interaction.
 
 ## Key Features
