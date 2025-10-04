@@ -4,7 +4,7 @@
 
 # CollaboSpeak
 
-CollaboSpeak is a web application that enhances collaborative problem-solving skills through AI-powered role-play discussions. Users engage in realistic conversations with AI personas to practice and improve their collaborative communication abilities.
+CollaboSpeak is where humans and AI finally learn to play nice together! Think of it as a digital playground where you practice your people skills with AI personas who are surprisingly good listeners (and occasionally sassy). Perfect for when you want to level up your collaboration game without the awkwardness of real human interaction.
 
 ## Key Features
 
@@ -30,5 +30,5 @@ CollaboSpeak is a web application that enhances collaborative problem-solving sk
 
 ## Core Contributors
 
-- **vuhuongnam** - The Mastermind Who Convinced AI to Behave [![LinkedIn](https://img.shields.io/badge/LinkedIn-0077B5?logo=linkedin&logoColor=white)](https://www.linkedin.com/in/vuhuongnam/)
-- **dtran2108** - The Code Monkey Who Made It Actually Work [![GitHub](https://img.shields.io/badge/GitHub-181717?logo=github&logoColor=white)](https://github.com/dtran2108)
+- **vuhuongnam** - The Mastermind who convinced AI to behave [![LinkedIn](https://img.shields.io/badge/LinkedIn-0077B5?logo=linkedin&logoColor=white)](https://www.linkedin.com/in/vuhuongnam/)
+- **dtran2108** - The Code Monkey who made it actually work [![GitHub](https://img.shields.io/badge/GitHub-181717?logo=github&logoColor=white)](https://github.com/dtran2108)
