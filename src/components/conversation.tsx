@@ -29,7 +29,12 @@ interface Message {
   color: string
 }
 
-export function Conversation({ personas }: { personas: Persona[] }) {
+interface ConversationProps {
+  personas: Persona[]
+  agentId: string
+}
+
+export function Conversation({ personas, agentId }: ConversationProps) {
   const params = useParams()
   const sessionId = params.sessionId as string
   const { user } = useAuth()
@@ -62,6 +67,7 @@ export function Conversation({ personas }: { personas: Persona[] }) {
     overall_score?: number
     detailed_feedback?: string
   } | null>(null)
+  const [showFiveMinuteWarning, setShowFiveMinuteWarning] = useState(false)
 
   const generateId = () => Math.random().toString(36).substr(2, 9)
   const getCurrentTimestamp = () =>
@@ -149,6 +155,17 @@ export function Conversation({ personas }: { personas: Persona[] }) {
     requestMicPermission()
   }, [])
 
+  // 5-minute timer effect
+  useEffect(() => {
+    if (!conversationStartTime) return
+
+    const timer = setTimeout(() => {
+      setShowFiveMinuteWarning(true)
+    }, 5 * 60 * 1000) // 5 minutes in milliseconds
+
+    return () => clearTimeout(timer)
+  }, [conversationStartTime])
+
   const handleStartConversation = async () => {
     try {
       // Reset all conversation state before starting new session
@@ -157,11 +174,43 @@ export function Conversation({ personas }: { personas: Persona[] }) {
       // Set conversation start time
       setConversationStartTime(new Date())
 
-      // Replace with your actual agent ID or URL
-      const conversationId = await conversation.startSession({
-        agentId: process.env.NEXT_PUBLIC_AGENT_ID!,
-        connectionType: 'webrtc',
+      // Get sign URL for private agent
+      const signUrlResponse = await fetch('/api/elevenlabs/sign-url', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          agentId: agentId,
+        }),
       })
+
+      if (!signUrlResponse.ok) {
+        throw new Error('Failed to get sign URL for private agent')
+      }
+
+      const responseData = await signUrlResponse.json()
+      
+      if (!responseData.signedUrl) {
+        throw new Error('No signed URL received from API')
+      }
+      
+      const { signedUrl } = responseData
+      
+      // Validate signed URL format
+      if (!signedUrl || typeof signedUrl !== 'string') {
+        throw new Error('Invalid signed URL format')
+      }
+      
+      if (!signedUrl.startsWith('wss://')) {
+        console.warn('Signed URL does not start with wss://:', signedUrl)
+      }
+
+      const conversationId = await conversation.startSession({
+        agentId: agentId,
+        connectionType: 'websocket',
+        signedUrl: signedUrl, 
+      } as unknown as Parameters<typeof conversation.startSession>[0])
       console.log('Started conversation:', conversationId)
     } catch (error) {
       setErrorMessage('Failed to start conversation')
@@ -329,6 +378,7 @@ export function Conversation({ personas }: { personas: Persona[] }) {
     setErrorMessage('')
     setShowReflectionModal(false)
     setShowEvaluationModal(false)
+    setShowFiveMinuteWarning(false)
   }
 
   const handleEvaluationClose = () => {
@@ -360,29 +410,36 @@ export function Conversation({ personas }: { personas: Persona[] }) {
               Reflection
             </Button>
           ) : status === 'connected' ? (
-            <Button
-              variant="destructive"
-              onClick={handleEndConversation}
-              disabled={isSaving || isConnecting || isEnding}
-              className="flex-1"
-            >
-              {isSaving ? (
-                <div className="flex items-center">
-                  <Loader className="mr-2 h-4 w-4 animate-spin" />
-                  Saving your progress, please wait...
-                </div>
-              ) : isEnding ? (
-                <div className="flex items-center">
-                  <Loader className="mr-2 h-4 w-4 animate-spin" />
-                  Please wait...
-                </div>
-              ) : (
-                <div className="flex items-center">
-                  <MicOff className="mr-2 h-4 w-4" />
-                  End Conversation
+            <div className="flex-1 space-y-2">
+              {showFiveMinuteWarning && (
+                <div className="bg-orange-100 border border-orange-300 text-orange-800 px-4 py-2 rounded-lg text-sm font-semibold shadow-sm animate-pulse text-center">
+                  ⏰ Oh, 5 minutes has passed, please try to wrap up now!
                 </div>
               )}
-            </Button>
+              <Button
+                variant="destructive"
+                onClick={handleEndConversation}
+                disabled={isSaving || isConnecting || isEnding}
+                className="w-full"
+              >
+                {isSaving ? (
+                  <div className="flex items-center">
+                    <Loader className="mr-2 h-4 w-4 animate-spin" />
+                    Saving your progress, please wait...
+                  </div>
+                ) : isEnding ? (
+                  <div className="flex items-center">
+                    <Loader className="mr-2 h-4 w-4 animate-spin" />
+                    Please wait...
+                  </div>
+                ) : (
+                  <div className="flex items-center">
+                    <MicOff className="mr-2 h-4 w-4" />
+                    End Conversation
+                  </div>
+                )}
+              </Button>
+            </div>
           ) : (
             <Button
               onClick={handleStartConversation}

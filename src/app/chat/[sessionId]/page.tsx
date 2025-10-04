@@ -146,10 +146,15 @@ export default function Page() {
         <div className="col-span-3">
           <Card className="w-full h-full gap-0">
             <CardHeader className="border-b font-bold text-lg">
-              Chat Window
+              <div className="flex items-center justify-between">
+                <span>Chat Window</span>
+              </div>
             </CardHeader>
             <CardContent className="py-4">
-              <Conversation personas={session.personas} />
+              <Conversation 
+                personas={session.personas} 
+                agentId={session.agentId}
+              />
             </CardContent>
           </Card>
         </div>
