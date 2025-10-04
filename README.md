@@ -1,3 +1,7 @@
+<div align="center">
+  <img src="public/logos/CollaboSpeak.svg" alt="CollaboSpeak Logo" width="200" height="200">
+</div>
+
 # CollaboSpeak
 
 CollaboSpeak is a web application that enhances collaborative problem-solving skills through AI-powered role-play discussions. Users engage in realistic conversations with AI personas to practice and improve their collaborative communication abilities.
