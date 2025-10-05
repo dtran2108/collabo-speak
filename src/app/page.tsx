@@ -37,21 +37,6 @@ export default function Page() {
     loading: chartLoading,
   } = useChartData()
 
-  // Check session participation for authenticated users
-  const checkSessionParticipation = useCallback(
-    async (sessionIds: string[]) => {
-      if (!user || sessionIds.length === 0) return
-
-      try {
-        const { participation } =
-          await api.participation.checkSessionParticipation(sessionIds)
-        setSessionParticipation(participation)
-      } catch (error) {
-        console.error('Error checking session participation:', error)
-      }
-    },
-    [user],
-  )
 
   // Load sessions and their personas
   const loadSessions = useCallback(async () => {
@@ -78,10 +63,16 @@ export default function Page() {
 
       setSessions(sessionsWithPersonas)
 
-      // Check participation for authenticated users
-      if (user) {
+      // Check participation for authenticated users - only once after sessions are loaded
+      if (user && sessionsWithPersonas.length > 0) {
         const sessionIds = sessionsWithPersonas.map((session) => session.id)
-        await checkSessionParticipation(sessionIds)
+        try {
+          const { participation } =
+            await api.participation.checkSessionParticipation(sessionIds)
+          setSessionParticipation(participation)
+        } catch (error) {
+          console.error('Error checking session participation:', error)
+        }
       }
     } catch (error) {
       console.error('Error loading sessions:', error)
@@ -89,22 +80,19 @@ export default function Page() {
     } finally {
       setSessionsLoading(false)
     }
-  }, [user, checkSessionParticipation])
+  }, [user])
 
-  // Load sessions on component mount
+  // Load sessions on component mount and when user changes
   useEffect(() => {
     loadSessions()
   }, [loadSessions])
 
-  // Check participation when user changes
+  // Clear participation when user logs out
   useEffect(() => {
-    if (user && sessions.length > 0) {
-      const sessionIds = sessions.map((session) => session.id)
-      checkSessionParticipation(sessionIds)
-    } else if (!user) {
+    if (!user) {
       setSessionParticipation({})
     }
-  }, [user, sessions, checkSessionParticipation])
+  }, [user])
 
   const handleStartSession = (sessionId: string) => {
     if (!user) {
