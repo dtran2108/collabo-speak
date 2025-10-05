@@ -9,7 +9,7 @@ import {
   DialogTitle,
 } from '@/components/ui/dialog'
 import { Button } from '@/components/ui/button'
-import { AlertTriangle } from 'lucide-react'
+import { AlertTriangle, Loader } from 'lucide-react'
 
 interface ConfirmationModalProps {
   isOpen: boolean
@@ -64,12 +64,19 @@ export function ConfirmationModal({
             {cancelText}
           </Button>
           <Button
-            className="flex-1"
+            className="flex-1 flex items-center justify-center"
             variant={variant === 'destructive' ? 'destructive' : 'default'}
             onClick={onConfirm}
             disabled={isLoading}
           >
-            {isLoading ? 'Processing...' : confirmText}
+            {isLoading ? (
+              <>
+                <Loader className="h-4 w-4 animate-spin mr-2" />
+                <span>Processing...</span>
+              </>
+            ) : (
+              confirmText
+            )}
           </Button>
         </DialogFooter>
       </DialogContent>

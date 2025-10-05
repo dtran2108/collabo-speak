@@ -126,7 +126,9 @@ export function useAdminTable<TData = unknown>({
   // Handlers
   const handlePaginationChange = useCallback((newPagination: PaginationState) => {
     setPagination(newPagination)
-  }, [])
+    // Trigger data fetch after pagination change
+    setTimeout(() => loadData(), 0)
+  }, [loadData])
   
   const handleSortingChange = useCallback((newSorting: SortingState) => {
     setSorting(newSorting)
