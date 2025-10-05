@@ -10,11 +10,11 @@ import React, {
 } from 'react'
 import { ColumnDef } from '@tanstack/react-table'
 import { Button } from '@/components/ui/button'
+import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar'
 import { AdminDataTable, SortableHeader } from '../AdminDataTable'
 import { PaginationState, FilterConfig } from '../helpers'
 import { useAdminTable } from '@/hooks/useAdminTable'
 import { Edit, Trash2 } from 'lucide-react'
-import Image from 'next/image'
 
 // Persona interface
 export interface Persona {
@@ -49,52 +49,52 @@ export interface PersonasTableRef {
 
 const PersonasTableComponent = forwardRef<PersonasTableRef, PersonasTableProps>(
   ({ onAddPersona, onEditPersona, onDeletePersona, fetchData }, ref) => {
-  // State for sessions data
-  const [sessions, setSessions] = useState<{ id: string; name: string }[]>([])
-  console.log("DEBUG ~ sessions:", sessions)
-  const [sessionsLoading, setSessionsLoading] = useState(false)
+    // State for sessions data
+    const [sessions, setSessions] = useState<{ id: string; name: string }[]>([])
+    console.log('DEBUG ~ sessions:', sessions)
+    const [sessionsLoading, setSessionsLoading] = useState(false)
 
-  // Fetch sessions for filter
-  const fetchSessions = useCallback(async () => {
-    try {
-      setSessionsLoading(true)
-      
-      // Get auth token
-      const { authClient } = await import('@/lib/auth-client')
-      const {
-        data: { session },
-      } = await authClient.getSession()
+    // Fetch sessions for filter
+    const fetchSessions = useCallback(async () => {
+      try {
+        setSessionsLoading(true)
 
-      if (!session?.access_token) {
-        throw new Error('No valid session found')
+        // Get auth token
+        const { authClient } = await import('@/lib/auth-client')
+        const {
+          data: { session },
+        } = await authClient.getSession()
+
+        if (!session?.access_token) {
+          throw new Error('No valid session found')
+        }
+
+        const response = await fetch('/api/admin/sessions?limit=1000', {
+          headers: {
+            Authorization: `Bearer ${session.access_token}`,
+            'Content-Type': 'application/json',
+          },
+        })
+
+        if (response.ok) {
+          const data = await response.json()
+          setSessions(data.sessions || [])
+        } else {
+          console.error('Failed to fetch sessions:', response.statusText)
+        }
+      } catch (error) {
+        console.error('Error fetching sessions:', error)
+      } finally {
+        setSessionsLoading(false)
       }
+    }, [])
 
-      const response = await fetch('/api/admin/sessions?limit=1000', {
-        headers: {
-          Authorization: `Bearer ${session.access_token}`,
-          'Content-Type': 'application/json',
-        },
-      })
-      
-      if (response.ok) {
-        const data = await response.json()
-        setSessions(data.sessions || [])
-      } else {
-        console.error('Failed to fetch sessions:', response.statusText)
-      }
-    } catch (error) {
-      console.error('Error fetching sessions:', error)
-    } finally {
-      setSessionsLoading(false)
-    }
-  }, [])
+    // Fetch sessions on component mount
+    useEffect(() => {
+      fetchSessions()
+    }, [fetchSessions])
 
-  // Fetch sessions on component mount
-  useEffect(() => {
-    fetchSessions()
-  }, [fetchSessions])
-
-  // Map frontend column names to API field names
+    // Map frontend column names to API field names
     const mapColumnToApiField = (columnId: string): string => {
       const mapping: Record<string, string> = {
         createdAt: 'created_at',
@@ -154,23 +154,29 @@ const PersonasTableComponent = forwardRef<PersonasTableRef, PersonasTableProps>(
       [refetch],
     )
 
-  // Create dynamic filters configuration
-  const filters: FilterConfig[] = useMemo(() => {
-    const sessionFilterConfig: FilterConfig = {
-      id: 'sessionId',
-      label: 'Session',
-      type: 'select',
-      options: sessions.map(session => ({
-        id: session.id,
-        name: session.name,
-      })),
-      value: sessionFilter || 'all',
-      onChange: handleSessionFilterChange,
-      disabled: loading || sessionsLoading,
-    }
+    // Create dynamic filters configuration
+    const filters: FilterConfig[] = useMemo(() => {
+      const sessionFilterConfig: FilterConfig = {
+        id: 'sessionId',
+        label: 'Session',
+        type: 'select',
+        options: sessions.map((session) => ({
+          id: session.id,
+          name: session.name,
+        })),
+        value: sessionFilter || 'all',
+        onChange: handleSessionFilterChange,
+        disabled: loading || sessionsLoading,
+      }
 
-    return [sessionFilterConfig]
-  }, [sessionFilter, handleSessionFilterChange, loading, sessionsLoading, sessions])
+      return [sessionFilterConfig]
+    }, [
+      sessionFilter,
+      handleSessionFilterChange,
+      loading,
+      sessionsLoading,
+      sessions,
+    ])
 
     // Handle edit button click
     const handleEditClick = useCallback(
@@ -244,26 +250,15 @@ const PersonasTableComponent = forwardRef<PersonasTableRef, PersonasTableProps>(
             const persona = row.original
             return (
               <div className="flex items-center gap-3">
-                <div className="flex-shrink-0">
-                  {persona.avatarUrl ? (
-                    <Image
-                      src={persona.avatarUrl}
-                      alt={`${persona.name} avatar`}
-                      width={32}
-                      height={32}
-                      className="w-8 h-8 rounded-full object-cover"
-                      onError={(e) => {
-                        e.currentTarget.style.display = 'none'
-                      }}
-                    />
-                  ) : (
-                    <div className="w-8 h-8 rounded-full bg-gray-200 flex items-center justify-center">
-                      <span className="text-xs text-gray-500 font-medium">
-                        {persona.name.charAt(0).toUpperCase()}
-                      </span>
-                    </div>
-                  )}
-                </div>
+                <Avatar className="w-8 h-8">
+                  <AvatarImage
+                    src={persona.avatarUrl}
+                    alt={`${persona.name} avatar`}
+                  />
+                  <AvatarFallback className="text-xs font-medium">
+                    {persona.name.charAt(0).toUpperCase()}
+                  </AvatarFallback>
+                </Avatar>
                 <div className="font-medium">{persona.name}</div>
               </div>
             )
@@ -292,37 +287,6 @@ const PersonasTableComponent = forwardRef<PersonasTableRef, PersonasTableProps>(
           cell: ({ row }) => (
             <div className="text-sm">{row.getValue('sessionName')}</div>
           ),
-        },
-        {
-          accessorKey: 'avatarUrl',
-          header: ({ column }) => (
-            <SortableHeader column={column}>Avatar</SortableHeader>
-          ),
-          enableSorting: false,
-          size: 150,
-          cell: ({ row }) => {
-            const avatarUrl = row.getValue('avatarUrl') as string
-            return (
-              <div className="flex items-center">
-                {avatarUrl ? (
-                  <Image
-                    src={avatarUrl}
-                    alt="Avatar"
-                    width={32}
-                    height={32}
-                    className="w-8 h-8 rounded-full object-cover"
-                    onError={(e) => {
-                      e.currentTarget.style.display = 'none'
-                    }}
-                  />
-                ) : (
-                  <div className="w-8 h-8 rounded-full bg-gray-200 flex items-center justify-center">
-                    <span className="text-xs text-gray-500">No Avatar</span>
-                  </div>
-                )}
-              </div>
-            )
-          },
         },
         {
           id: 'actions',

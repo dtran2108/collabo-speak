@@ -108,7 +108,7 @@ export async function GET(request: NextRequest) {
         description,
         sessionId,
         avatarUrl,
-        sessions!inner(
+        sessions(
           id,
           name
         )
@@ -138,16 +138,22 @@ export async function GET(request: NextRequest) {
       throw new Error('Failed to fetch personas')
     }
 
+    // Debug: Log the raw data to see what we're getting
+    console.log('Raw personas data:', JSON.stringify(personas, null, 2))
+
     // Transform data
-    const transformedPersonas: PersonaData[] = (personas || []).map((persona) => ({
-      id: persona.id,
-      createdAt: persona.created_at,
-      name: persona.name,
-      description: persona.description || '',
-      sessionId: persona.sessionId,
-      sessionName: persona.sessions?.[0]?.name || 'Unknown Session',
-      avatarUrl: persona.avatarUrl || '',
-    }))
+    const transformedPersonas: PersonaData[] = (personas || []).map((persona) => {
+      console.log('Processing persona:', persona.name, 'sessions:', persona.sessions)
+      return {
+        id: persona.id,
+        createdAt: persona.created_at,
+        name: persona.name,
+        description: persona.description || '',
+        sessionId: persona.sessionId,
+        sessionName: persona.sessions?.name || 'No Session',
+        avatarUrl: persona.avatarUrl || '',
+      }
+    })
 
     // Calculate pagination info
     const totalPages = Math.ceil(totalCount / params.limit)
