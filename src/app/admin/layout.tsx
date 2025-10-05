@@ -25,10 +25,10 @@ function getPageTitle(pathname: string): string {
       return 'User Management'
     case 'sessions':
       return 'Session Management'
-    case 'personas':
-      return 'Persona Management'
-    case 'participation':
-      return 'Participation Log'
+    case 'agents':
+      return 'Agent Management'
+    case 'participation-log':
+      return 'Participation Logs'
     default:
       return 'Admin Dashboard'
   }

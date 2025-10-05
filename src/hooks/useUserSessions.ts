@@ -49,7 +49,18 @@ export function useSessionToUser() {
     setError(null)
     
     try {
-      const response = await fetch('/api/sessions')
+      const { data: { session } } = await authClient.getSession()
+      if (!session?.access_token) {
+        setError('User not authenticated')
+        return
+      }
+
+      const response = await fetch('/api/sessions', {
+        headers: {
+          Authorization: `Bearer ${session.access_token}`,
+          'Content-Type': 'application/json',
+        },
+      })
 
       if (!response.ok) {
         throw new Error('Failed to fetch sessions')

@@ -30,13 +30,13 @@ export const adminNavItems: AdminNavItem[] = [
     icon: MessagesSquare,
   },
   {
-    title: 'Manage Personas',
-    href: '/admin/personas',
+    title: 'Manage Agents',
+    href: '/admin/agents',
     icon: Bot,
   },
   {
     title: 'Participation Logs',
-    href: '/admin/participation',
+    href: '/admin/participation-log',
     icon: FileText,
   },
 ]
