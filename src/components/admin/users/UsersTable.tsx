@@ -1,6 +1,6 @@
 'use client'
 
-import React, { useMemo, useCallback } from 'react'
+import React, { useMemo, useCallback, forwardRef, useImperativeHandle } from 'react'
 import { ColumnDef } from '@tanstack/react-table'
 import { Button } from '@/components/ui/button'
 import { Badge } from '@/components/ui/badge'
@@ -42,14 +42,19 @@ export interface UsersTableProps {
   }) => Promise<{ data: User[]; pagination: PaginationState }>
 }
 
+// Ref interface for exposing refetch function
+export interface UsersTableRef {
+  refetch: () => Promise<void>
+}
 
-export function UsersTable({
+
+const UsersTableComponent = forwardRef<UsersTableRef, UsersTableProps>(({
   onAddUser,
   onEditUser,
   onDeleteUser,
   availableRoles = [],
   fetchData,
-}: UsersTableProps) {
+}, ref) => {
 
   // Map frontend column names to API field names
   const mapColumnToApiField = (columnId: string): string => {
@@ -98,12 +103,18 @@ export function UsersTable({
     handleSortingChange,
     handleSearchChange,
     handleFilterChange: handleRoleFilterChange,
+    refetch,
   } = useAdminTable({
     fetchData: fetchUsersWithMapping,
     filterKey: 'roleId',
     initialLimit: 10,
     initialSorting: [{ id: 'createdAt', desc: true }],
   })
+
+  // Expose refetch function to parent component
+  useImperativeHandle(ref, () => ({
+    refetch,
+  }), [refetch])
 
   // Create dynamic filters configuration
   const filters: FilterConfig[] = useMemo(() => {
@@ -325,4 +336,8 @@ export function UsersTable({
       />
     </>
   )
-}
+})
+
+UsersTableComponent.displayName = 'UsersTable'
+
+export const UsersTable = UsersTableComponent

@@ -1,9 +1,9 @@
 'use client'
 
-import { useState, useEffect, useCallback } from 'react'
+import { useState, useEffect, useCallback, useRef } from 'react'
 import { useAuth } from '@/contexts/AuthContext'
 import { useRouter } from 'next/navigation'
-import { UsersTable, User } from '@/components/admin/users/UsersTable'
+import { UsersTable, User, UsersTableRef } from '@/components/admin/users/UsersTable'
 import { authClient } from '@/lib/auth-client'
 import { PageLoading } from '@/components/ui/loading-spinner'
 import { ConfirmationModal } from '@/components/ui/confirmation-modal'
@@ -14,6 +14,7 @@ import { toast } from 'sonner'
 export default function AdminUsersPage() {
   const { user, loading, isAdmin } = useAuth()
   const router = useRouter()
+  const usersTableRef = useRef<UsersTableRef>(null)
   const [availableRoles, setAvailableRoles] = useState<{ id: string; name: string }[]>([])
 
   // Modal state management
@@ -206,6 +207,9 @@ export default function AdminUsersPage() {
           isLoading: false,
         })
 
+        // Refresh the table data
+        await usersTableRef.current?.refetch()
+
         // Show success message
         toast.success(`User ${userData.email} created successfully!`)
       } catch (error) {
@@ -265,6 +269,9 @@ export default function AdminUsersPage() {
           userData: null,
         })
 
+        // Refresh the table data
+        await usersTableRef.current?.refetch()
+
         // Show success message
         toast.success(`User updated successfully!`)
       } catch (error) {
@@ -316,6 +323,9 @@ export default function AdminUsersPage() {
           userEmail: null,
           isLoading: false,
         })
+
+        // Refresh the table data
+        await usersTableRef.current?.refetch()
 
         // Show success message
         toast.success('User deleted successfully!')
@@ -404,6 +414,7 @@ export default function AdminUsersPage() {
     <>
       <div className="w-full max-w-full lg:max-w-[80vw] overflow-hidden">
         <UsersTable
+          ref={usersTableRef}
           onAddUser={handleAddUser}
           onEditUser={handleEditUser}
           onDeleteUser={handleDeleteUser}

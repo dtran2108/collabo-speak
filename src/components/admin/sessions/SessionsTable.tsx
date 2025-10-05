@@ -1,18 +1,13 @@
 'use client'
 
-import React, { useMemo, useCallback, useState } from 'react'
+import React, { useMemo, useCallback, forwardRef, useImperativeHandle } from 'react'
 import { ColumnDef } from '@tanstack/react-table'
 import { Button } from '@/components/ui/button'
 import { Badge } from '@/components/ui/badge'
 import { AdminDataTable, SortableHeader } from '../AdminDataTable'
 import { PaginationState, FilterConfig } from '../helpers'
 import { useAdminTable } from '@/hooks/useAdminTable'
-import { authClient } from '@/lib/auth-client'
-import { ConfirmationModal } from '@/components/ui/confirmation-modal'
-import { AddSessionModal } from './add-session-modal'
-import { SessionForm } from './session-form'
 import { Edit, Trash2 } from 'lucide-react'
-import { toast } from 'sonner'
 
 // Session interface
 export interface Session {
@@ -27,105 +22,29 @@ export interface Session {
 // Props for the SessionsTable component
 export interface SessionsTableProps {
   onAddSession?: () => void
-  onEditSession?: (sessionId: string) => void
-  onDeleteSession?: (sessionId: string) => void
+  onEditSession?: (sessionId: string, session: Session) => void
+  onDeleteSession?: (sessionId: string, sessionName: string) => void
+  fetchData: (params: {
+    page: number
+    limit: number
+    search: string
+    sortBy: string
+    sortOrder: 'asc' | 'desc'
+    isReady?: string
+  }) => Promise<{ data: Session[]; pagination: PaginationState }>
 }
 
-// API function to fetch sessions
-async function fetchSessions(params: {
-  page: number
-  limit: number
-  search: string
-  sortBy: string
-  sortOrder: 'asc' | 'desc'
-  isReady?: string
-}): Promise<{ data: Session[]; pagination: PaginationState }> {
-  const {
-    data: { session },
-  } = await authClient.getSession()
-
-  if (!session?.access_token) {
-    throw new Error('No valid session found')
-  }
-
-  const searchParams = new URLSearchParams({
-    page: params.page.toString(),
-    limit: params.limit.toString(),
-    search: params.search,
-    sortBy: params.sortBy,
-    sortOrder: params.sortOrder,
-  })
-
-  if (params.isReady !== undefined) {
-    searchParams.set('isReady', params.isReady)
-  }
-
-  const response = await fetch(`/api/admin/sessions?${searchParams}`, {
-    headers: {
-      Authorization: `Bearer ${session.access_token}`,
-      'Content-Type': 'application/json',
-    },
-  })
-
-  if (!response.ok) {
-    throw new Error('Failed to fetch sessions')
-  }
-
-  const result = await response.json()
-
-  // Transform API response to match useAdminTable expected format
-  const transformedResult = {
-    data: result.sessions,
-    pagination: result.pagination,
-  }
-
-  return transformedResult
+// Ref interface for exposing refetch function
+export interface SessionsTableRef {
+  refetch: () => Promise<void>
 }
 
-export function SessionsTable({
+const SessionsTableComponent = forwardRef<SessionsTableRef, SessionsTableProps>(({
   onAddSession,
   onEditSession,
   onDeleteSession,
-}: SessionsTableProps) {
-  // Delete confirmation modal state
-  const [deleteModal, setDeleteModal] = useState<{
-    isOpen: boolean
-    sessionId: string | null
-    sessionName: string | null
-    isLoading: boolean
-  }>({
-    isOpen: false,
-    sessionId: null,
-    sessionName: null,
-    isLoading: false,
-  })
-
-  // Add session modal state
-  const [addSessionModal, setAddSessionModal] = useState<{
-    isOpen: boolean
-    isLoading: boolean
-  }>({
-    isOpen: false,
-    isLoading: false,
-  })
-
-  // Update session modal state
-  const [updateSessionModal, setUpdateSessionModal] = useState<{
-    isOpen: boolean
-    isLoading: boolean
-    sessionId: string | null
-    sessionData: {
-      name: string
-      description: string
-      agentId: string
-      isReady: boolean
-    } | null
-  }>({
-    isOpen: false,
-    isLoading: false,
-    sessionId: null,
-    sessionData: null,
-  })
+  fetchData,
+}, ref) => {
 
   // Map frontend column names to API field names
   const mapColumnToApiField = (columnId: string): string => {
@@ -137,7 +56,7 @@ export function SessionsTable({
     return mapping[columnId] || columnId
   }
 
-  // Create a wrapper function for fetchSessions
+  // Create a wrapper function for fetchData
   const fetchSessionsWithMapping = useCallback(
     (params: {
       page: number
@@ -153,9 +72,9 @@ export function SessionsTable({
         sortBy: mapColumnToApiField(params.sortBy),
       }
 
-      return fetchSessions(mappedParams)
+      return fetchData(mappedParams)
     },
-    [],
+    [fetchData],
   )
 
   // Use the admin table hook
@@ -171,13 +90,18 @@ export function SessionsTable({
     handleSortingChange,
     handleSearchChange,
     handleFilterChange: handleIsReadyFilterChange,
-    refetch: loadData,
+    refetch,
   } = useAdminTable({
     fetchData: fetchSessionsWithMapping,
     filterKey: 'isReady',
     initialLimit: 10,
     initialSorting: [{ id: 'createdAt', desc: true }],
   })
+
+  // Expose refetch function to parent component
+  useImperativeHandle(ref, () => ({
+    refetch,
+  }), [refetch])
 
   // Create dynamic filters configuration
   const filters: FilterConfig[] = useMemo(() => {
@@ -198,265 +122,20 @@ export function SessionsTable({
     return [isReadyFilterConfig]
   }, [isReadyFilter, handleIsReadyFilterChange, loading])
 
-  // Delete session function
-  const deleteSession = useCallback(
-    async (sessionId: string) => {
-      try {
-        setDeleteModal((prev) => ({ ...prev, isLoading: true }))
-
-        const {
-          data: { session },
-        } = await authClient.getSession()
-
-        if (!session?.access_token) {
-          throw new Error('No valid session found')
-        }
-
-        const response = await fetch(`/api/admin/sessions/${sessionId}`, {
-          method: 'DELETE',
-          headers: {
-            Authorization: `Bearer ${session.access_token}`,
-            'Content-Type': 'application/json',
-          },
-        })
-
-        if (!response.ok) {
-          const errorData = await response.json()
-          throw new Error(errorData.error || 'Failed to delete session')
-        }
-
-        const result = await response.json()
-        console.log('Session deleted successfully:', result)
-
-        // Close modal and refresh data
-        setDeleteModal({
-          isOpen: false,
-          sessionId: null,
-          sessionName: null,
-          isLoading: false,
-        })
-
-        // Refresh the table data
-        await loadData()
-
-        // Call parent callback if provided
-        onDeleteSession?.(sessionId)
-      } catch (error) {
-        console.error('Error deleting session:', error)
-        setDeleteModal((prev) => ({ ...prev, isLoading: false }))
-        toast.error(
-          `Error deleting session: ${
-            error instanceof Error ? error.message : 'Unknown error'
-          }`,
-        )
-      }
-    },
-    [loadData, onDeleteSession],
-  )
+  // Handle edit button click
+  const handleEditClick = useCallback((sessionId: string, session: Session) => {
+    onEditSession?.(sessionId, session)
+  }, [onEditSession])
 
   // Handle delete button click
-  const handleDeleteClick = useCallback(
-    (sessionId: string, sessionName: string) => {
-      setDeleteModal({
-        isOpen: true,
-        sessionId,
-        sessionName,
-        isLoading: false,
-      })
-    },
-    [],
-  )
-
-  // Handle delete confirmation
-  const handleDeleteConfirm = useCallback(() => {
-    if (deleteModal.sessionId) {
-      deleteSession(deleteModal.sessionId)
-    }
-  }, [deleteModal.sessionId, deleteSession])
-
-  // Handle delete modal close
-  const handleDeleteCancel = useCallback(() => {
-    setDeleteModal({
-      isOpen: false,
-      sessionId: null,
-      sessionName: null,
-      isLoading: false,
-    })
-  }, [])
-
-  // Add session function
-  const addSession = useCallback(
-    async (sessionData: {
-      name: string
-      description: string
-      agentId: string
-      isReady: boolean
-    }) => {
-      try {
-        setAddSessionModal((prev) => ({ ...prev, isLoading: true }))
-
-        const {
-          data: { session },
-        } = await authClient.getSession()
-
-        if (!session?.access_token) {
-          throw new Error('No valid session found')
-        }
-
-        const response = await fetch('/api/admin/sessions', {
-          method: 'POST',
-          headers: {
-            Authorization: `Bearer ${session.access_token}`,
-            'Content-Type': 'application/json',
-          },
-          body: JSON.stringify(sessionData),
-        })
-
-        if (!response.ok) {
-          const errorData = await response.json()
-          throw new Error(errorData.error || 'Failed to create session')
-        }
-
-        const result = await response.json()
-        console.log('Session created successfully:', result)
-
-        // Close modal and refresh data
-        setAddSessionModal({
-          isOpen: false,
-          isLoading: false,
-        })
-
-        // Refresh the table data
-        await loadData()
-
-        // Call parent callback if provided
-        onAddSession?.()
-
-        // Show success message
-        toast.success(`Session "${sessionData.name}" created successfully!`)
-      } catch (error) {
-        console.error('Error creating session:', error)
-        setAddSessionModal((prev) => ({ ...prev, isLoading: false }))
-        toast.error(
-          `Error creating session: ${
-            error instanceof Error ? error.message : 'Unknown error'
-          }`,
-        )
-      }
-    },
-    [loadData, onAddSession],
-  )
+  const handleDeleteClick = useCallback((sessionId: string, sessionName: string) => {
+    onDeleteSession?.(sessionId, sessionName)
+  }, [onDeleteSession])
 
   // Handle add session button click
   const handleAddSessionClick = useCallback(() => {
-    setAddSessionModal({
-      isOpen: true,
-      isLoading: false,
-    })
-  }, [])
-
-  // Handle add session modal close
-  const handleAddSessionClose = useCallback(() => {
-    setAddSessionModal({
-      isOpen: false,
-      isLoading: false,
-    })
-  }, [])
-
-  // Update session function
-  const updateSession = useCallback(
-    async (sessionData: {
-      name: string
-      description: string
-      agentId: string
-      isReady: boolean
-    }) => {
-      if (!updateSessionModal.sessionId) return
-
-      try {
-        setUpdateSessionModal((prev) => ({ ...prev, isLoading: true }))
-
-        const {
-          data: { session },
-        } = await authClient.getSession()
-
-        if (!session?.access_token) {
-          throw new Error('No valid session found')
-        }
-
-        const response = await fetch(
-          `/api/admin/sessions/${updateSessionModal.sessionId}`,
-          {
-            method: 'PUT',
-            headers: {
-              Authorization: `Bearer ${session.access_token}`,
-              'Content-Type': 'application/json',
-            },
-            body: JSON.stringify(sessionData),
-          },
-        )
-
-        if (!response.ok) {
-          const errorData = await response.json()
-          throw new Error(errorData.error || 'Failed to update session')
-        }
-
-        const result = await response.json()
-        console.log('Session updated successfully:', result)
-
-        // Close modal and refresh data
-        setUpdateSessionModal({
-          isOpen: false,
-          isLoading: false,
-          sessionId: null,
-          sessionData: null,
-        })
-
-        // Refresh the table data
-        await loadData()
-
-        // Call parent callback if provided
-        onEditSession?.(updateSessionModal.sessionId)
-
-        // Show success message
-        toast.success(`Session updated successfully!`)
-      } catch (error) {
-        console.error('Error updating session:', error)
-        setUpdateSessionModal((prev) => ({ ...prev, isLoading: false }))
-        toast.error(
-          `Error updating session: ${
-            error instanceof Error ? error.message : 'Unknown error'
-          }`,
-        )
-      }
-    },
-    [updateSessionModal.sessionId, loadData, onEditSession],
-  )
-
-  // Handle edit button click
-  const handleEditClick = useCallback((sessionId: string, session: Session) => {
-    setUpdateSessionModal({
-      isOpen: true,
-      isLoading: false,
-      sessionId,
-      sessionData: {
-        name: session.name,
-        description: session.description,
-        agentId: session.agentId,
-        isReady: session.isReady,
-      },
-    })
-  }, [])
-
-  // Handle update session modal close
-  const handleUpdateSessionClose = useCallback(() => {
-    setUpdateSessionModal({
-      isOpen: false,
-      isLoading: false,
-      sessionId: null,
-      sessionData: null,
-    })
-  }, [])
+    onAddSession?.()
+  }, [onAddSession])
 
   // Define columns
   const columns: ColumnDef<Session>[] = useMemo(
@@ -590,69 +269,26 @@ export function SessionsTable({
   )
 
   return (
-    <>
-      <AdminDataTable
-        data={sessions}
-        columns={columns}
-        loading={loading}
-        error={error}
-        pagination={pagination}
-        onPaginationChange={handlePaginationChange}
-        sorting={sorting}
-        onSortingChange={handleSortingChange}
-        searchValue={search}
-        onSearchChange={handleSearchChange}
-        searchPlaceholder="Search by session name..."
-        filters={filters}
-        onAddItem={handleAddSessionClick}
-        addButtonText="Add Session"
-        emptyStateMessage="No sessions found."
-      />
-
-      {/* Delete Confirmation Modal */}
-      <ConfirmationModal
-        isOpen={deleteModal.isOpen}
-        onClose={handleDeleteCancel}
-        onConfirm={handleDeleteConfirm}
-        title="Delete Session"
-        description={
-          <>
-            <p>You are deleting this session:</p>
-            <strong className="text-orange-500">
-              {deleteModal.sessionName}
-            </strong>
-            <p className="mt-2">
-              This action cannot be undone and will permanently remove the
-              session. Note: Sessions with existing participation logs or
-              personas cannot be deleted.
-            </p>
-          </>
-        }
-        confirmText="Delete Session"
-        cancelText="Cancel"
-        variant="destructive"
-        isLoading={deleteModal.isLoading}
-      />
-
-      {/* Add Session Modal */}
-      <AddSessionModal
-        isOpen={addSessionModal.isOpen}
-        onClose={handleAddSessionClose}
-        onSubmit={addSession}
-        isLoading={addSessionModal.isLoading}
-      />
-
-      {/* Update Session Modal */}
-      {updateSessionModal.sessionData && (
-        <SessionForm
-          isOpen={updateSessionModal.isOpen}
-          onClose={handleUpdateSessionClose}
-          onSubmit={updateSession}
-          isLoading={updateSessionModal.isLoading}
-          mode="update"
-          initialData={updateSessionModal.sessionData}
-        />
-      )}
-    </>
+    <AdminDataTable
+      data={sessions}
+      columns={columns}
+      loading={loading}
+      error={error}
+      pagination={pagination}
+      onPaginationChange={handlePaginationChange}
+      sorting={sorting}
+      onSortingChange={handleSortingChange}
+      searchValue={search}
+      onSearchChange={handleSearchChange}
+      searchPlaceholder="Search by session name..."
+      filters={filters}
+      onAddItem={handleAddSessionClick}
+      addButtonText="Add Session"
+      emptyStateMessage="No sessions found."
+    />
   )
-}
+})
+
+SessionsTableComponent.displayName = 'SessionsTable'
+
+export const SessionsTable = SessionsTableComponent
