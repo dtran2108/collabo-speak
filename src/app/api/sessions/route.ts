@@ -3,23 +3,17 @@ import { supabase } from '@/app/api/lib/supabase'
 
 export async function GET(request: NextRequest) {
   try {
-    // Get user from Authorization header
+    // Check if authorization header is provided (optional for public access)
     const authHeader = request.headers.get('authorization')
-    if (!authHeader) {
-      return NextResponse.json(
-        { error: 'Authorization header required' },
-        { status: 401 }
-      )
-    }
+    let user = null
 
-    const token = authHeader.replace('Bearer ', '')
-    const { data: { user }, error: userError } = await supabase.auth.getUser(token)
-
-    if (userError || !user) {
-      return NextResponse.json(
-        { error: 'Invalid token' },
-        { status: 401 }
-      )
+    if (authHeader) {
+      const token = authHeader.replace('Bearer ', '')
+      const { data: { user: authUser }, error: userError } = await supabase.auth.getUser(token)
+      
+      if (!userError && authUser) {
+        user = authUser
+      }
     }
 
     const { data, error } = await supabase

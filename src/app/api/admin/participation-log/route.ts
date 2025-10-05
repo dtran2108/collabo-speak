@@ -189,7 +189,7 @@ export async function GET(request: NextRequest) {
     ).map((log) => ({
       id: log.id,
       createdAt: log.created_at,
-      sessionName: (log.sessions as any)?.name || 'Unknown Session',
+      sessionName: (log.sessions as { name?: string })?.name || 'Unknown Session',
       userFullName: userProfiles[log.userId]?.full_name || 'Unknown User',
       transcriptUrl: log.transcriptUrl,
       duration: log.duration,

@@ -48,7 +48,7 @@ export default function AdminParticipationLogPage() {
       }
 
       const result = await response.json()
-      setSessionOptions(result.sessions.map((session: any) => ({
+      setSessionOptions(result.sessions.map((session: { id: string; name: string }) => ({
         id: session.id,
         name: session.name
       })))

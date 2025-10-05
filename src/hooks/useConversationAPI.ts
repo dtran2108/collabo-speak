@@ -88,6 +88,15 @@ export const useConversationAPI = ({ state, actions, sessionId, userId, conversa
       if (evaluation) {
         actions.setEvaluationData(evaluation)
         actions.setUserSessionId(userSessionId)
+
+        // Update the participation log with the evaluation data
+        try {
+          await api.participationLog.update(userSessionId, evaluation)
+          console.log('Evaluation data saved successfully')
+        } catch (updateError) {
+          console.error('Error updating participation log with evaluation data:', updateError)
+          // Don't fail the whole process if update fails - user can still see evaluation
+        }
       } else {
         actions.setErrorMessage('Failed to get AI evaluation')
       }

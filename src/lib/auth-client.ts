@@ -86,9 +86,33 @@ export const authClient = {
 
   // Get session for API calls
   async getSession() {
+    // First check if we have a current token
+    if (currentToken) {
+      return {
+        data: {
+          session: { access_token: currentToken }
+        }
+      }
+    }
+    
+    // If no current token, try to get it from localStorage
+    try {
+      const storedToken = localStorage.getItem('auth_token')
+      if (storedToken) {
+        currentToken = storedToken
+        return {
+          data: {
+            session: { access_token: storedToken }
+          }
+        }
+      }
+    } catch (error) {
+      console.error('Error getting token from localStorage:', error)
+    }
+    
     return {
       data: {
-        session: currentToken ? { access_token: currentToken } : null
+        session: null
       }
     }
   },

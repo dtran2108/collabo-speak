@@ -1,19 +1,29 @@
 import type { Session, Persona } from '@/types/database'
-import { handleResponse, API_BASE_URL } from './shared'
+import { getAuthHeaders, handleResponse, API_BASE_URL } from './shared'
 
 export const sessionsApi = {
   async getAll(): Promise<{ sessions: Session[] }> {
-    const response = await fetch(`${API_BASE_URL}/sessions`)
+    // Try to get auth headers, but don't fail if not available (for public access)
+    const headers = await getAuthHeaders()
+    const response = await fetch(`${API_BASE_URL}/sessions`, {
+      headers,
+    })
     return handleResponse(response)
   },
 
   async getById(id: string): Promise<{ session: Session }> {
-    const response = await fetch(`${API_BASE_URL}/sessions/${id}`)
+    const headers = await getAuthHeaders()
+    const response = await fetch(`${API_BASE_URL}/sessions/${id}`, {
+      headers,
+    })
     return handleResponse(response)
   },
 
   async getPersonas(sessionId: string): Promise<{ personas: Persona[] }> {
-    const response = await fetch(`${API_BASE_URL}/sessions/${sessionId}/personas`)
+    const headers = await getAuthHeaders()
+    const response = await fetch(`${API_BASE_URL}/sessions/${sessionId}/personas`, {
+      headers,
+    })
     return handleResponse(response)
   },
 }

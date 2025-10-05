@@ -150,7 +150,7 @@ export async function GET(request: NextRequest) {
         name: persona.name,
         description: persona.description || '',
         sessionId: persona.sessionId,
-        sessionName: persona.sessions?.name || 'No Session',
+        sessionName: (persona.sessions as { name?: string })?.name || 'No Session',
         avatarUrl: persona.avatarUrl || '',
       }
     })
