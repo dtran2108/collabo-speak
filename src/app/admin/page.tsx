@@ -4,7 +4,13 @@ import { useEffect, useState } from 'react'
 import { useAuth } from '@/contexts/AuthContext'
 import { useRouter } from 'next/navigation'
 import { authClient } from '@/lib/auth-client'
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
+import {
+  Card,
+  CardContent,
+  CardDescription,
+  CardHeader,
+  CardTitle,
+} from '@/components/ui/card'
 import { Button } from '@/components/ui/button'
 import { Badge } from '@/components/ui/badge'
 import { Alert, AlertDescription } from '@/components/ui/alert'
@@ -48,7 +54,9 @@ export default function AdminPage() {
       setError(null)
 
       // Get auth token
-      const { data: { session } } = await authClient.getSession()
+      const {
+        data: { session },
+      } = await authClient.getSession()
       if (!session?.access_token) {
         throw new Error('No valid session found')
       }
@@ -56,7 +64,7 @@ export default function AdminPage() {
       // Fetch admin statistics
       const response = await fetch('/api/admin/stats', {
         headers: {
-          'Authorization': `Bearer ${session.access_token}`,
+          Authorization: `Bearer ${session.access_token}`,
           'Content-Type': 'application/json',
         },
       })
@@ -79,7 +87,7 @@ export default function AdminPage() {
   }
 
   if (loading || isLoading) {
-    return <PageLoading message="Loading admin dashboard..." variant="logo" />
+    return <PageLoading />
   }
 
   if (error) {
@@ -126,32 +134,34 @@ export default function AdminPage() {
             </CardHeader>
             <CardContent>
               <div className="text-2xl font-bold">{stats.totalUsers}</div>
-              <p className="text-xs text-muted-foreground">
-                Registered users
-              </p>
+              <p className="text-xs text-muted-foreground">Registered users</p>
             </CardContent>
           </Card>
 
           <Card>
             <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-              <CardTitle className="text-sm font-medium">Total Sessions</CardTitle>
+              <CardTitle className="text-sm font-medium">
+                Total Sessions
+              </CardTitle>
               <BarChart3 className="h-4 w-4 text-muted-foreground" />
             </CardHeader>
             <CardContent>
               <div className="text-2xl font-bold">{stats.totalSessions}</div>
-              <p className="text-xs text-muted-foreground">
-                Active sessions
-              </p>
+              <p className="text-xs text-muted-foreground">Active sessions</p>
             </CardContent>
           </Card>
 
           <Card>
             <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-              <CardTitle className="text-sm font-medium">Participation</CardTitle>
+              <CardTitle className="text-sm font-medium">
+                Participation
+              </CardTitle>
               <Users className="h-4 w-4 text-muted-foreground" />
             </CardHeader>
             <CardContent>
-              <div className="text-2xl font-bold">{stats.totalParticipation}</div>
+              <div className="text-2xl font-bold">
+                {stats.totalParticipation}
+              </div>
               <p className="text-xs text-muted-foreground">
                 Total participations
               </p>
@@ -160,14 +170,14 @@ export default function AdminPage() {
 
           <Card>
             <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-              <CardTitle className="text-sm font-medium">Recent Activity</CardTitle>
+              <CardTitle className="text-sm font-medium">
+                Recent Activity
+              </CardTitle>
               <BarChart3 className="h-4 w-4 text-muted-foreground" />
             </CardHeader>
             <CardContent>
               <div className="text-2xl font-bold">{stats.recentActivity}</div>
-              <p className="text-xs text-muted-foreground">
-                Last 24 hours
-              </p>
+              <p className="text-xs text-muted-foreground">Last 24 hours</p>
             </CardContent>
           </Card>
         </div>

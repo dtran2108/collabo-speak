@@ -18,7 +18,7 @@ export default function LoginPage() {
   }, [user, loading, router])
 
   if (loading) {
-    return <PageLoading message="Loading login page..." />
+    return <PageLoading />
   }
 
   if (user) {

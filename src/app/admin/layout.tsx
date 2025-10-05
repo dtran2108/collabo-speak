@@ -3,23 +3,23 @@
 import { useAuth } from '@/contexts/AuthContext'
 import { useRouter, usePathname } from 'next/navigation'
 import { AdminSidebar } from '@/components/admin/AdminSidebar'
-import { 
-  SidebarProvider, 
+import {
+  SidebarProvider,
   SidebarInset,
-  SidebarTrigger
+  SidebarTrigger,
 } from '@/components/ui/sidebar'
 import { PageLoading } from '@/components/ui/loading-spinner'
 
 // Function to get page title based on pathname
 function getPageTitle(pathname: string): string {
   const pathSegments = pathname.split('/').filter(Boolean)
-  
+
   if (pathSegments.length <= 1) {
     return 'Admin Dashboard'
   }
-  
+
   const page = pathSegments[1]
-  
+
   switch (page) {
     case 'users':
       return 'User Management'
@@ -46,7 +46,7 @@ export default function AdminLayout({
 
   // Show loading state
   if (loading) {
-    return <PageLoading message="Loading admin dashboard..." />
+    return <PageLoading />
   }
 
   // Redirect if not authenticated
@@ -72,9 +72,7 @@ export default function AdminLayout({
         </header>
 
         {/* Page content */}
-        <main className="flex-1 overflow-auto p-2">
-          {children}
-        </main>
+        <main className="flex-1 overflow-auto p-2">{children}</main>
       </SidebarInset>
     </SidebarProvider>
   )

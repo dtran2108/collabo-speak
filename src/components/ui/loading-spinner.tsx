@@ -249,19 +249,16 @@ export function LoadingSpinner({
 }
 
 interface PageLoadingProps {
-  message?: string
   variant?: 'default' | 'logo'
 }
 
 export function PageLoading({ 
-  message = 'Loading...', 
   variant = 'logo' 
 }: PageLoadingProps) {
   return (
-    <div className="flex items-center justify-center min-h-[400px]">
+    <div className="flex items-center justify-center min-h-[70vh]">
       <div className="text-center">
         <LoadingSpinner size="lg" variant={variant} />
-        <p className="mt-4 text-muted-foreground">{message}</p>
       </div>
     </div>
   )

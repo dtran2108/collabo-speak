@@ -6,16 +6,15 @@
 
 ![Under Development](https://img.shields.io/badge/Status-Under%20Development-orange?logo=construction&logoColor=white)
 
-CollaboSpeak is where humans and AI finally learn to play nice together! Think of it as a digital playground where you practice your people skills with AI personas who are surprisingly good listeners (and occasionally sassy). Perfect for when you want to level up your collaboration game without the awkwardness of real human interaction.
+CollaboSpeak is where humans and AI finally learn to play nice together! Think of it as a digital playground where you practice your people skills with AI agents who are surprisingly good listeners (and occasionally sassy). Perfect for when you want to level up your collaboration game without the awkwardness of real human interaction.
 
 ## Key Features
 
-- **AI-Powered Conversations**: Real-time voice interactions with ElevenLabs AI personas for immersive role-play scenarios
+- **AI-Powered Conversations**: Real-time voice interactions with ElevenLabs AI agents for immersive role-play scenarios
 - **Collaborative Problem Solving Assessment**: PISA-based evaluation system tracking user progress across multiple skill dimensions
 - **Admin Dashboard**: Comprehensive user management, session monitoring, and analytics for educators and administrators
 - **Session History & Analytics**: Detailed tracking of user performance with radar charts and progress visualization
 - **Real-time Audio Processing**: Advanced voice synthesis and recognition for natural conversation flow
-- **Responsive Design**: Mobile-first interface with adaptive layouts and touch-friendly controls
 - **Role-based Access Control**: Secure authentication with admin privileges and user permission management
 - **Reflection & Evaluation System**: Post-conversation reflection prompts and skill assessment tools
 

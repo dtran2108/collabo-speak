@@ -25,7 +25,7 @@ export default function AdminSessionsPage() {
 
   // Only show page-level loading for auth, not for data fetching
   if (loading) {
-    return <PageLoading message="Loading session management..." />
+    return <PageLoading />
   }
 
   const handleAddSession = () => {

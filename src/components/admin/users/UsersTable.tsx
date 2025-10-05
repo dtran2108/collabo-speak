@@ -1,6 +1,6 @@
 'use client'
 
-import React, { useMemo, useCallback, useState } from 'react'
+import React, { useMemo, useCallback } from 'react'
 import { ColumnDef } from '@tanstack/react-table'
 import { Button } from '@/components/ui/button'
 import { Badge } from '@/components/ui/badge'
@@ -13,12 +13,7 @@ import {
   FilterConfig,
 } from '../helpers'
 import { useAdminTable } from '@/hooks/useAdminTable'
-import { authClient } from '@/lib/auth-client'
-import { ConfirmationModal } from '@/components/ui/confirmation-modal'
-import { AddUserModal } from '@/components/admin/users/add-user-modal'
-import { UserForm } from '@/components/admin/users/user-form'
 import { Edit, Trash2 } from 'lucide-react'
-import { toast } from 'sonner'
 
 // User interface
 export interface User {
@@ -34,127 +29,27 @@ export interface User {
 // Props for the UsersTable component
 export interface UsersTableProps {
   onAddUser?: () => void
-  onEditUser?: (userId: string) => void
-  onDeleteUser?: (userId: string) => void
+  onEditUser?: (userId: string, user: User) => void
+  onDeleteUser?: (userId: string, userEmail: string) => void
   availableRoles?: { id: string; name: string }[]
-}
-
-// API function to fetch users
-async function fetchUsers(
-  params: {
+  fetchData: (params: {
     page: number
     limit: number
     search: string
     sortBy: string
     sortOrder: 'asc' | 'desc'
     roleId?: string
-  },
-  availableRoles: { id: string; name: string }[] = [],
-): Promise<{ data: User[]; pagination: PaginationState }> {
-  const {
-    data: { session },
-  } = await authClient.getSession()
-
-  if (!session?.access_token) {
-    throw new Error('No valid session found')
-  }
-
-  const searchParams = new URLSearchParams({
-    page: params.page.toString(),
-    limit: params.limit.toString(),
-    search: params.search,
-    sortBy: params.sortBy,
-    sortOrder: params.sortOrder,
-  })
-
-  if (params.roleId) {
-    // Convert role name to role ID
-    const selectedRole = availableRoles.find(
-      (role) => role.name === params.roleId,
-    )
-    if (selectedRole) {
-      searchParams.set('roleId', selectedRole.id)
-      console.log(
-        'DEBUG ~ fetchUsers ~ converted role name to ID:',
-        params.roleId,
-        '->',
-        selectedRole.id,
-      )
-    } else {
-      console.warn(
-        'DEBUG ~ fetchUsers ~ role not found in availableRoles:',
-        params.roleId,
-      )
-    }
-  }
-
-  const response = await fetch(`/api/admin/users?${searchParams}`, {
-    headers: {
-      Authorization: `Bearer ${session.access_token}`,
-      'Content-Type': 'application/json',
-    },
-  })
-
-  if (!response.ok) {
-    throw new Error('Failed to fetch users')
-  }
-
-  const result = await response.json()
-
-  // Transform API response to match useAdminTable expected format
-  const transformedResult = {
-    data: result.users,
-    pagination: result.pagination,
-  }
-
-  return transformedResult
+  }) => Promise<{ data: User[]; pagination: PaginationState }>
 }
+
 
 export function UsersTable({
   onAddUser,
   onEditUser,
   onDeleteUser,
   availableRoles = [],
+  fetchData,
 }: UsersTableProps) {
-  // Delete confirmation modal state
-  const [deleteModal, setDeleteModal] = useState<{
-    isOpen: boolean
-    userId: string | null
-    userEmail: string | null
-    isLoading: boolean
-  }>({
-    isOpen: false,
-    userId: null,
-    userEmail: null,
-    isLoading: false,
-  })
-
-  // Add user modal state
-  const [addUserModal, setAddUserModal] = useState<{
-    isOpen: boolean
-    isLoading: boolean
-  }>({
-    isOpen: false,
-    isLoading: false,
-  })
-
-  // Update user modal state
-  const [updateUserModal, setUpdateUserModal] = useState<{
-    isOpen: boolean
-    isLoading: boolean
-    userId: string | null
-    userData: {
-      fullName: string
-      ieltsScore: string
-      role: 'USER' | 'ADMIN'
-      email: string
-    } | null
-  }>({
-    isOpen: false,
-    isLoading: false,
-    userId: null,
-    userData: null,
-  })
 
   // Map frontend column names to API field names
   const mapColumnToApiField = (columnId: string): string => {
@@ -169,8 +64,8 @@ export function UsersTable({
     return mapping[columnId] || columnId
   }
 
-  // Create a wrapper function that includes availableRoles
-  const fetchUsersWithRoles = useCallback(
+  // Create a wrapper function that maps sortBy field
+  const fetchUsersWithMapping = useCallback(
     (params: {
       page: number
       limit: number
@@ -185,9 +80,9 @@ export function UsersTable({
         sortBy: mapColumnToApiField(params.sortBy)
       }
       
-      return fetchUsers(mappedParams, availableRoles)
+      return fetchData(mappedParams)
     },
-    [availableRoles],
+    [fetchData],
   )
 
   // Use the admin table hook
@@ -203,9 +98,8 @@ export function UsersTable({
     handleSortingChange,
     handleSearchChange,
     handleFilterChange: handleRoleFilterChange,
-    refetch: loadData,
   } = useAdminTable({
-    fetchData: fetchUsersWithRoles,
+    fetchData: fetchUsersWithMapping,
     filterKey: 'roleId',
     initialLimit: 10,
     initialSorting: [{ id: 'createdAt', desc: true }],
@@ -256,260 +150,6 @@ export function UsersTable({
 
     return [roleFilterConfig]
   }, [availableRoles, roleFilter, handleRoleFilterChange, loading])
-
-  // Delete user function
-  const deleteUser = useCallback(
-    async (userId: string) => {
-      try {
-        setDeleteModal((prev) => ({ ...prev, isLoading: true }))
-
-        const {
-          data: { session },
-        } = await authClient.getSession()
-
-        if (!session?.access_token) {
-          throw new Error('No valid session found')
-        }
-
-        const response = await fetch(`/api/admin/users/${userId}`, {
-          method: 'DELETE',
-          headers: {
-            Authorization: `Bearer ${session.access_token}`,
-            'Content-Type': 'application/json',
-          },
-        })
-
-        if (!response.ok) {
-          const errorData = await response.json()
-          throw new Error(errorData.error || 'Failed to delete user')
-        }
-
-        const result = await response.json()
-        console.log('User deleted successfully:', result)
-
-        // Close modal and refresh data
-        setDeleteModal({
-          isOpen: false,
-          userId: null,
-          userEmail: null,
-          isLoading: false,
-        })
-
-        // Refresh the table data
-        await loadData()
-
-        // Call parent callback if provided
-        onDeleteUser?.(userId)
-      } catch (error) {
-        console.error('Error deleting user:', error)
-        setDeleteModal((prev) => ({ ...prev, isLoading: false }))
-        toast.error(
-          `Error deleting user: ${
-            error instanceof Error ? error.message : 'Unknown error'
-          }`,
-        )
-      }
-    },
-    [loadData, onDeleteUser],
-  )
-
-  // Handle delete button click
-  const handleDeleteClick = useCallback((userId: string, userEmail: string) => {
-    setDeleteModal({
-      isOpen: true,
-      userId,
-      userEmail,
-      isLoading: false,
-    })
-  }, [])
-
-  // Handle delete confirmation
-  const handleDeleteConfirm = useCallback(() => {
-    if (deleteModal.userId) {
-      deleteUser(deleteModal.userId)
-    }
-  }, [deleteModal.userId, deleteUser])
-
-  // Handle delete modal close
-  const handleDeleteCancel = useCallback(() => {
-    setDeleteModal({
-      isOpen: false,
-      userId: null,
-      userEmail: null,
-      isLoading: false,
-    })
-  }, [])
-
-  // Add user function
-  const addUser = useCallback(
-    async (userData: {
-      email: string
-      password: string
-      fullName: string
-      ieltsScore?: string
-      role: 'USER' | 'ADMIN'
-    }) => {
-      try {
-        setAddUserModal((prev) => ({ ...prev, isLoading: true }))
-
-        const {
-          data: { session },
-        } = await authClient.getSession()
-
-        if (!session?.access_token) {
-          throw new Error('No valid session found')
-        }
-
-        const response = await fetch('/api/admin/users', {
-          method: 'POST',
-          headers: {
-            Authorization: `Bearer ${session.access_token}`,
-            'Content-Type': 'application/json',
-          },
-          body: JSON.stringify(userData),
-        })
-
-        if (!response.ok) {
-          const errorData = await response.json()
-          throw new Error(errorData.error || 'Failed to create user')
-        }
-
-        const result = await response.json()
-        console.log('User created successfully:', result)
-
-        // Close modal and refresh data
-        setAddUserModal({
-          isOpen: false,
-          isLoading: false,
-        })
-
-        // Refresh the table data
-        await loadData()
-
-        // Call parent callback if provided
-        onAddUser?.()
-
-        // Show success message
-        toast.success(`User ${userData.email} created successfully!`)
-      } catch (error) {
-        console.error('Error creating user:', error)
-        setAddUserModal((prev) => ({ ...prev, isLoading: false }))
-        toast.error(
-          `Error creating user: ${
-            error instanceof Error ? error.message : 'Unknown error'
-          }`,
-        )
-      }
-    },
-    [loadData, onAddUser],
-  )
-
-  // Handle add user button click
-  const handleAddUserClick = useCallback(() => {
-    setAddUserModal({
-      isOpen: true,
-      isLoading: false,
-    })
-  }, [])
-
-  // Handle add user modal close
-  const handleAddUserClose = useCallback(() => {
-    setAddUserModal({
-      isOpen: false,
-      isLoading: false,
-    })
-  }, [])
-
-  // Update user function
-  const updateUser = useCallback(
-    async (userData: {
-      fullName: string
-      ieltsScore?: string
-      role: 'USER' | 'ADMIN'
-    }) => {
-      if (!updateUserModal.userId) return
-
-      try {
-        setUpdateUserModal((prev) => ({ ...prev, isLoading: true }))
-
-        const {
-          data: { session },
-        } = await authClient.getSession()
-
-        if (!session?.access_token) {
-          throw new Error('No valid session found')
-        }
-
-        const response = await fetch(`/api/admin/users/${updateUserModal.userId}`, {
-          method: 'PUT',
-          headers: {
-            Authorization: `Bearer ${session.access_token}`,
-            'Content-Type': 'application/json',
-          },
-          body: JSON.stringify(userData),
-        })
-
-        if (!response.ok) {
-          const errorData = await response.json()
-          throw new Error(errorData.error || 'Failed to update user')
-        }
-
-        const result = await response.json()
-        console.log('User updated successfully:', result)
-
-        // Close modal and refresh data
-        setUpdateUserModal({
-          isOpen: false,
-          isLoading: false,
-          userId: null,
-          userData: null,
-        })
-
-        // Refresh the table data
-        await loadData()
-
-        // Call parent callback if provided
-        onEditUser?.(updateUserModal.userId)
-
-        // Show success message
-        toast.success(`User updated successfully!`)
-      } catch (error) {
-        console.error('Error updating user:', error)
-        setUpdateUserModal((prev) => ({ ...prev, isLoading: false }))
-        toast.error(
-          `Error updating user: ${
-            error instanceof Error ? error.message : 'Unknown error'
-          }`,
-        )
-      }
-    },
-    [updateUserModal.userId, loadData, onEditUser],
-  )
-
-  // Handle edit button click
-  const handleEditClick = useCallback((userId: string, user: User) => {
-    setUpdateUserModal({
-      isOpen: true,
-      isLoading: false,
-      userId,
-      userData: {
-        fullName: user.displayName,
-        ieltsScore: user.ieltsScore === 'N/A' ? '' : user.ieltsScore,
-        role: user.roles.includes('ADMIN') ? 'ADMIN' : 'USER',
-        email: user.email,
-      },
-    })
-  }, [])
-
-  // Handle update user modal close
-  const handleUpdateUserClose = useCallback(() => {
-    setUpdateUserModal({
-      isOpen: false,
-      isLoading: false,
-      userId: null,
-      userData: null,
-    })
-  }, [])
 
   // Define columns
   const columns: ColumnDef<User>[] = useMemo(
@@ -643,7 +283,7 @@ export function UsersTable({
             <Button
               variant="outline"
               size="sm"
-              onClick={() => handleEditClick(row.original.userId, row.original)}
+              onClick={() => onEditUser?.(row.original.userId, row.original)}
             >
               <Edit className="h-4 w-4" />
             </Button>
@@ -651,7 +291,7 @@ export function UsersTable({
               variant="outline"
               size="sm"
               onClick={() =>
-                handleDeleteClick(row.original.userId, row.original.email)
+                onDeleteUser?.(row.original.userId, row.original.email)
               }
               className="text-red-600 hover:text-red-700 hover:bg-red-50"
             >
@@ -661,7 +301,7 @@ export function UsersTable({
         ),
       },
     ],
-    [handleEditClick, handleDeleteClick],
+    [onEditUser, onDeleteUser],
   )
 
   return (
@@ -679,54 +319,10 @@ export function UsersTable({
         onSearchChange={handleSearchChange}
         searchPlaceholder="Search by name or email..."
         filters={filters}
-        onAddItem={handleAddUserClick}
+        onAddItem={onAddUser}
         addButtonText="Add User"
         emptyStateMessage="No users found."
       />
-
-      {/* Delete Confirmation Modal */}
-      <ConfirmationModal
-        isOpen={deleteModal.isOpen}
-        onClose={handleDeleteCancel}
-        onConfirm={handleDeleteConfirm}
-        title="Delete User"
-        description={
-          <>
-            <p>You are deleting this user:</p>
-            <strong className="text-orange-500">
-              {deleteModal.userEmail}
-            </strong>
-            <p className="mt-2">
-              This action cannot be undone and will permanently remove all user
-              data including participation logs and profile information.
-            </p>
-          </>
-        }
-        confirmText="Delete User"
-        cancelText="Cancel"
-        variant="destructive"
-        isLoading={deleteModal.isLoading}
-      />
-
-      {/* Add User Modal */}
-      <AddUserModal
-        isOpen={addUserModal.isOpen}
-        onClose={handleAddUserClose}
-        onSubmit={addUser}
-        isLoading={addUserModal.isLoading}
-      />
-
-      {/* Update User Modal */}
-      {updateUserModal.userData && (
-        <UserForm
-          isOpen={updateUserModal.isOpen}
-          onClose={handleUpdateUserClose}
-          onSubmit={updateUser}
-          isLoading={updateUserModal.isLoading}
-          mode="update"
-          initialData={updateUserModal.userData}
-        />
-      )}
     </>
   )
 }

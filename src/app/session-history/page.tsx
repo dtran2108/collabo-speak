@@ -311,7 +311,7 @@ export default function SessionHistoryPage() {
   }, [pagination.page, filters, user, loadSessionHistory])
 
   if (loading || isLoading) {
-    return <PageLoading message="Loading session history..." />
+    return <PageLoading />
   }
 
   if (!user) {

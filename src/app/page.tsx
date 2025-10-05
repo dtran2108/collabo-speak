@@ -122,7 +122,7 @@ export default function Page() {
   }
 
   if (loading || sessionsLoading || (user && chartLoading)) {
-    return <PageLoading message={loading ? 'Loading...' : 'Loading sessions...'} variant="logo" />
+    return <PageLoading variant="logo" />
   }
 
   return (
