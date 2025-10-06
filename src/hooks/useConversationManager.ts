@@ -18,51 +18,56 @@ export const useConversationManager = ({
   const isMobile = useIsMobile()
 
   // Memoize the conversation configuration to prevent recreation
-  const conversationConfig = useMemo(() => ({
-    // Simplified configuration for better WebRTC compatibility
-    overrides: {
-      client: {
-        source: 'react_sdk',
-        version: '0.7.1',
+  const conversationConfig = useMemo(
+    () => ({
+      // Simplified configuration for better WebRTC compatibility
+      overrides: {
+        client: {
+          source: 'react_sdk',
+          version: '0.7.1',
+        },
       },
-    },
-    onConnect: () => {
-      try {
-        console.log('WebRTC conversation connected successfully')
-        actions.setIsConnecting(false)
-      } catch (error) {
-        console.error('Error connecting to conversation:', error)
-        actions.setErrorMessage('Failed to connect to conversation')
-      }
-    },
-    onDisconnect: (details: any) => {
-      try {
-        console.log('WebRTC conversation disconnected:', details)
-        console.log('Disconnect reason:', details?.reason)
-        console.log('Disconnect details:', details)
-        actions.setIsConnecting(false)
-        if (details?.reason === 'error') {
-          actions.setErrorMessage('Connection lost. Please try again.')
-        } else if (details?.reason === 'user') {
-          console.log('Conversation ended by user - this might be unexpected')
+      onConnect: () => {
+        try {
+          console.log('WebRTC conversation connected successfully')
+          actions.setIsConnecting(false)
+        } catch (error) {
+          console.error('Error connecting to conversation:', error)
+          actions.setErrorMessage('Failed to connect to conversation')
         }
-      } catch (error) {
-        console.error('Error disconnecting from conversation:', error)
-      }
-    },
-    onMessage: (message: unknown): void => {
-      try {
-        const newMessage = parseConversationMessage(message)
-        actions.setMessages((prev) => [...prev, newMessage])
-      } catch (error) {
-        console.error('Error parsing message:', error)
-      }
-    },
-    onError: (error: string | Error): void => {
-      actions.setErrorMessage(typeof error === 'string' ? error : error.message)
-      console.error('Error:', error)
-    },
-  }), [actions])
+      },
+      onDisconnect: (details: { reason?: string; [key: string]: unknown }) => {
+        try {
+          console.log('WebRTC conversation disconnected:', details)
+          console.log('Disconnect reason:', details?.reason)
+          console.log('Disconnect details:', details)
+          actions.setIsConnecting(false)
+          if (details?.reason === 'error') {
+            actions.setErrorMessage('Connection lost. Please try again.')
+          } else if (details?.reason === 'user') {
+            console.log('Conversation ended by user - this might be unexpected')
+          }
+        } catch (error) {
+          console.error('Error disconnecting from conversation:', error)
+        }
+      },
+      onMessage: (message: unknown): void => {
+        try {
+          const newMessage = parseConversationMessage(message)
+          actions.setMessages((prev) => [...prev, newMessage])
+        } catch (error) {
+          console.error('Error parsing message:', error)
+        }
+      },
+      onError: (error: string | Error): void => {
+        actions.setErrorMessage(
+          typeof error === 'string' ? error : error.message,
+        )
+        console.error('Error:', error)
+      },
+    }),
+    [actions],
+  )
 
   const conversation = useConversation(conversationConfig)
 
@@ -220,7 +225,8 @@ export const useConversationManager = ({
     return () => {
       document.removeEventListener('visibilitychange', handleVisibilityChange)
     }
-  }, [isMobile, status]) // Remove conversation from dependencies
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [isMobile, status]) // conversation is intentionally excluded to prevent premature disconnection
 
   // Note: Cleanup is handled by the conversation object itself
   // No manual cleanup needed to prevent premature disconnection
