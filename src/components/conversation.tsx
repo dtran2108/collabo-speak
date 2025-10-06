@@ -9,11 +9,13 @@ import { ReflectionModal } from './ReflectionModal'
 import { EvaluationModal } from './EvaluationModal'
 import { ConversationControls } from './conversation/ConversationControls'
 import { useConversationManager } from '@/hooks/useConversationManager'
+import { MobileErrorBoundary } from '@/components/MobileErrorBoundary'
 
 // Hooks and utilities
 import { useConversationState } from '@/hooks/useConversationState'
 import { useConversationTimer } from '@/hooks/useConversationTimer'
 import { useConversationAPI } from '@/hooks/useConversationAPI'
+import { useMobilePageReloadPrevention } from '@/hooks/useMobilePageReloadPrevention'
 import { useAuth } from '@/contexts/AuthContext'
 import { Persona } from '@/types/database'
 
@@ -33,6 +35,9 @@ export function Conversation({ personas, agentId, connectionType = 'websocket' }
   
   // Use conversation timer hook
   useConversationTimer({ state, actions })
+  
+  // Prevent page reload on mobile
+  useMobilePageReloadPrevention()
   
   // Use conversation manager hook first to get conversation object
   const { conversation, status, isSpeaking, handleStartConversation } = useConversationManager({
@@ -65,43 +70,48 @@ export function Conversation({ personas, agentId, connectionType = 'websocket' }
   }
 
   return (
-    <div className="space-y-4 flex flex-col justify-between h-full">
-      {/* Transcript Component */}
-      <div className="w-full max-w-4xl mx-auto">
-        <Transcript
-          messages={state.messages}
-          isCensored={state.isCensored}
-          personas={personas}
+    <MobileErrorBoundary>
+      <div 
+        className="space-y-4 flex flex-col justify-between h-full"
+        data-conversation-active={status === 'connected' ? 'true' : 'false'}
+      >
+        {/* Transcript Component */}
+        <div className="w-full max-w-4xl mx-auto">
+          <Transcript
+            messages={state.messages}
+            isCensored={state.isCensored}
+            personas={personas}
+          />
+        </div>
+
+        {/* Conversation Controls */}
+        <ConversationControls
+          state={state}
+          status={status}
+          isSpeaking={isSpeaking}
+          onStartConversation={handleStartConversation}
+          onEndConversation={handleEndConversation}
+          onReopenReflection={handleReopenReflection}
+        />
+
+        {/* Reflection Modal */}
+        <ReflectionModal
+          isOpen={state.showReflectionModal}
+          onClose={() => actions.setShowReflectionModal(false)}
+          onSubmit={handleReflectionSubmit}
+          onViewTranscript={handleViewTranscript}
+          isSubmitting={state.isSaving}
+        />
+
+        {/* Evaluation Modal */}
+        <EvaluationModal
+          isOpen={state.showEvaluationModal}
+          onClose={handleEvaluationClose}
+          evaluationData={state.evaluationData}
+          isLoading={state.isEvaluating}
+          userSessionId={state.userSessionId || undefined}
         />
       </div>
-
-      {/* Conversation Controls */}
-      <ConversationControls
-        state={state}
-        status={status}
-        isSpeaking={isSpeaking}
-        onStartConversation={handleStartConversation}
-        onEndConversation={handleEndConversation}
-        onReopenReflection={handleReopenReflection}
-      />
-
-      {/* Reflection Modal */}
-      <ReflectionModal
-        isOpen={state.showReflectionModal}
-        onClose={() => actions.setShowReflectionModal(false)}
-        onSubmit={handleReflectionSubmit}
-        onViewTranscript={handleViewTranscript}
-        isSubmitting={state.isSaving}
-      />
-
-      {/* Evaluation Modal */}
-      <EvaluationModal
-        isOpen={state.showEvaluationModal}
-        onClose={handleEvaluationClose}
-        evaluationData={state.evaluationData}
-        isLoading={state.isEvaluating}
-        userSessionId={state.userSessionId || undefined}
-      />
-    </div>
+    </MobileErrorBoundary>
   )
 }

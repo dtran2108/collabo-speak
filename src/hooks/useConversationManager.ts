@@ -2,6 +2,7 @@ import { useEffect, useCallback } from 'react'
 import { useConversation } from '@elevenlabs/react'
 import { ConversationActions } from '@/types/conversation'
 import { parseConversationMessage } from '@/lib/conversation-utils'
+import { useIsMobile } from '@/hooks/use-mobile'
 
 interface UseConversationManagerProps {
   actions: ConversationActions
@@ -14,7 +15,22 @@ export const useConversationManager = ({
   agentId,
   connectionType = 'websocket',
 }: UseConversationManagerProps) => {
+  const isMobile = useIsMobile()
+  
   const conversation = useConversation({
+    // Mobile-optimized configuration
+    format: 'pcm' as const,
+    // Add mobile-specific overrides
+    overrides: {
+      client: {
+        source: 'react_sdk',
+        version: '0.7.1',
+      },
+    },
+    // Mobile audio worklet configuration
+    audioWorklet: {
+      enabled: true,
+    },
     onConnect: () => {
       try {
         actions.setIsConnecting(false)
@@ -46,19 +62,34 @@ export const useConversationManager = ({
   const { status, isSpeaking } = conversation
 
   // Request microphone permission on component mount
-  useEffect(() => {
-    const requestMicPermission = async () => {
-      try {
-        await navigator.mediaDevices.getUserMedia({ audio: true })
-        actions.setHasPermission(true)
-      } catch (error) {
-        actions.setErrorMessage('Microphone access denied')
-        console.error('Error accessing microphone:', error)
+  const requestMicPermission = useCallback(async () => {
+    try {
+      // Mobile-optimized audio constraints
+      const constraints = {
+        audio: {
+          echoCancellation: isMobile ? false : true, // Disable on mobile to prevent glitches
+          noiseSuppression: isMobile ? false : true, // Disable on mobile to prevent glitches
+          autoGainControl: true,
+          sampleRate: isMobile ? 16000 : 44100, // Lower sample rate for mobile
+          channelCount: 1, // Mono for mobile
+          latency: isMobile ? 0.01 : 0.02, // Lower latency for mobile
+        }
       }
+      
+      const stream = await navigator.mediaDevices.getUserMedia(constraints)
+      actions.setHasPermission(true)
+      
+      // Clean up stream after permission check
+      stream.getTracks().forEach(track => track.stop())
+    } catch (error) {
+      actions.setErrorMessage('Microphone access denied')
+      console.error('Error accessing microphone:', error)
     }
+  }, [isMobile, actions])
 
+  useEffect(() => {
     requestMicPermission()
-  }, [actions])
+  }, [requestMicPermission])
 
   const handleStartConversation = useCallback(async () => {
     try {
@@ -148,7 +179,41 @@ export const useConversationManager = ({
       actions.setErrorMessage('Failed to start conversation')
       console.error('Error starting conversation:', error)
     }
-  }, [agentId, actions, conversation, connectionType])
+  }, [agentId, connectionType, actions, conversation]) // Add back dependencies
+
+  // Handle page visibility changes for mobile
+  useEffect(() => {
+    const handleVisibilityChange = () => {
+      if (document.hidden && isMobile) {
+        // Pause conversation when page goes to background on mobile
+        if (conversation && typeof conversation === 'object' && 'endSession' in conversation) {
+          try {
+            (conversation as { endSession: () => Promise<void> }).endSession()
+          } catch (error) {
+            console.error('Error pausing conversation on visibility change:', error)
+          }
+        }
+      }
+    }
+
+    document.addEventListener('visibilitychange', handleVisibilityChange)
+    return () => {
+      document.removeEventListener('visibilitychange', handleVisibilityChange)
+    }
+  }, [conversation, isMobile])
+
+  // Cleanup conversation on unmount
+  useEffect(() => {
+    return () => {
+      if (conversation && typeof conversation === 'object' && 'endSession' in conversation) {
+        try {
+          (conversation as { endSession: () => Promise<void> }).endSession()
+        } catch (error) {
+          console.error('Error cleaning up conversation:', error)
+        }
+      }
+    }
+  }, [conversation])
 
   // Expose the conversation methods and status
   return {
