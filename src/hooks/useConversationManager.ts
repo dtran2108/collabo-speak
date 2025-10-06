@@ -22,6 +22,9 @@ export const useConversationManager = ({
     () => ({
       // WebRTC-optimized configuration for better audio quality
       format: 'pcm' as const,
+      // Audio format configuration for better quality
+      sampleRate: isMobile ? 16000 : 44100, // Lower sample rate for mobile to reduce distortion
+      channelCount: 1, // Mono audio for better quality
       overrides: {
         client: {
           source: 'react_sdk',
@@ -40,6 +43,15 @@ export const useConversationManager = ({
       output: {
         // Enable audio processing for better quality
         enableAudioProcessing: true,
+        // Additional audio quality settings
+        volume: 1.0, // Full volume
+        muted: false,
+      },
+      // Additional audio quality optimizations
+      connectionDelay: {
+        default: 100, // Reduce connection delay
+        android: 150,
+        ios: 200,
       },
       onConnect: () => {
         try {
