@@ -25,12 +25,6 @@ export const useConversationManager = ({
       // Audio format configuration for better quality
       sampleRate: isMobile ? 16000 : 44100, // Lower sample rate for mobile to reduce distortion
       channelCount: 1, // Mono audio for better quality
-      // Additional format optimizations to reduce artifacts
-      bitDepth: 16, // 16-bit audio for better quality
-      // Reduce audio processing load
-      enableEchoCancellation: !isMobile, // Disable on mobile to reduce artifacts
-      enableNoiseSuppression: !isMobile, // Disable on mobile to reduce artifacts
-      enableAutoGainControl: true, // Keep AGC for volume stability
       overrides: {
         client: {
           source: 'react_sdk',
@@ -40,8 +34,6 @@ export const useConversationManager = ({
       // Audio worklet for better performance
       audioWorklet: {
         enabled: true,
-        // Additional worklet optimizations
-        bufferSize: 256, // Smaller buffer size for lower latency
       },
       // Input configuration for better audio quality
       input: {
@@ -57,14 +49,10 @@ export const useConversationManager = ({
       },
       // Additional audio quality optimizations
       connectionDelay: {
-        default: 50, // Further reduce connection delay
-        android: 100,
-        ios: 150,
+        default: 100, // Reduce connection delay
+        android: 150,
+        ios: 200,
       },
-      // Audio buffering optimizations to reduce artifacts
-      useWakeLock: true, // Prevent device sleep during conversation
-      // Reduce audio processing complexity
-      textOnly: false,
       onConnect: () => {
         try {
           console.log('WebRTC conversation connected successfully')
