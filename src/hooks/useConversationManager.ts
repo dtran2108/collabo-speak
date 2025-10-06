@@ -22,44 +22,33 @@ export const useConversationManager = ({
     () => ({
       // WebRTC-optimized configuration for better audio quality
       format: 'pcm' as const,
-      // Audio format configuration for better quality
-      sampleRate: isMobile ? 16000 : 44100, // Lower sample rate for mobile to reduce distortion
-      channelCount: 1, // Mono audio for better quality
-      // Additional format optimizations to reduce artifacts
-      bitDepth: 16, // 16-bit audio for better quality
-      // Reduce audio processing load
-      enableEchoCancellation: !isMobile, // Disable on mobile to reduce artifacts
-      enableNoiseSuppression: !isMobile, // Disable on mobile to reduce artifacts
-      enableAutoGainControl: true, // Keep AGC for volume stability
+      // Let ElevenLabs handle audio format optimization
+      // Remove custom audio processing to avoid conflicts with ElevenLabs' built-in optimizations
       overrides: {
         client: {
           source: 'react_sdk',
           version: '0.7.1',
         },
+        // Enable ElevenLabs' built-in audio processing
+        conversation: {
+          textOnly: false,
+        },
       },
-      // Audio worklet for better performance
+      // Audio worklet for better performance (use ElevenLabs defaults)
       audioWorklet: {
         enabled: true,
-        // Additional worklet optimizations
-        bufferSize: 256, // Smaller buffer size for lower latency
       },
-      // Input configuration for better audio quality
+      // ElevenLabs recommended input configuration
       input: {
         preferHeadphonesForIosDevices: isMobile,
       },
-      // Output configuration for better audio quality
-      output: {
-        // Enable audio processing for better quality
-        enableAudioProcessing: true,
-        // Additional audio quality settings
-        volume: 1.0, // Full volume
-        muted: false,
-      },
-      // Additional audio quality optimizations
+      // Let ElevenLabs handle output optimization
+      // Remove custom output settings to avoid conflicts
+      // ElevenLabs recommended connection delays for mobile
       connectionDelay: {
-        default: 50, // Further reduce connection delay
-        android: 100,
-        ios: 150,
+        default: 0,
+        android: 3000, // 3 seconds as recommended by ElevenLabs
+        ios: 0,
       },
       // Audio buffering optimizations to reduce artifacts
       useWakeLock: true, // Prevent device sleep during conversation
@@ -265,6 +254,14 @@ export const useConversationManager = ({
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [isMobile, status]) // conversation is intentionally excluded to prevent premature disconnection
+
+  // Mobile performance optimization: reduce re-renders
+  useEffect(() => {
+    if (isMobile) {
+      // Mobile-specific optimizations are handled by ElevenLabs' built-in features
+      // No additional throttling needed as we're using their recommended configuration
+    }
+  }, [isMobile])
 
   // Note: Cleanup is handled by the conversation object itself
   // No manual cleanup needed to prevent premature disconnection

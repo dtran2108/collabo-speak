@@ -24,51 +24,55 @@ export const useConversationAPI = ({ state, actions, sessionId, userId, conversa
       // Uncover the transcript content when ending the session
       actions.setIsCensored(false)
 
-      // Upload transcript and create participationLog immediately
-      if (state.messages.length > 0) {
-        try {
-          actions.setIsSaving(true)
-
-          // Format the transcript
-          const transcriptContent = formatTranscript(
-            state.messages,
-            state.conversationStartTime || undefined,
-          )
-
-          // Generate filename
-          const fileName = generateTranscriptFileName(sessionId)
-
-          // Upload transcript to storage
-          const { url: transcriptUrl } = await api.transcripts.upload(
-            fileName,
-            transcriptContent,
-          )
-
-          if (transcriptUrl) {
-            // Create user session record with transcriptUrl only (no reflection yet)
-            const { userSession } = await api.participationLog.create({
-              sessionId,
-              userId,
-              transcriptUrl,
-            })
-
-            // Store the user session ID for later use
-            actions.setUserSessionId(userSession.id)
-          } else {
-            console.error('Failed to upload transcript')
-            actions.setErrorMessage('Failed to save transcript')
-          }
-        } catch (saveError) {
-          console.error('Error saving transcript:', saveError)
-          actions.setErrorMessage('Failed to save transcript')
-        } finally {
-          actions.setIsSaving(false)
-        }
-      }
-
-      // Set reflection as pending and open modal
+      // Show reflection modal immediately for better UX
       actions.setIsReflectionPending(true)
       actions.setShowReflectionModal(true)
+
+      // Defer heavy operations to prevent UI blocking
+      setTimeout(async () => {
+        // Upload transcript and create participationLog in background
+        if (state.messages.length > 0) {
+          try {
+            actions.setIsSaving(true)
+
+            // Format the transcript
+            const transcriptContent = formatTranscript(
+              state.messages,
+              state.conversationStartTime || undefined,
+            )
+
+            // Generate filename
+            const fileName = generateTranscriptFileName(sessionId)
+
+            // Upload transcript to storage
+            const { url: transcriptUrl } = await api.transcripts.upload(
+              fileName,
+              transcriptContent,
+            )
+
+            if (transcriptUrl) {
+              // Create user session record with transcriptUrl only (no reflection yet)
+              const { userSession } = await api.participationLog.create({
+                sessionId,
+                userId,
+                transcriptUrl,
+              })
+
+              // Store the user session ID for later use
+              actions.setUserSessionId(userSession.id)
+            } else {
+              console.error('Failed to upload transcript')
+              actions.setErrorMessage('Failed to save transcript')
+            }
+          } catch (saveError) {
+            console.error('Error saving transcript:', saveError)
+            actions.setErrorMessage('Failed to save transcript')
+          } finally {
+            actions.setIsSaving(false)
+          }
+        }
+      }, 100) // Small delay to let UI update first
+
     } catch (error) {
       actions.setErrorMessage('Failed to end conversation')
       console.error('Error ending conversation:', error)
