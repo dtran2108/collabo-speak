@@ -32,7 +32,7 @@ export function Footer() {
             href="mailto:vuhuongnam07@gmail.com" 
             className="underline hover:text-yellow-300 transition-colors"
           >
-            bugs@collabospeak.com
+            vuhuongnam07@gmail.com
           </a>
           {' '}and I will try to fix it! Your feedback means the world to me - every bug report helps me learn and improve! 
         </div>
