@@ -33,7 +33,7 @@ export default function Page() {
         setError('Session not found')
         return
       }
-      
+
       const { personas } = await api.sessions.getPersonas(sessionId)
 
       setSession({
@@ -140,10 +140,10 @@ export default function Page() {
               </div>
             </CardHeader>
             <CardContent className="py-4">
-              <Conversation 
-                personas={session.personas} 
+              <Conversation
+                personas={session.personas}
                 agentId={session.agentId}
-                connectionType="webrtc"
+                connectionType="websocket"
               />
             </CardContent>
           </Card>

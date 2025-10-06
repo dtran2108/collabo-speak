@@ -16,31 +16,31 @@ export const useConversationManager = ({
   connectionType = 'websocket',
 }: UseConversationManagerProps) => {
   const isMobile = useIsMobile()
-  
+
   const conversation = useConversation({
-    // Mobile-optimized configuration
-    format: 'pcm' as const,
-    // Add mobile-specific overrides
+    // Simplified configuration for better WebRTC compatibility
     overrides: {
       client: {
         source: 'react_sdk',
         version: '0.7.1',
       },
     },
-    // Mobile audio worklet configuration
-    audioWorklet: {
-      enabled: true,
-    },
     onConnect: () => {
       try {
+        console.log('WebRTC conversation connected successfully')
         actions.setIsConnecting(false)
       } catch (error) {
         console.error('Error connecting to conversation:', error)
+        actions.setErrorMessage('Failed to connect to conversation')
       }
     },
-    onDisconnect: () => {
+    onDisconnect: (details) => {
       try {
-        // actions.setIsConnecting(false)
+        console.log('WebRTC conversation disconnected:', details)
+        actions.setIsConnecting(false)
+        if (details?.reason === 'error') {
+          actions.setErrorMessage('Connection lost. Please try again.')
+        }
       } catch (error) {
         console.error('Error disconnecting from conversation:', error)
       }
@@ -64,28 +64,17 @@ export const useConversationManager = ({
   // Request microphone permission on component mount
   const requestMicPermission = useCallback(async () => {
     try {
-      // Mobile-optimized audio constraints
-      const constraints = {
-        audio: {
-          echoCancellation: isMobile ? false : true, // Disable on mobile to prevent glitches
-          noiseSuppression: isMobile ? false : true, // Disable on mobile to prevent glitches
-          autoGainControl: true,
-          sampleRate: isMobile ? 16000 : 44100, // Lower sample rate for mobile
-          channelCount: 1, // Mono for mobile
-          latency: isMobile ? 0.01 : 0.02, // Lower latency for mobile
-        }
-      }
-      
-      const stream = await navigator.mediaDevices.getUserMedia(constraints)
+      // Simple permission check without complex constraints
+      const stream = await navigator.mediaDevices.getUserMedia({ audio: true })
       actions.setHasPermission(true)
-      
+
       // Clean up stream after permission check
-      stream.getTracks().forEach(track => track.stop())
+      stream.getTracks().forEach((track) => track.stop())
     } catch (error) {
       actions.setErrorMessage('Microphone access denied')
       console.error('Error accessing microphone:', error)
     }
-  }, [isMobile, actions])
+  }, [actions])
 
   useEffect(() => {
     requestMicPermission()
@@ -99,7 +88,9 @@ export const useConversationManager = ({
       // Set conversation start time
       actions.setConversationStartTime(new Date())
 
-      let sessionConfig: { signedUrl: string; connectionType: 'websocket' } | { conversationToken: string; connectionType: 'webrtc' }
+      let sessionConfig:
+        | { signedUrl: string; connectionType: 'websocket' }
+        | { conversationToken: string; connectionType: 'webrtc' }
 
       if (connectionType === 'websocket') {
         // Get sign URL for WebSocket connection
@@ -140,15 +131,18 @@ export const useConversationManager = ({
         }
       } else {
         // Get conversation token for WebRTC connection
-        const tokenResponse = await fetch('/api/elevenlabs/conversation-token', {
-          method: 'POST',
-          headers: {
-            'Content-Type': 'application/json',
+        const tokenResponse = await fetch(
+          '/api/elevenlabs/conversation-token',
+          {
+            method: 'POST',
+            headers: {
+              'Content-Type': 'application/json',
+            },
+            body: JSON.stringify({
+              agentId: agentId,
+            }),
           },
-          body: JSON.stringify({
-            agentId: agentId,
-          }),
-        })
+        )
 
         if (!tokenResponse.ok) {
           throw new Error('Failed to get conversation token for WebRTC')
@@ -173,24 +167,46 @@ export const useConversationManager = ({
         }
       }
 
-      const conversationId = await conversation.startSession(sessionConfig as unknown as Parameters<typeof conversation.startSession>[0])
-      console.log('Started conversation:', conversationId)
+      console.log('Starting conversation with config:', sessionConfig)
+
+      // Add a small delay to ensure WebRTC connection is ready
+      await new Promise((resolve) => setTimeout(resolve, 1000))
+
+      const conversationId = await conversation.startSession(
+        sessionConfig as unknown as Parameters<
+          typeof conversation.startSession
+        >[0],
+      )
+      console.log('Started conversation successfully:', conversationId)
     } catch (error) {
-      actions.setErrorMessage('Failed to start conversation')
       console.error('Error starting conversation:', error)
+      actions.setErrorMessage(
+        `Failed to start conversation: ${
+          error instanceof Error ? error.message : 'Unknown error'
+        }`,
+      )
+      actions.setIsConnecting(false)
     }
   }, [agentId, connectionType, actions, conversation]) // Add back dependencies
 
   // Handle page visibility changes for mobile
   useEffect(() => {
     const handleVisibilityChange = () => {
-      if (document.hidden && isMobile) {
-        // Pause conversation when page goes to background on mobile
-        if (conversation && typeof conversation === 'object' && 'endSession' in conversation) {
+      if (document.hidden && isMobile && status === 'connected') {
+        // Only pause conversation when page goes to background on mobile AND conversation is active
+        console.log('Page went to background, pausing conversation')
+        if (
+          conversation &&
+          typeof conversation === 'object' &&
+          'endSession' in conversation
+        ) {
           try {
-            (conversation as { endSession: () => Promise<void> }).endSession()
+            ;(conversation as { endSession: () => Promise<void> }).endSession()
           } catch (error) {
-            console.error('Error pausing conversation on visibility change:', error)
+            console.error(
+              'Error pausing conversation on visibility change:',
+              error,
+            )
           }
         }
       }
@@ -200,14 +216,18 @@ export const useConversationManager = ({
     return () => {
       document.removeEventListener('visibilitychange', handleVisibilityChange)
     }
-  }, [conversation, isMobile])
+  }, [conversation, isMobile, status])
 
   // Cleanup conversation on unmount
   useEffect(() => {
     return () => {
-      if (conversation && typeof conversation === 'object' && 'endSession' in conversation) {
+      if (
+        conversation &&
+        typeof conversation === 'object' &&
+        'endSession' in conversation
+      ) {
         try {
-          (conversation as { endSession: () => Promise<void> }).endSession()
+          ;(conversation as { endSession: () => Promise<void> }).endSession()
         } catch (error) {
           console.error('Error cleaning up conversation:', error)
         }
