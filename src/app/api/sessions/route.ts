@@ -5,14 +5,14 @@ export async function GET(request: NextRequest) {
   try {
     // Check if authorization header is provided (optional for public access)
     const authHeader = request.headers.get('authorization')
+    let user = null
 
     if (authHeader) {
       const token = authHeader.replace('Bearer ', '')
       const { data: { user: authUser }, error: userError } = await supabase.auth.getUser(token)
       
       if (!userError && authUser) {
-        // User is authenticated, could be used for filtering sessions if needed
-        console.log('Authenticated user:', authUser.id)
+        user = authUser
       }
     }
 

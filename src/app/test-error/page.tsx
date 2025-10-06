@@ -78,6 +78,7 @@ export default function TestErrorPage() {
   const mobileInfo = mobileErrorHandler.getMobileInfo()
 
   const testMobileErrorUI = () => {
+    const error = new Error('Test mobile error UI')
     setShowMobileUI(true)
   }
 

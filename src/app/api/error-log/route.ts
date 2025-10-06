@@ -9,7 +9,7 @@ interface ErrorLogData {
   userId?: string | null
   sessionId?: string | null
   errorType: 'unhandled' | 'promise' | 'network' | 'component'
-  additionalInfo?: Record<string, unknown>
+  additionalInfo?: any
   componentStack?: string
 }
 
@@ -62,7 +62,7 @@ export async function POST(request: NextRequest) {
 }
 
 // Optional: Add a GET endpoint to retrieve error logs (for admin purposes)
-export async function GET() {
+export async function GET(request: NextRequest) {
   // This would typically require admin authentication
   // and return paginated error logs from your database
   
