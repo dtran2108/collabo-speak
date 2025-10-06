@@ -1,6 +1,6 @@
 'use client'
 
-import { useEffect, useState, useCallback } from 'react'
+import { useEffect, useState, useCallback, Suspense } from 'react'
 import { useParams } from 'next/navigation'
 import BackBtn from '@/components/back-btn'
 import { Conversation } from '@/components/conversation'
@@ -22,22 +22,29 @@ export default function Page() {
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState<string | null>(null)
 
-  // Load session and personas data
+  // Load session and personas data in parallel for better performance
   const loadSession = useCallback(async () => {
     try {
       setLoading(true)
       setError(null)
 
-      const { session: sessionData } = await api.sessions.getById(sessionId)
-      if (!sessionData) {
+      // Load session and personas in parallel instead of sequentially
+      const [sessionResult, personasResult] = await Promise.allSettled([
+        api.sessions.getById(sessionId),
+        api.sessions.getPersonas(sessionId)
+      ])
+
+      // Handle session data
+      if (sessionResult.status === 'rejected' || !sessionResult.value.session) {
         setError('Session not found')
         return
       }
 
-      const { personas } = await api.sessions.getPersonas(sessionId)
+      // Handle personas data (don't fail if personas fail to load)
+      const personas = personasResult.status === 'fulfilled' ? personasResult.value.personas : []
 
       setSession({
-        ...sessionData,
+        ...sessionResult.value.session,
         personas,
       })
     } catch (error) {
@@ -140,11 +147,13 @@ export default function Page() {
               </div>
             </CardHeader>
             <CardContent className="py-4">
-              <Conversation 
-                personas={session.personas} 
-                agentId={session.agentId}
-                connectionType="webrtc"
-              />
+              <Suspense fallback={<div className="flex items-center justify-center p-8"><PageLoading /></div>}>
+                <Conversation 
+                  personas={session.personas} 
+                  agentId={session.agentId}
+                  connectionType="webrtc"
+                />
+              </Suspense>
             </CardContent>
           </Card>
         </div>

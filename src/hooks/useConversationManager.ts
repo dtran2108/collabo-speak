@@ -99,10 +99,19 @@ export const useConversationManager = ({
 
   const { status, isSpeaking } = conversation
 
-  // Request microphone permission on component mount
+  // Request microphone permission on component mount (optimized for performance)
   const requestMicPermission = useCallback(async () => {
     try {
-      // Simple permission check without complex constraints
+      // Check if permission is already granted to avoid unnecessary requests
+      if (navigator.permissions) {
+        const permission = await navigator.permissions.query({ name: 'microphone' as PermissionName })
+        if (permission.state === 'granted') {
+          actions.setHasPermission(true)
+          return
+        }
+      }
+
+      // Only request permission if not already granted
       const stream = await navigator.mediaDevices.getUserMedia({ audio: true })
       actions.setHasPermission(true)
 
@@ -114,8 +123,14 @@ export const useConversationManager = ({
     }
   }, [actions])
 
+  // Defer microphone permission request to prevent blocking initial render
   useEffect(() => {
-    requestMicPermission()
+    // Use setTimeout to defer the permission request
+    const timeoutId = setTimeout(() => {
+      requestMicPermission()
+    }, 100)
+
+    return () => clearTimeout(timeoutId)
   }, [requestMicPermission])
 
   const handleStartConversation = useCallback(async () => {

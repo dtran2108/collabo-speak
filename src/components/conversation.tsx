@@ -40,6 +40,7 @@ export function Conversation({ personas, agentId, connectionType = 'websocket' }
   useMobilePageReloadPrevention()
   
   // Use conversation manager hook first to get conversation object
+  // Defer initialization until component is actually rendered
   const { conversation, status, isSpeaking, handleStartConversation } = useConversationManager({
     actions,
     agentId,
