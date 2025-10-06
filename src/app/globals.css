@@ -135,3 +135,7 @@
   width: max-content;
   min-width: 100vw;
 }
+
+.animate-scroll:hover {
+  animation-play-state: paused;
+}
