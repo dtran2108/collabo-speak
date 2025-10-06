@@ -11,13 +11,23 @@ interface UseConversationAPIProps {
   conversation: unknown // ElevenLabs conversation object
 }
 
-export const useConversationAPI = ({ state, actions, sessionId, userId, conversation }: UseConversationAPIProps) => {
+export const useConversationAPI = ({
+  state,
+  actions,
+  sessionId,
+  userId,
+  conversation,
+}: UseConversationAPIProps) => {
   const handleEndConversation = useCallback(async () => {
     try {
       actions.setIsEnding(true)
 
       // End the conversation first to stop the agent from speaking
-      if (conversation && typeof conversation === 'object' && 'endSession' in conversation) {
+      if (
+        conversation &&
+        typeof conversation === 'object' &&
+        'endSession' in conversation
+      ) {
         await (conversation as { endSession: () => Promise<void> }).endSession()
       }
 
@@ -77,77 +87,92 @@ export const useConversationAPI = ({ state, actions, sessionId, userId, conversa
     }
   }, [conversation, state, actions, sessionId, userId])
 
-  const getAIEvaluation = useCallback(async (transcript: string, userSessionId: string) => {
-    try {
-      actions.setIsEvaluating(true)
-      actions.setShowEvaluationModal(true)
+  const getAIEvaluation = useCallback(
+    async (transcript: string, userSessionId: string) => {
+      try {
+        actions.setIsEvaluating(true)
+        actions.setShowEvaluationModal(true)
 
-      // Get evaluation from ChatGPT
-      const { evaluation } = await api.evaluation.evaluateTranscript(transcript)
+        // Get evaluation from ChatGPT
+        const { evaluation } = await api.evaluation.evaluateTranscript(
+          transcript,
+        )
 
-      if (evaluation) {
-        actions.setEvaluationData(evaluation)
-        actions.setUserSessionId(userSessionId)
+        if (evaluation) {
+          actions.setEvaluationData(evaluation)
+          actions.setUserSessionId(userSessionId)
 
-        // Update the participation log with the evaluation data
-        try {
-          await api.participationLog.update(userSessionId, evaluation)
-          console.log('Evaluation data saved successfully')
-        } catch (updateError) {
-          console.error('Error updating participation log with evaluation data:', updateError)
-          // Don't fail the whole process if update fails - user can still see evaluation
+          // Update the participation log with the evaluation data
+          try {
+            await api.participationLog.update(userSessionId, evaluation)
+            console.log('Evaluation data saved successfully')
+          } catch (updateError) {
+            console.error(
+              'Error updating participation log with evaluation data:',
+              updateError,
+            )
+            // Don't fail the whole process if update fails - user can still see evaluation
+          }
+        } else {
+          actions.setErrorMessage('Failed to get AI evaluation')
         }
-      } else {
+      } catch (error) {
         actions.setErrorMessage('Failed to get AI evaluation')
+        console.error('Error getting AI evaluation:', error)
+      } finally {
+        actions.setIsEvaluating(false)
       }
-    } catch (error) {
-      actions.setErrorMessage('Failed to get AI evaluation')
-      console.error('Error getting AI evaluation:', error)
-    } finally {
-      actions.setIsEvaluating(false)
-    }
-  }, [actions])
+    },
+    [actions],
+  )
 
-  const handleReflectionSubmit = useCallback(async (reflection: string) => {
-    try {
-      actions.setIsSaving(true)
+  const handleReflectionSubmit = useCallback(
+    async (reflection: string) => {
+      try {
+        actions.setIsSaving(true)
 
-      // Update reflection field in existing participationLog
-      if (state.userSessionId) {
-        try {
-          console.log('Updating reflection for userSessionId:', state.userSessionId)
-          await api.participationLog.update(state.userSessionId, {
-            reflection,
-          } as unknown as JSON)
+        // Update reflection field in existing participationLog
+        if (state.userSessionId) {
+          try {
+            console.log(
+              'Updating reflection for userSessionId:',
+              state.userSessionId,
+            )
+            await api.participationLog.update(state.userSessionId, {
+              reflection,
+            } as unknown as JSON)
 
-          console.log('Reflection saved successfully')
+            console.log('Reflection saved successfully')
 
-          // Now get AI evaluation
-          const transcriptContent = formatTranscript(
-            state.messages,
-            state.conversationStartTime || undefined,
+            // Now get AI evaluation
+            const transcriptContent = formatTranscript(
+              state.messages,
+              state.conversationStartTime || undefined,
+            )
+            await getAIEvaluation(transcriptContent, state.userSessionId)
+          } catch (updateError) {
+            console.error('Error updating reflection:', updateError)
+            actions.setErrorMessage('Failed to save reflection')
+          }
+        } else {
+          console.error('No userSessionId available for reflection update')
+          actions.setErrorMessage(
+            'Failed to save reflection - session not found',
           )
-          await getAIEvaluation(transcriptContent, state.userSessionId)
-        } catch (updateError) {
-          console.error('Error updating reflection:', updateError)
-          actions.setErrorMessage('Failed to save reflection')
         }
-      } else {
-        console.error('No userSessionId available for reflection update')
-        actions.setErrorMessage('Failed to save reflection - session not found')
+
+        // Close reflection modal
+        actions.setShowReflectionModal(false)
+        actions.setIsReflectionPending(false)
+      } catch (error) {
+        actions.setErrorMessage('Failed to save reflection')
+        console.error('Error saving reflection:', error)
+      } finally {
+        actions.setIsSaving(false)
       }
-
-      // Close reflection modal
-      actions.setShowReflectionModal(false)
-      actions.setIsReflectionPending(false)
-    } catch (error) {
-      actions.setErrorMessage('Failed to save reflection')
-      console.error('Error saving reflection:', error)
-    } finally {
-      actions.setIsSaving(false)
-    }
-  }, [state, actions, getAIEvaluation])
-
+    },
+    [state, actions, getAIEvaluation],
+  )
 
   return {
     handleEndConversation,

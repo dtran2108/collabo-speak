@@ -4,6 +4,7 @@ import './globals.css'
 import { AuthProvider } from '@/contexts/AuthContext'
 import { Toaster } from '@/components/ui/sonner'
 import { Navbar } from '@/components/nav-bar'
+import { Footer } from '@/components/footer'
 import { Analytics } from '@vercel/analytics/next'
 import NextTopLoader from 'nextjs-toploader'
 
@@ -46,7 +47,8 @@ export default function RootLayout({
         />
         <AuthProvider>
           <Navbar />
-          <div className="pt-16">{children}</div>
+          <div className="pt-16 pb-16">{children}</div>
+          <Footer />
           <Toaster />
         </AuthProvider>
         <Analytics />
