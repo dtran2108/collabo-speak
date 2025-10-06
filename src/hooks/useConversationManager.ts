@@ -1,4 +1,4 @@
-import { useEffect, useCallback } from 'react'
+import { useEffect, useCallback, useMemo } from 'react'
 import { useConversation } from '@elevenlabs/react'
 import { ConversationActions } from '@/types/conversation'
 import { parseConversationMessage } from '@/lib/conversation-utils'
@@ -17,7 +17,8 @@ export const useConversationManager = ({
 }: UseConversationManagerProps) => {
   const isMobile = useIsMobile()
 
-  const conversation = useConversation({
+  // Memoize the conversation configuration to prevent recreation
+  const conversationConfig = useMemo(() => ({
     // Simplified configuration for better WebRTC compatibility
     overrides: {
       client: {
@@ -34,12 +35,16 @@ export const useConversationManager = ({
         actions.setErrorMessage('Failed to connect to conversation')
       }
     },
-    onDisconnect: (details) => {
+    onDisconnect: (details: any) => {
       try {
         console.log('WebRTC conversation disconnected:', details)
+        console.log('Disconnect reason:', details?.reason)
+        console.log('Disconnect details:', details)
         actions.setIsConnecting(false)
         if (details?.reason === 'error') {
           actions.setErrorMessage('Connection lost. Please try again.')
+        } else if (details?.reason === 'user') {
+          console.log('Conversation ended by user - this might be unexpected')
         }
       } catch (error) {
         console.error('Error disconnecting from conversation:', error)
@@ -57,7 +62,9 @@ export const useConversationManager = ({
       actions.setErrorMessage(typeof error === 'string' ? error : error.message)
       console.error('Error:', error)
     },
-  })
+  }), [actions])
+
+  const conversation = useConversation(conversationConfig)
 
   const { status, isSpeaking } = conversation
 
@@ -169,9 +176,6 @@ export const useConversationManager = ({
 
       console.log('Starting conversation with config:', sessionConfig)
 
-      // Add a small delay to ensure WebRTC connection is ready
-      await new Promise((resolve) => setTimeout(resolve, 1000))
-
       const conversationId = await conversation.startSession(
         sessionConfig as unknown as Parameters<
           typeof conversation.startSession
@@ -216,24 +220,10 @@ export const useConversationManager = ({
     return () => {
       document.removeEventListener('visibilitychange', handleVisibilityChange)
     }
-  }, [conversation, isMobile, status])
+  }, [isMobile, status]) // Remove conversation from dependencies
 
-  // Cleanup conversation on unmount
-  useEffect(() => {
-    return () => {
-      if (
-        conversation &&
-        typeof conversation === 'object' &&
-        'endSession' in conversation
-      ) {
-        try {
-          ;(conversation as { endSession: () => Promise<void> }).endSession()
-        } catch (error) {
-          console.error('Error cleaning up conversation:', error)
-        }
-      }
-    }
-  }, [conversation])
+  // Note: Cleanup is handled by the conversation object itself
+  // No manual cleanup needed to prevent premature disconnection
 
   // Expose the conversation methods and status
   return {
