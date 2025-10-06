@@ -86,7 +86,7 @@ export const useConversationManager = ({
 
       const conversationId = await conversation.startSession({
         agentId: agentId,
-        connectionType: 'websocket',
+        connectionType: 'webrtc',
         signedUrl: signedUrl, 
       } as unknown as Parameters<typeof conversation.startSession>[0])
       console.log('Started conversation:', conversationId)
