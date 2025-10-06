@@ -69,7 +69,7 @@ This dimension assesses the student's ability to manage their role, adhere to co
 Calculate the following metrics and return them as an integer or float.  For student words per minute (WPM), Student fillers per minute and student participation percentage,  ONLY calculate based on the student's speech.
 
 	1.	Session length (duration field in the JSON)
-	•	Session length = timestamp of the last turn (any speaker) − timestamp of the first turn (any speaker).
+	•	Session length = timestamp of the onversation ends at − timestamp of the conversation starts at.
 	•	Format: {minutes} min {seconds} sec.
 	2.	Student words per minute (WPM) (words_per_min field in the JSON)
 	•	For each student turn:

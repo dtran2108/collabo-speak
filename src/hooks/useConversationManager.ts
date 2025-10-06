@@ -138,7 +138,7 @@ export const useConversationManager = ({
       // Reset all conversation state before starting new session
       actions.resetConversationState()
       actions.setIsConnecting(true)
-      // Set conversation start time
+      // Set conversation start time - this will trigger the 5-minute timer
       actions.setConversationStartTime(new Date())
 
       let sessionConfig:

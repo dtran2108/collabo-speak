@@ -66,7 +66,9 @@ export const ConversationControls: React.FC<ConversationControlsProps> = ({
         ) : (
           <Button
             onClick={onStartConversation}
-            disabled={!state.hasPermission || state.isSaving || state.isConnecting}
+            disabled={
+              !state.hasPermission || state.isSaving || state.isConnecting
+            }
             className="flex-1 bg-black hover:bg-black/80"
             variant="destructive"
           >
@@ -95,7 +97,9 @@ export const ConversationControls: React.FC<ConversationControlsProps> = ({
             {isSpeaking ? 'Agent is speaking...' : 'Listening...'}
           </p>
         )}
-        {state.errorMessage && <p className="text-red-500">{state.errorMessage}</p>}
+        {state.errorMessage && (
+          <p className="text-red-500">{state.errorMessage}</p>
+        )}
         {!state.hasPermission && (
           <p className="text-yellow-600">
             Please allow microphone access to use voice chat
