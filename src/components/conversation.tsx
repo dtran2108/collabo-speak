@@ -20,9 +20,10 @@ import { Persona } from '@/types/database'
 interface ConversationProps {
   personas: Persona[]
   agentId: string
+  connectionType?: 'websocket' | 'webrtc'
 }
 
-export function Conversation({ personas, agentId }: ConversationProps) {
+export function Conversation({ personas, agentId, connectionType = 'websocket' }: ConversationProps) {
   const params = useParams()
   const sessionId = params.sessionId as string
   const { user } = useAuth()
@@ -37,6 +38,7 @@ export function Conversation({ personas, agentId }: ConversationProps) {
   const { conversation, status, isSpeaking, handleStartConversation } = useConversationManager({
     actions,
     agentId,
+    connectionType,
   })
 
   // Use conversation API hook

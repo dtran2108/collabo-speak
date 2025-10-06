@@ -143,6 +143,7 @@ export default function Page() {
               <Conversation 
                 personas={session.personas} 
                 agentId={session.agentId}
+                connectionType="webrtc"
               />
             </CardContent>
           </Card>
