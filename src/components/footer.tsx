@@ -27,7 +27,7 @@ export function Footer() {
           </a>
           {' '}and I will try to fix it! Your feedback means the world to me - every bug report helps me learn and improve! 
           🚀 I made this app in just 7 days, so it has lots of bugs! 
-          If something breaks, please email us at{' '}
+          If something breaks, please email me at{' '}
           <a 
             href="mailto:vuhuongnam07@gmail.com" 
             className="underline hover:text-yellow-300 transition-colors"
