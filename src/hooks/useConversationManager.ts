@@ -14,12 +14,26 @@ export const useConversationManager = ({
 }: UseConversationManagerProps) => {
   const conversation = useConversation({
     onConnect: () => {
-      actions.setIsConnecting(false)
+      try {
+        actions.setIsConnecting(false)
+      } catch (error) {
+        console.error('Error connecting to conversation:', error)
+      }
     },
-    onDisconnect: () => {},
+    onDisconnect: () => {
+      try {
+        // actions.setIsConnecting(false)
+      } catch (error) {
+        console.error('Error disconnecting from conversation:', error)
+      }
+    },
     onMessage: (message: unknown): void => {
-      const newMessage = parseConversationMessage(message)
-      actions.setMessages((prev) => [...prev, newMessage])
+      try {
+        const newMessage = parseConversationMessage(message)
+        actions.setMessages((prev) => [...prev, newMessage])
+      } catch (error) {
+        console.error('Error parsing message:', error)
+      }
     },
     onError: (error: string | Error): void => {
       actions.setErrorMessage(typeof error === 'string' ? error : error.message)
@@ -68,18 +82,18 @@ export const useConversationManager = ({
       }
 
       const responseData = await signUrlResponse.json()
-      
+
       if (!responseData.signedUrl) {
         throw new Error('No signed URL received from API')
       }
-      
+
       const { signedUrl } = responseData
-      
+
       // Validate signed URL format
       if (!signedUrl || typeof signedUrl !== 'string') {
         throw new Error('Invalid signed URL format')
       }
-      
+
       if (!signedUrl.startsWith('wss://')) {
         console.warn('Signed URL does not start with wss://:', signedUrl)
       }
@@ -87,7 +101,7 @@ export const useConversationManager = ({
       const conversationId = await conversation.startSession({
         agentId: agentId,
         connectionType: 'webrtc',
-        signedUrl: signedUrl, 
+        signedUrl: signedUrl,
       } as unknown as Parameters<typeof conversation.startSession>[0])
       console.log('Started conversation:', conversationId)
     } catch (error) {
