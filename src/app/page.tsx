@@ -37,7 +37,6 @@ export default function Page() {
     loading: chartLoading,
   } = useChartData()
 
-
   // Load sessions and their personas
   const loadSessions = useCallback(async () => {
     try {
@@ -140,10 +139,12 @@ export default function Page() {
             {/* Single overlay covering both charts */}
             {(!user || !hasEnoughSessions) && (
               <div className="absolute inset-0 flex items-center justify-center">
-                <div className="bg-black text-white px-6 py-3 rounded-lg text-sm font-semibold text-center">
-                  {!user
-                    ? 'Please complete at least 2 sessions to see your progress'
-                    : 'Progress will be updated after 2 sessions'}
+                <div className="bg-gray-50 border-2 border-dashed border-gray-300 px-8 py-6 text-sm text-gray-600 text-center max-w-md">
+                  <p className="font-medium">
+                    {!user
+                      ? 'Please complete at least 2 sessions to see your progress'
+                      : 'Progress will be updated after 2 sessions'}
+                  </p>
                 </div>
               </div>
             )}
