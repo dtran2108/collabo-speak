@@ -4,9 +4,22 @@ import { useEffect, useState } from 'react'
 import { mobileErrorHandler } from '@/lib/mobile-error-handler'
 import { errorHandler } from '@/lib/error-handler'
 
+interface MobileErrorData {
+  isMobile: boolean
+  deviceType: 'mobile' | 'tablet' | 'desktop'
+  platform: 'ios' | 'android' | 'windows' | 'macos' | 'linux' | 'unknown'
+  browser: string
+  screenSize: {
+    width: number
+    height: number
+  }
+  touchSupport: boolean
+  orientation: 'portrait' | 'landscape'
+}
+
 export default function TestSSRPage() {
   const [isClient, setIsClient] = useState(false)
-  const [mobileInfo, setMobileInfo] = useState<any>(null)
+  const [mobileInfo, setMobileInfo] = useState<MobileErrorData | null>(null)
 
   useEffect(() => {
     setIsClient(true)
