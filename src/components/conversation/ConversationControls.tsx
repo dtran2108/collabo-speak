@@ -2,7 +2,6 @@ import React from 'react'
 import { Button } from '@/components/ui/button'
 import { Loader, MicOff, Phone } from 'lucide-react'
 import { ConversationState } from '@/types/conversation'
-import { useIsMobile } from '@/hooks/use-mobile'
 
 interface ConversationControlsProps {
   state: ConversationState
@@ -21,19 +20,6 @@ export const ConversationControls: React.FC<ConversationControlsProps> = ({
   onEndConversation,
   onReopenReflection,
 }) => {
-  const isMobile = useIsMobile()
-
-  // Mobile-optimized click handler to prevent lag
-  const handleEndConversation = React.useCallback(() => {
-    if (isMobile) {
-      // Use requestAnimationFrame to prevent UI blocking on mobile
-      requestAnimationFrame(() => {
-        onEndConversation()
-      })
-    } else {
-      onEndConversation()
-    }
-  }, [onEndConversation, isMobile])
   return (
     <div className="flex flex-col">
       <div className="flex items-center p-2 space-x-4">
@@ -55,7 +41,7 @@ export const ConversationControls: React.FC<ConversationControlsProps> = ({
             )}
             <Button
               variant="destructive"
-              onClick={handleEndConversation}
+              onClick={onEndConversation}
               disabled={state.isSaving || state.isConnecting || state.isEnding}
               className="w-full"
             >
