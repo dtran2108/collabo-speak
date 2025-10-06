@@ -6,6 +6,7 @@ import { Toaster } from '@/components/ui/sonner'
 import { Navbar } from '@/components/nav-bar'
 import { Analytics } from '@vercel/analytics/next'
 import NextTopLoader from 'nextjs-toploader'
+import { GlobalErrorHandler } from '@/components/GlobalErrorHandler'
 
 const geistSans = Geist({
   variable: '--font-geist-sans',
@@ -45,6 +46,7 @@ export default function RootLayout({
           shadow="0 0 10px #3b82f6,0 0 5px #3b82f6"
         />
         <AuthProvider>
+          <GlobalErrorHandler />
           <Navbar />
           <div className="pt-16">{children}</div>
           <Toaster />
