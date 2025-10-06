@@ -20,12 +20,26 @@ export const useConversationManager = ({
   // Memoize the conversation configuration to prevent recreation
   const conversationConfig = useMemo(
     () => ({
-      // Simplified configuration for better WebRTC compatibility
+      // WebRTC-optimized configuration for better audio quality
+      format: 'pcm' as const,
       overrides: {
         client: {
           source: 'react_sdk',
           version: '0.7.1',
         },
+      },
+      // Audio worklet for better performance
+      audioWorklet: {
+        enabled: true,
+      },
+      // Input configuration for better audio quality
+      input: {
+        preferHeadphonesForIosDevices: isMobile,
+      },
+      // Output configuration for better audio quality
+      output: {
+        // Enable audio processing for better quality
+        enableAudioProcessing: true,
       },
       onConnect: () => {
         try {
@@ -65,9 +79,9 @@ export const useConversationManager = ({
         )
         console.error('Error:', error)
       },
-    }),
-    [actions],
-  )
+     }),
+     [actions, isMobile],
+   )
 
   const conversation = useConversation(conversationConfig)
 

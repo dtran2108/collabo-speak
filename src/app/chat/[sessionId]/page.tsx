@@ -140,10 +140,10 @@ export default function Page() {
               </div>
             </CardHeader>
             <CardContent className="py-4">
-              <Conversation
-                personas={session.personas}
+              <Conversation 
+                personas={session.personas} 
                 agentId={session.agentId}
-                connectionType="websocket"
+                connectionType="webrtc"
               />
             </CardContent>
           </Card>
