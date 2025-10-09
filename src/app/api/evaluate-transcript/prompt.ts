@@ -12,27 +12,35 @@ The goal of the feedback is for student to improve:
     
 You must return your complete evaluation in the EXACT JSON FORMAT specified below.
 
-Feedback must be in three clear sections:
+Feedback must be in four clear sections:
 - 👍 What you did well (strengths)
 - 🔧 What to work on (improvements)
 - 💡 Tips for next time (tips)
+- 🌐 Big Picture Thinking (big_picture_thinking)
 
 
 For the improvements:
-- student did not do well, as well as missed opportunties, (for example: you did not clarify refreshment from the start so you did not understand what the words mean so misunderstand until later on.
+- student did not do well, as well as missed opportunities, (for example: you did not clarify refreshment from the start so you did not understand what the words mean so misunderstand until later on.
 When Eli ideas get too distracted you didn't bring him back. When Clara keep silent you didn't encourage her to speak.)
 For the tips section:
-- The "tips" section should include:
+
+The "tips" section should include:
 1. Practical speaking tips (e.g., language strategies, ways to improve complexity, accuracy, fluency)
 2. Collaborative problem solving tips (e.g, invite teammates, define problems to be solved, deal with distracted teammate, ask for others idea, take initiave instead of just answering questions,)
-2. Big picture thinking tips (strategic angles they can consider in future discussions).
 - Write each tip as ONE clear, friendly sentence.
--The tip must be specific and include a functional example phrase or a suggested technique the student can try next time (e.g., if the improvement is 'was too brief,' the tip must suggest a phrase like 'Try using a transition phrase such as: "The reason I think that is..."').
-- The Big Picture Thinking starts with a short sentence like: “Also, think about the bigger context next time — for example:”
-   - Then list **2–4 bullet points** (or separate lines) with guiding questions + short explanations in parentheses.
-   - Example: “• Is the workshop formal or casual? (because the type of event influences the refreshment style)”
-   "is it on Morning, afternoon, or all-day? (beecause the time and duration of workshop influence the type of refreshment)
-Always end the tips section with the Big Picture Thinking block.
+- The tip must be specific and include a functional example phrase or a suggested technique the student can try next time (e.g., if the improvement is 'was too brief,' the tip must suggest a phrase like 'Try using a transition phrase such as: "The reason I think that is..."').
+
+For the Big Picture Thinking section:
+- Look at what the conversation is about (e.g., choosing refreshments, picking a venue, planning a project)
+- Write at least 3 simple questions that help students think about important things they might have missed
+- Use EASY, everyday language that students can understand - avoid fancy words
+- Make each question specific to their topic and explain why it matters in simple terms
+- Format: "• [Simple question] (because [simple explanation])"
+- Examples:
+  - If about refreshments: "• Is this a fancy event or casual? (because fancy events need fancier food)"
+  - If about refreshments: "• Is it in the morning, afternoon, or all day? (because people want different food at different times)"
+  - If about choosing a venue: "• How many people are coming? (because you need a place big enough for everyone)"
+  - If about choosing a venue: "• How much money do you have? (because some places cost more than others)"
 
 Guidelines:
 - Always highlight at least three short strengths, three short improvements, and three tips.
@@ -47,49 +55,28 @@ Guidelines:
 - Be specific, but do not write lenghthy.
 
 
-### Scoring Rubric for Collaborative Skills (PISA) (Scale 1–4):
+### PISA Collaborative Skills Scoring (1-4 scale):
 
+**1 = Beginning** | **2 = Developing** | **3 = Proficient** | **4 = Advanced**
 
-**Scoring Scale:** **1 = Beginning** (rarely/never demonstrates the skill) | **2 = Developing** (sometimes demonstrates the skill, often reactively) | **3 = Proficient** (regularly and appropriately demonstrates the skill) | **4 = Advanced** (proactively and effectively demonstrates the skill)
+**Shared Understanding (1-4):**
+- 1: Ignores others, unclear ideas
+- 2: Responds when asked, basic understanding
+- 3: Asks questions, clarifies, builds on others' ideas
+- 4: Synthesizes ideas, corrects misunderstandings, ensures everyone understands
 
----
+**Problem Solving Action (1-4):**
+- 1: Avoids planning, gets stuck, irrelevant suggestions
+- 2: Offers isolated ideas, no clear plan
+- 3: Proposes steps, monitors progress, participates actively
+- 4: Leads planning, keeps team on track, reflects on effectiveness
 
-Dimension 1: Establishing and Maintaining a Shared Understanding (PISA Competencies A1, A2, B1, D1)
+**Team Organization (1-4):**
+- 1: Interrupts others, doesn't follow group norms
+- 2: Only responds when asked, unclear role
+- 3: Follows turn-taking, contributes appropriately
+- 4: Facilitates discussion, helps manage team dynamics
 
-This dimension assesses the student's ability to listen to others, clarify information, and ensure everyone is on the same page.
-
-|Score|Description of Spoken Behavior|Example Utterances|
-|---|---|---|
-|**1**|Ignores or doesn't acknowledge teammates' contributions. Struggles to articulate their own ideas clearly.|(Silence after a question) or "I don't know."|
-|**2**|Responds to direct questions but does not actively seek to understand others' viewpoints. Paraphrases or clarifies only when prompted.|"Okay, so what you're saying is...?"|
-|**3**|Actively listens and asks clarifying questions to ensure common understanding. Paraphrases others' ideas to confirm information.|"Just to make sure I'm following, we agree we need to decide on criteria first, right?"|
-|**4**|Proactively builds on others' ideas and synthesizes them into a shared understanding. Corrects misconceptions and confirms everyone is on the same page.|"It sounds like we all agree that [Location A] is out, and we should focus on the remaining two. What are the pros and cons of those?"|
-
----
-
-Dimension 2: Taking Appropriate Action to Solve the Problem (PISA Competencies B2, C2, D2)
-
-This dimension assesses the student's ability to contribute to the task, plan next steps, and monitor progress toward a solution.
-
-|Score|Description of Spoken Behavior|Example Utterances|
-|---|---|---|
-|**1**|Avoids proposing or enacting a plan. Makes irrelevant suggestions or gets stuck.|"Let's just vote." or "What should we do?"|
-|**2**|Contributes to the task by offering isolated ideas, but does not connect them to a larger plan.|"We should go to the museum." or "The factory is far away."|
-|**3**|Actively participates in planning and executing the task. Proposes logical steps and monitors the progress of the team.|"Okay, so my idea is that we should first talk about what a good visit looks like, then we can pick a place."|
-|**4**|Takes a lead role in the problem-solving process. Proposes a clear, sequential plan, helps the team stay on track, and reflects on whether the current path is effective.|"We've spent too much time on the museum. Let's move on and talk about the other options and then make a final decision."|
-
----
-
-Dimension 3: Establishing and Maintaining Team Organization (PISA Competencies A3, B3, C3, D3)
-
-This dimension assesses the student's ability to manage their role, adhere to conversational norms, and help the team function smoothly.
-
-| Score | Description of Spoken Behavior                                                                                                                                | Example Utterances                                                         |
-| ----- | ------------------------------------------------------------------------------------------------------------------------------------------------------------- | -------------------------------------------------------------------------- |
-| **1** | Does not respect turn-taking (e.g., interrupts others frequently). Does not contribute in a manner consistent with their role.                                | (Interrupting a teammate) "No, let's vote now."                            |
-| **2** | Responds to questions but does not actively contribute to the conversational flow. Does not seem to understand their role within the group.                   | (Only responding when directly asked a question.)                          |
-| **3** | Follows rules of engagement (e.g., turn-taking, respectful disagreement). Contributes in a way that aligns with their assigned role within the group dynamic. | "Sorry to interrupt, but I have a thought about the budget."               |
-| **4** | Acts as a facilitator or mediator. Provides constructive feedback to teammates and helps the team manage its own organization.                                | "I think we've gone a bit off topic. Let's get back to the main question." |
 ### Metric Calculation Instructions:
 
 Calculate the following metrics and return them as an integer or float.  For student words per minute (WPM), Student fillers per minute and student participation percentage,  ONLY calculate based on the student's speech.
@@ -124,13 +111,14 @@ You must return your complete evaluation in the **EXACT JSON FORMAT** specified 
   "strengths": ["strength1 + examples", "strength2 + examples", "strength3 + examples", "strength4 + examples",...],
   "improvements": ["improvement1 + examples", "improvement2 + examples", "improvement3 + examples", "improvement4 + examples",...],
   "tips": ["tip1 + examples", "tip2 + examples", "tip3 + examples", "tip4 + examples",...],
-  "words_per_min": "an integer value for words per minute",
-  "filler_words_per_min": "an integer value for fillers per minute",
-  "participation_percentage": "a float value for turns percentage",
+  "big_picture_thinking": ["question1 + explanation", "question2 + explanation", "question3 + explanation",...],
+  "words_per_min": <an integer value for words per minute>,
+  "filler_words_per_min": <an integer value for fillers per minute>,
+  "participation_percentage": <a float value for turns percentage>,
   "duration": "{minutes} minutes {seconds} seconds",
-  "pisa_shared_understanding": "an integer value for the PISA shared understanding score on the scale of 1 to 4",
-  "pisa_problem_solving_action": "an integer value for the PISA problem solving action score on the scale of 1 to 4",
-  "pisa_team_organization": "an integer value for the PISA team organization score on the scale of 1 to 4"
+  "pisa_shared_understanding": <an integer value for the PISA shared understanding score on the scale of 1 to 4>,
+  "pisa_problem_solving_action": <an integer value for the PISA problem solving action score on the scale of 1 to 4>,
+  "pisa_team_organization": <an integer value for the PISA team organization score on the scale of 1 to 4>
 }
 
 Please provide a detailed, constructive evaluation in the EXACT JSON FORMAT specified above.`

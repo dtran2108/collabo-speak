@@ -41,6 +41,7 @@ interface SessionData {
     strengths: string[]
     improvements: string[]
     tips: string[]
+    big_picture_thinking: string[]
   } | null
   words_per_min: number | null
   filler_words_per_min: number | null
@@ -94,6 +95,7 @@ export default function SessionHistoryPage() {
     strengths: string[]
     improvements: string[]
     tips: string[]
+    big_picture_thinking: string[]
     words_per_min?: number
     filler_words_per_min?: number
     participation_percentage?: number
@@ -543,6 +545,37 @@ export default function SessionHistoryPage() {
                       </div>
                     </div>
                   )}
+
+                  {/* Big Picture Thinking */}
+                  {session.feedback?.big_picture_thinking &&
+                    session.feedback.big_picture_thinking.length > 0 && (
+                      <div className="bg-gradient-to-r from-indigo-50 to-purple-50 p-6 rounded-xl border-2 border-indigo-200 shadow-lg">
+                        <div className="flex items-center space-x-3 mb-4">
+                          <h4 className="text-xl font-bold text-indigo-800">
+                            🌐 Big Picture Thinking
+                          </h4>
+                        </div>
+                        <div className="space-y-3">
+                          <p className="text-sm text-indigo-700 font-medium mb-3">
+                            Also, think about the bigger context next time — for
+                            example:
+                          </p>
+                          <ul className="">
+                            {session.feedback.big_picture_thinking.map(
+                              (item, index) => (
+                                <li
+                                  key={index}
+                                  className="text-sm ml-3 text-gray-800 flex items-start"
+                                >
+                                  <span className="w-1.5 h-1.5 bg-indigo-500 rounded-full mt-2 mr-2 flex-shrink-0"></span>
+                                  {item}
+                                </li>
+                              ),
+                            )}
+                          </ul>
+                        </div>
+                      </div>
+                    )}
 
                   {/* Feedback */}
                   {session.feedback !== null && (

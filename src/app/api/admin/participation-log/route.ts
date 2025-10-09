@@ -27,6 +27,7 @@ interface ParticipationLogData {
     strengths: string[]
     improvements: string[]
     tips: string[]
+    big_picture_thinking: string[]
   } | null
   words_per_min: number | null
   filler_words_per_min: number | null
@@ -166,15 +167,17 @@ export async function GET(request: NextRequest) {
     }
 
     // Get user profiles for all userIds
-    const userIds = [...new Set((participationLogs || []).map(log => log.userId))]
+    const userIds = [
+      ...new Set((participationLogs || []).map((log) => log.userId)),
+    ]
     let userProfiles: Record<string, { full_name: string }> = {}
-    
+
     if (userIds.length > 0) {
       const { data: profiles, error: profilesError } = await supabaseAdmin
         .from('user_profiles')
         .select('user_id, full_name')
         .in('user_id', userIds)
-      
+
       if (!profilesError && profiles) {
         userProfiles = profiles.reduce((acc, profile) => {
           acc[profile.user_id] = { full_name: profile.full_name }
@@ -189,7 +192,8 @@ export async function GET(request: NextRequest) {
     ).map((log) => ({
       id: log.id,
       createdAt: log.created_at,
-      sessionName: (log.sessions as { name?: string })?.name || 'Unknown Session',
+      sessionName:
+        (log.sessions as { name?: string })?.name || 'Unknown Session',
       userFullName: userProfiles[log.userId]?.full_name || 'Unknown User',
       transcriptUrl: log.transcriptUrl,
       duration: log.duration,
@@ -209,9 +213,10 @@ export async function GET(request: NextRequest) {
     // Apply user name search filter if needed
     if (params.search) {
       const searchTerm = params.search.toLowerCase()
-      transformedParticipationLogs = transformedParticipationLogs.filter(log => 
-        log.sessionName.toLowerCase().includes(searchTerm) ||
-        log.userFullName.toLowerCase().includes(searchTerm)
+      transformedParticipationLogs = transformedParticipationLogs.filter(
+        (log) =>
+          log.sessionName.toLowerCase().includes(searchTerm) ||
+          log.userFullName.toLowerCase().includes(searchTerm),
       )
     }
 

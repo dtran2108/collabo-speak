@@ -30,6 +30,7 @@ export interface ParticipationLog {
     strengths: string[]
     improvements: string[]
     tips: string[]
+    big_picture_thinking: string[]
   } | null
   words_per_min: number | null
   filler_words_per_min: number | null

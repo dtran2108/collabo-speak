@@ -11,6 +11,7 @@ export interface EvaluationData {
   strengths: string[]
   improvements: string[]
   tips: string[]
+  big_picture_thinking: string[]
   words_per_min?: number
   filler_words_per_min?: number
   participation_percentage?: number

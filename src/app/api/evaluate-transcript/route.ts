@@ -9,6 +9,7 @@ interface ChatGPTEvaluation {
   strengths: string[]
   improvements: string[]
   tips: string[]
+  big_picture_thinking: string[]
   words_per_min: number
   filler_words_per_min: number
   participation_percentage: number
@@ -95,7 +96,12 @@ export async function POST(request: NextRequest) {
     }
 
     // Validate the response structure
-    if (!evaluation.strengths || !evaluation.improvements || !evaluation.tips) {
+    if (
+      !evaluation.strengths ||
+      !evaluation.improvements ||
+      !evaluation.tips ||
+      !evaluation.big_picture_thinking
+    ) {
       return NextResponse.json(
         { error: 'Invalid evaluation format received' },
         { status: 500 },
