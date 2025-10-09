@@ -21,7 +21,7 @@ const initialState: ConversationState = {
   isEvaluating: false,
   userSessionId: null,
   evaluationData: null,
-  showFiveMinuteWarning: false,
+  showTimeLimitWarning: false,
 }
 
 export const useConversationState = () => {
@@ -65,7 +65,7 @@ export const useConversationState = () => {
     setEvaluationData: (data: EvaluationData | null) =>
       setState((prev) => ({ ...prev, evaluationData: data })),
     setShowFiveMinuteWarning: (value: boolean) => {
-      setState((prev) => ({ ...prev, showFiveMinuteWarning: value }))
+      setState((prev) => ({ ...prev, showTimeLimitWarning: value }))
     },
     resetConversationState,
   }

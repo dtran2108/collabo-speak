@@ -14,13 +14,13 @@ export const useConversationTimer = ({
   const actionsRef = useRef(actions)
   actionsRef.current = actions
 
-  // 5-minute timer effect
+  // 8-minute timer effect
   useEffect(() => {
     if (!state.conversationStartTime) return
 
     const timer = setTimeout(() => {
       actionsRef.current.setShowFiveMinuteWarning(true)
-    }, 5 * 60 * 1000) // 30 seconds for testing (was 5 minutes)
+    }, 8 * 60 * 1000) // 8 minutes
 
     return () => {
       clearTimeout(timer)
