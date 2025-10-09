@@ -41,7 +41,6 @@ interface SessionData {
     strengths: string[]
     improvements: string[]
     tips: string[]
-    objectives: string[]
   } | null
   words_per_min: number | null
   filler_words_per_min: number | null
@@ -95,7 +94,6 @@ export default function SessionHistoryPage() {
     strengths: string[]
     improvements: string[]
     tips: string[]
-    objectives: string[]
     words_per_min?: number
     filler_words_per_min?: number
     participation_percentage?: number
@@ -552,32 +550,6 @@ export default function SessionHistoryPage() {
                       <h4 className="font-semibold text-gray-900">
                         AI Feedback
                       </h4>
-
-                      {session.feedback.objectives &&
-                        session.feedback.objectives.length > 0 && (
-                          <div className="bg-gradient-to-r from-purple-50 to-indigo-50 p-4 rounded-lg border border-purple-200">
-                            <div className="flex items-center space-x-2 mb-3">
-                              <h5 className="font-semibold text-purple-800 text-lg">
-                                🎯 The big picture
-                              </h5>
-                            </div>
-                            <ul className="space-y-2">
-                              {session.feedback.objectives.map(
-                                (objective, index) => (
-                                  <li
-                                    key={index}
-                                    className="text-sm ml-3 text-gray-800 flex items-start font-medium"
-                                  >
-                                    <span className="text-blue-600 mr-3 mt-0.5 flex-shrink-0">
-                                      ⭕
-                                    </span>
-                                    {objective}
-                                  </li>
-                                ),
-                              )}
-                            </ul>
-                          </div>
-                        )}
 
                       {session.feedback.strengths &&
                         session.feedback.strengths.length > 0 && (
