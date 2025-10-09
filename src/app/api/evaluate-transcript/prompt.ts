@@ -112,9 +112,6 @@ You must return your complete evaluation in the **EXACT JSON FORMAT** specified 
   "pisa_team_organization": "an integer value for the PISA team organization score on the scale of 1 to 4"
 }
 
-Transcript:
-${transcript}
-
 Please provide a detailed, constructive evaluation in the EXACT JSON FORMAT specified above.
 
 Additional rules:
