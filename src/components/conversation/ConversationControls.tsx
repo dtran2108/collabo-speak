@@ -34,9 +34,9 @@ export const ConversationControls: React.FC<ConversationControlsProps> = ({
           </Button>
         ) : status === 'connected' ? (
           <div className="flex-1 space-y-2">
-            {state.showFiveMinuteWarning && (
+            {state.showTimeLimitWarning && (
               <div className="bg-orange-100 border border-orange-300 text-orange-800 px-4 py-2 rounded-lg text-sm font-semibold shadow-sm animate-pulse text-center">
-                ⏰ Oh, 5 minutes has passed, please try to wrap up now!
+                ⏰ Oh, 8 minutes has passed, please try to wrap up now!
               </div>
             )}
             <Button

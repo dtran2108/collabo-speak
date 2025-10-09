@@ -37,7 +37,7 @@ export interface ConversationState {
   isEvaluating: boolean
   userSessionId: string | null
   evaluationData: EvaluationData | null
-  showFiveMinuteWarning: boolean
+  showTimeLimitWarning: boolean
 }
 
 export interface ConversationActions {
