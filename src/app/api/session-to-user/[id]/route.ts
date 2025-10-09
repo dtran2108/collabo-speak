@@ -20,11 +20,12 @@ export async function PATCH(
     const finalUpdateData: Record<string, unknown> = {}
 
     // Handle feedback object (only update if all feedback fields are provided)
-    if (updateData.strengths && updateData.improvements && updateData.tips) {
+    if (updateData.strengths && updateData.improvements && updateData.tips && updateData.objectives) {
       finalUpdateData.feedback = {
         strengths: updateData.strengths,
         improvements: updateData.improvements,
         tips: updateData.tips,
+        objectives: updateData.objectives,
       }
     }
 

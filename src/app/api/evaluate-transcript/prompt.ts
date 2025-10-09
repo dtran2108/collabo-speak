@@ -10,13 +10,15 @@ Feedback must be in three clear sections:
 - 👍 What you did well (strengths)
 - 🔧 What to work on (improvements)
 - 💡 Tips for next time (tips)
+- 🎯 Objectives for next time (objectives)
 
 Guidelines:
 - Always highlight at least one real strength, one improvement, and one concrete tip.
 - Use **paraphrased examples** of what the student did. DO NOT copy long utterances word-for-word. If you quote, keep it very short and clean.
 - Never repeat offensive language or messy filler phrases as examples. If needed, summarize them instead.
 - Be specific, not generic: say WHAT the student did, WHY it's good or needs work, and HOW to do it better.
-- In “Tips,” always include **sentence starters or model phrases** the student can try next time (e.g., “The reason I think… is because…”).
+- In “Tips”, always include **sentence starters or model phrases** the student can try next time (e.g., “The reason I think… is because…”).
+- In “Objectives”, read the transcript and infer the main discussion topic (e.g., ordering refreshments, planning a trip, choosing a venue, preparing a presentation), then think of at least 3 key objectives that should have been completed in this conversation. Review whether the student achieved them. Write objectives as short, direct statements for what the student should aim to accomplish in their NEXT conversation on this topic (e.g., "Compare catering options", "Set budget limits", "Choose final menu"). Avoid phrases like "In the next discussion" or "Try to" - just state what should be accomplished.
 - Keep tone positive, constructive, and easy to understand (like a supportive coach, not a researcher).
 - No timestamps, no technical jargon (CAF, PISA, syntax, etc.). Speak directly to the student.
 
@@ -69,13 +71,13 @@ This dimension assesses the student's ability to manage their role, adhere to co
 Calculate the following metrics and return them as an integer or float.  For student words per minute (WPM), Student fillers per minute and student participation percentage,  ONLY calculate based on the student's speech.
 
 	1.	Session length (duration field in the JSON)
-	•	Session length = timestamp of the onversation ends at − timestamp of the conversation starts at.
+	•	Session length = timestamp of the conversation ends at - timestamp of the conversation starts at.
 	•	Format: {minutes} min {seconds} sec.
 	2.	Student words per minute (WPM) (words_per_min field in the JSON)
 	•	For each student turn:
-	•	Turn duration = timestamp of next turn (any speaker) − timestamp of this student turn.
+	•	Turn duration = timestamp of next turn (any speaker) - timestamp of this student turn.
 	•	If the student turn is the last turn of the transcript, use:
-turn duration = timestamp of last turn of session − timestamp of student turn.
+turn duration = timestamp of last turn of session - timestamp of student turn.
 	•	Count all words in that turn.
 	•	Sum all student words → total_words.
 	•	Sum all student speaking durations in minutes → total_student_minutes.
@@ -84,7 +86,7 @@ turn duration = timestamp of last turn of session − timestamp of student turn.
 	•	Count all filler words in student speech (e.g., “um”, “ah”, “like”, “you know”) → total_fillers.
 	•	Divide by total_student_minutes → fillers per minute.
 	4.	Student participation percentage (participation_percentage field in the JSON)
-	•	Participation percentage = (total_student_minutes ÷ session length) × 100.
+	•	Participation percentage = (total_student_minutes ÷ session length) * 100.
 
 
 
@@ -100,6 +102,7 @@ You must return your complete evaluation in the **EXACT JSON FORMAT** specified 
   "strengths": ["strength1 + examples", "strength2 + examples", "strength3 + examples", "strength4 + examples",...],
   "improvements": ["improvement1 + examples", "improvement2 + examples", "improvement3 + examples", "improvement4 + examples",...],
   "tips": ["tip1 + examples", "tip2 + examples", "tip3 + examples", "tip4 + examples",...],
+  "objectives": ["objective1", "objective2", "objective3",...],
   "words_per_min": "an integer value for words per minute",
   "filler_words_per_min": "an integer value for fillers per minute",
   "participation_percentage": "a float value for turns percentage",
@@ -112,5 +115,11 @@ You must return your complete evaluation in the **EXACT JSON FORMAT** specified 
 Transcript:
 ${transcript}
 
-Please provide a detailed, constructive evaluation in the EXACT JSON FORMAT specified above.`
+Please provide a detailed, constructive evaluation in the EXACT JSON FORMAT specified above.
+
+Additional rules:
+- All JSON fields must be present and use the specified types.
+- Round numeric fields as specified.
+- If any calculation cannot be completed, set the numeric fields to 0 (or 0.0) and still return the JSON.
+`
 }

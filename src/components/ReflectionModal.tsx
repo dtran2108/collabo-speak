@@ -63,13 +63,13 @@ export function ReflectionModal({
                onChange={(e) => setReflection(e.target.value)}
                placeholder="Share your thoughts about the conversation..."
                className="min-h-[100px] resize-none"
-               maxLength={300}
+               maxLength={150}
                disabled={isSubmitting}
                required
              />
              <div className="flex justify-between text-sm text-muted-foreground">
                <span className={reflection.length > 150 ? 'text-red-500' : ''}>
-                 {reflection.length}/300 characters
+                 {reflection.length}/150 characters
                </span>
              </div>
            </div>

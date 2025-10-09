@@ -202,6 +202,32 @@ export function ParticipationLogDetailModal({
             <div className="space-y-4">
               <h4 className="font-semibold text-gray-900">AI Feedback</h4>
 
+              {participationLog.feedback.objectives &&
+                participationLog.feedback.objectives.length > 0 && (
+                  <div className="bg-gradient-to-r from-purple-50 to-indigo-50 p-4 rounded-lg border border-purple-200">
+                    <div className="flex items-center space-x-2 mb-3">
+                      <h5 className="font-semibold text-purple-800 text-lg">
+                        🎯 The big picture
+                      </h5>
+                    </div>
+                    <ul className="space-y-2">
+                      {participationLog.feedback.objectives.map(
+                        (objective, index) => (
+                          <li
+                            key={index}
+                            className="text-sm ml-3 text-gray-800 flex items-start font-medium"
+                          >
+                            <span className="text-blue-600 mr-3 mt-0.5 flex-shrink-0">
+                              ⭕
+                            </span>
+                            {objective}
+                          </li>
+                        ),
+                      )}
+                    </ul>
+                  </div>
+                )}
+
               {participationLog.feedback.strengths &&
                 participationLog.feedback.strengths.length > 0 && (
                   <div>

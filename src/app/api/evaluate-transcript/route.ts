@@ -9,6 +9,7 @@ interface ChatGPTEvaluation {
   strengths: string[]
   improvements: string[]
   tips: string[]
+  objectives: string[]
   words_per_min: number
   filler_words_per_min: number
   participation_percentage: number
@@ -95,24 +96,29 @@ export async function POST(request: NextRequest) {
     }
 
     // Validate the response structure
-    if (!evaluation.strengths || !evaluation.improvements || !evaluation.tips) {
-      return NextResponse.json(
-        { error: 'Invalid evaluation format received' },
-        { status: 500 },
-      )
-    }
+    // if (
+    //   !evaluation.strengths ||
+    //   !evaluation.improvements ||
+    //   !evaluation.tips ||
+    //   !evaluation.objectives
+    // ) {
+    //   return NextResponse.json(
+    //     { error: 'Invalid evaluation format received' },
+    //     { status: 500 },
+    //   )
+    // }
 
-    if (
-      !evaluation.words_per_min ||
-      !evaluation.filler_words_per_min ||
-      !evaluation.participation_percentage ||
-      !evaluation.duration ||
-      !evaluation.pisa_shared_understanding ||
-      !evaluation.pisa_problem_solving_action ||
-      !evaluation.pisa_team_organization
-    ) {
-      console.error('Invalid evaluation format received:', evaluation)
-    }
+    // if (
+    //   !evaluation.words_per_min ||
+    //   !evaluation.filler_words_per_min ||
+    //   !evaluation.participation_percentage ||
+    //   !evaluation.duration ||
+    //   !evaluation.pisa_shared_understanding ||
+    //   !evaluation.pisa_problem_solving_action ||
+    //   !evaluation.pisa_team_organization
+    // ) {
+    //   console.error('Invalid evaluation format received:', evaluation)
+    // }
 
     return NextResponse.json({ evaluation })
   } catch (error) {

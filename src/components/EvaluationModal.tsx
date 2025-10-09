@@ -17,6 +17,7 @@ interface EvaluationData {
   strengths: string[]
   improvements: string[]
   tips: string[]
+  objectives: string[]
   words_per_min?: number
   filler_words_per_min?: number
   participation_percentage?: number
@@ -203,6 +204,31 @@ export function EvaluationModal({
               </div>
             )}
 
+            {/* Objectives for next time */}
+            <div className="space-y-3">
+              <div className="bg-gradient-to-r from-purple-50 to-indigo-50 p-4 rounded-lg border border-purple-200">
+                <div className="flex items-center space-x-2 mb-3">
+                  <h3 className="text-lg font-semibold text-purple-800">
+                    🎯 The big picture
+                  </h3>
+                </div>
+                <ul className="space-y-2">
+                  {data?.objectives.map((objective, index) => (
+                    <li
+                      key={index}
+                      className="text-sm ml-3 text-gray-800 flex items-start font-medium animate-in slide-in-from-left-2 duration-300"
+                      style={{ animationDelay: `${index * 100}ms` }}
+                    >
+                      <span className="text-blue-600 mr-3 mt-0.5 flex-shrink-0">
+                        ⭕
+                      </span>
+                      {objective}
+                    </li>
+                  ))}
+                </ul>
+              </div>
+            </div>
+
             {/* What you did well */}
             <div className="space-y-3">
               <div className="flex items-center space-x-2">
@@ -216,7 +242,11 @@ export function EvaluationModal({
                   <li
                     key={index}
                     className="text-sm text-gray-700 flex items-start animate-in slide-in-from-left-2 duration-300"
-                    style={{ animationDelay: `${index * 100}ms` }}
+                    style={{
+                      animationDelay: `${
+                        (index + (data?.objectives?.length || 0)) * 100
+                      }ms`,
+                    }}
                   >
                     <span className="w-2 h-2 bg-green-500 rounded-full mt-2 mr-3 flex-shrink-0"></span>
                     {strength}
@@ -240,7 +270,10 @@ export function EvaluationModal({
                     className="text-sm text-gray-700 flex items-start animate-in slide-in-from-left-2 duration-300"
                     style={{
                       animationDelay: `${
-                        (index + data?.strengths.length) * 100
+                        (index +
+                          (data?.objectives?.length || 0) +
+                          data?.strengths.length) *
+                        100
                       }ms`,
                     }}
                   >
@@ -267,6 +300,7 @@ export function EvaluationModal({
                     style={{
                       animationDelay: `${
                         (index +
+                          (data?.objectives?.length || 0) +
                           data?.strengths.length +
                           data?.improvements.length) *
                         100

@@ -27,6 +27,7 @@ interface ParticipationLogData {
     strengths: string[]
     improvements: string[]
     tips: string[]
+    objectives: string[]
   } | null
   words_per_min: number | null
   filler_words_per_min: number | null

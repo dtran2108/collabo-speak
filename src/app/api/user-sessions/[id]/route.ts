@@ -18,29 +18,35 @@ export async function PATCH(
 
     // Build update object with only provided fields
     const updateData: Record<string, unknown> = {}
-    
+
     // Handle feedback object (only update if all feedback fields are provided)
-    if (AIFeedback.strengths && AIFeedback.improvements && AIFeedback.tips) {
+    if (
+      AIFeedback.strengths &&
+      AIFeedback.improvements &&
+      AIFeedback.tips &&
+      AIFeedback.objectives
+    ) {
       updateData.feedback = {
         strengths: AIFeedback.strengths,
         improvements: AIFeedback.improvements,
         tips: AIFeedback.tips,
+        objectives: AIFeedback.objectives,
       }
     }
-    
+
     // Handle all other fields - only include if they exist
     const fieldsToUpdate = [
       'words_per_min',
-      'filler_words_per_min', 
+      'filler_words_per_min',
       'participation_percentage',
       'duration',
       'pisa_shared_understanding',
       'pisa_problem_solving_action',
       'pisa_team_organization',
-      'user_question_or_feedback'
+      'user_question_or_feedback',
     ]
-    
-    fieldsToUpdate.forEach(field => {
+
+    fieldsToUpdate.forEach((field) => {
       if (AIFeedback[field] !== undefined) {
         updateData[field] = AIFeedback[field]
       }
