@@ -39,20 +39,20 @@ export async function POST(request: NextRequest) {
           'Content-Type': 'application/json',
         },
         body: JSON.stringify({
-          model: 'gpt-4',
+          model: 'gpt-4o',
           messages: [
             {
               role: 'system',
               content:
-                "You are a collaborative skills analyst and supportive English speaking coach. Your goal is to provide encouraging feedback based ONLY on the student's speech in the transcript. Ignore all turns from AI personas (e.g., Fiona, Eli, Clara).",
+                "You are a collaborative skills analyst and supportive English speaking coach. Your goal is to provide encouraging feedback based ONLY on the student's speech in the transcript. Ignore all turns from AI personas (e.g., Fiona, Eli, Clara). You MUST return your response in valid JSON format only.",
             },
             {
               role: 'user',
               content: getPrompt(transcript),
             },
           ],
-          temperature: 0.7,
-          // max_tokens: 1000,
+          temperature: 0.3,
+          max_tokens: 2000,
         }),
       },
     )
@@ -85,12 +85,18 @@ export async function POST(request: NextRequest) {
       // Extract JSON from the response (in case there's extra text)
       const jsonMatch = evaluationText.match(/\{[\s\S]*\}/)
       const jsonString = jsonMatch ? jsonMatch[0] : evaluationText
+      console.log('Attempting to parse JSON:', jsonString.substring(0, 200) + '...')
       evaluation = JSON.parse(jsonString)
     } catch (parseError) {
       console.error('Failed to parse ChatGPT response:', parseError)
-      console.error('Raw response:', evaluationText)
+      console.error('Raw response length:', evaluationText.length)
+      console.error('Raw response preview:', evaluationText.substring(0, 500))
       return NextResponse.json(
-        { error: 'Failed to parse evaluation response' },
+        { 
+          error: 'Failed to parse evaluation response',
+          details: parseError instanceof Error ? parseError.message : 'Unknown parsing error',
+          responsePreview: evaluationText.substring(0, 200)
+        },
         { status: 500 },
       )
     }

@@ -204,35 +204,6 @@ export function EvaluationModal({
               </div>
             )}
 
-            {/* Big Picture Thinking */}
-            {data?.big_picture_thinking &&
-              data.big_picture_thinking.length > 0 && (
-                <div className="bg-gradient-to-r from-indigo-50 to-purple-50 p-6 rounded-xl border-2 border-indigo-200 shadow-lg">
-                  <div className="flex items-center space-x-3 mb-4">
-                    <h3 className="text-xl font-bold text-indigo-800">
-                      🌐 Big Picture Thinking
-                    </h3>
-                  </div>
-                  <div className="space-y-3">
-                    <p className="text-sm text-indigo-700 font-medium mb-3">
-                      Also, think about the bigger context next time — for
-                      example:
-                    </p>
-                    <ul className="space-y-2">
-                      {data.big_picture_thinking.map((item, index) => (
-                        <li
-                          key={index}
-                          className="text-sm ml-3 text-gray-800 flex items-start"
-                        >
-                          <span className="w-1.5 h-1.5 bg-indigo-500 rounded-full mt-2 mr-2 flex-shrink-0"></span>
-                          {item}
-                        </li>
-                      ))}
-                    </ul>
-                  </div>
-                </div>
-              )}
-
             {/* What you did well */}
             <div className="space-y-3">
               <div className="flex items-center space-x-2">
@@ -305,6 +276,33 @@ export function EvaluationModal({
                   >
                     <span className="w-2 h-2 bg-blue-500 rounded-full mt-2 mr-3 flex-shrink-0"></span>
                     {tip}
+                  </li>
+                ))}
+              </ul>
+            </div>
+          </div>
+        )}
+
+        {/* Big Picture Thinking */}
+        {data?.big_picture_thinking && data.big_picture_thinking.length > 0 && (
+          <div className="bg-gradient-to-r from-indigo-50 to-purple-50 p-6 rounded-xl border-2 border-indigo-200">
+            <div className="flex items-center space-x-3 mb-4">
+              <h3 className="text-xl font-bold text-indigo-800">
+                🌐 Big Picture Thinking
+              </h3>
+            </div>
+            <div className="space-y-3">
+              <p className="text-sm text-indigo-700 font-medium mb-3">
+                Also, think about the bigger picture next time — for example:
+              </p>
+              <ul className="space-y-2">
+                {data.big_picture_thinking.map((item, index) => (
+                  <li
+                    key={index}
+                    className="text-sm ml-3 text-gray-800 flex items-start"
+                  >
+                    <span className="w-1.5 h-1.5 bg-indigo-500 rounded-full mt-2 mr-2 flex-shrink-0"></span>
+                    {item}
                   </li>
                 ))}
               </ul>

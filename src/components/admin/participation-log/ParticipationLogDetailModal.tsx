@@ -197,42 +197,9 @@ export function ParticipationLogDetailModal({
             </div>
           )}
 
-          {/* Big Picture Thinking */}
-          {participationLog.feedback?.big_picture_thinking &&
-            participationLog.feedback.big_picture_thinking.length > 0 && (
-              <div className="bg-gradient-to-r from-indigo-50 to-purple-50 p-6 rounded-xl border-2 border-indigo-200 shadow-lg">
-                <div className="flex items-center space-x-3 mb-4">
-                  <h4 className="text-xl font-bold text-indigo-800">
-                    🌐 Big Picture Thinking
-                  </h4>
-                </div>
-                <div className="space-y-3">
-                  <p className="text-sm text-indigo-700 font-medium mb-3">
-                    Also, think about the bigger context next time — for
-                    example:
-                  </p>
-                  <ul className="space-y-2">
-                    {participationLog.feedback.big_picture_thinking.map(
-                      (item, index) => (
-                        <li
-                          key={index}
-                          className="text-sm ml-3 text-gray-800 flex items-start"
-                        >
-                          <span className="w-1.5 h-1.5 bg-indigo-500 rounded-full mt-2 mr-2 flex-shrink-0"></span>
-                          {item}
-                        </li>
-                      ),
-                    )}
-                  </ul>
-                </div>
-              </div>
-            )}
-
           {/* Feedback */}
           {participationLog.feedback !== null && (
             <div className="space-y-4">
-              <h4 className="font-semibold text-gray-900">AI Feedback</h4>
-
               {participationLog.feedback.strengths &&
                 participationLog.feedback.strengths.length > 0 && (
                   <div>
@@ -304,6 +271,37 @@ export function ParticipationLogDetailModal({
                 )}
             </div>
           )}
+
+          {/* Big Picture Thinking */}
+          {participationLog.feedback?.big_picture_thinking &&
+            participationLog.feedback.big_picture_thinking.length > 0 && (
+              <div className="bg-gradient-to-r from-indigo-50 to-purple-50 p-6 rounded-xl border-2 border-indigo-200">
+                <div className="flex items-center space-x-3 mb-4">
+                  <h4 className="text-xl font-bold text-indigo-800">
+                    🌐 Big Picture Thinking
+                  </h4>
+                </div>
+                <div className="space-y-3">
+                  <p className="text-sm text-indigo-700 font-medium mb-3">
+                    Also, think about the bigger picture next time — for
+                    example:
+                  </p>
+                  <ul className="space-y-2">
+                    {participationLog.feedback.big_picture_thinking.map(
+                      (item, index) => (
+                        <li
+                          key={index}
+                          className="text-sm ml-3 text-gray-800 flex items-start"
+                        >
+                          <span className="w-1.5 h-1.5 bg-indigo-500 rounded-full mt-2 mr-2 flex-shrink-0"></span>
+                          {item}
+                        </li>
+                      ),
+                    )}
+                  </ul>
+                </div>
+              </div>
+            )}
 
           {/* Reflection */}
           {participationLog.reflection !== null && (
